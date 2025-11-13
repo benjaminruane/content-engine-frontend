@@ -375,12 +375,13 @@ const selectedVersion =
                   Upload Files
                 </Button>
                 <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => addFiles(e.target.files)}
-                />
+  ref={fileInputRef}
+  type="file"
+  multiple
+  className="hidden"
+  style={{ display: "none" }}
+  onChange={(e) => addFiles(e.target.files)}
+/>
 
                 <div className="mt-4 space-y-2">
                   {parsed.map((p, i) => (
