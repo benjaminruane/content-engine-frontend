@@ -469,17 +469,18 @@ export default function App() {
                 </div>
 
                 <div className="flex gap-2 flex-wrap">
-                  <Button onClick={handleGenerate} disabled={hasInitialGeneration}>
-                    Generate
-                  </Button>
-                  <Button onClick={handleRewrite}>Rewrite</Button>
-                  <Button onClick={() => setShowRubric(true)}>View Rubrics</Button>
-                  {hasInitialGeneration && (
-                    <Button onClick={() => setShowNewConfirm(true)}>
-                      New Output
-                    </Button>
-                  )}
-                </div>
+  <Button onClick={handleGenerate} disabled={hasInitialGeneration}>
+    Generate
+  </Button>
+  <Button onClick={handleRewrite} disabled={!hasInitialGeneration}>
+    Rewrite
+  </Button>
+  <Button onClick={() => setShowRubric(true)}>View Rubrics</Button>
+  {hasInitialGeneration && (
+    <Button onClick={() => setShowNewConfirm(true)}>New Output</Button>
+  )}
+</div>
+
               </CardBody>
             </Card>
 
