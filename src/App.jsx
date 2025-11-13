@@ -148,7 +148,10 @@ export default function App() {
 
   // Backend
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [apiBaseUrl, setApiBaseUrl] = useState("");
+const [apiBaseUrl, setApiBaseUrl] = useState(
+  "https://content-engine-backend-v2.vercel.app/api"
+);
+
   const [apiStatus, setApiStatus] = useState("Unknown");
 
   const checkHealth = async () => {
@@ -320,7 +323,8 @@ export default function App() {
   };
 
   const selectedVersion =
-    versions.find((v) => v.id === selectedVersionId) || null;
+  versions.find((v) => v.id === selectedVersionId) ||
+  (versions.length > 0 ? versions[versions.length - 1] : null);
 
   // Diagnostics
   const [diagnostics, setDiagnostics] = useState(null);
