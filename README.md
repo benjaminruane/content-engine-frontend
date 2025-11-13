@@ -1,4 +1,4 @@
-AI Content Engine – v1.0
+AI Content Engine
 
 This repository contains the frontend application for the AI Content Engine, a prototype tool that enables structured content generation using source documents, URLs, predefined output types, and version tracking.
 
@@ -92,9 +92,6 @@ This project is designed for Vercel hosting.
 
 Simply connect the repo to Vercel and deploy — no extra configuration needed.
 
-📘 Version
-
-Current frontend version: v1.0Backend version may differ.
 
 🙌 Author & Usage
 
