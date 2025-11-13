@@ -479,7 +479,15 @@ const selectedVersion =
   <Button onClick={handleRewrite} disabled={!hasInitialGeneration}>
     Rewrite
   </Button>
-  <Button onClick={() => setShowRubric(true)}>View Rubrics</Button>
+  <Button
+  onClick={() => {
+    console.log("View Rubrics clicked");
+    setShowRubric(true);
+  }}
+>
+  View Rubrics
+</Button>
+
   {hasInitialGeneration && (
     <Button onClick={() => setShowNewConfirm(true)}>New Output</Button>
   )}
@@ -605,13 +613,16 @@ const selectedVersion =
                 title="Output Draft"
                 subtitle="Generated content appears here"
                 right={
-                  <button
-                    onClick={() => setShowRubric(true)}
-                    className="text-sm text-gray-700 underline"
-                  >
-                    Score: {selectedVersion?.score ?? "–"}/100
-                  </button>
-                }
+  <button
+    onClick={() => {
+      console.log("Score Rubrics clicked");
+      setShowRubric(true);
+    }}
+    className="text-sm text-gray-700 underline"
+  >
+    Score: {selectedVersion?.score ?? "–"}/100
+  </button>
+}
               />
               <CardBody>
                 <Textarea
@@ -701,6 +712,12 @@ const selectedVersion =
             </Card>
           </div>
         </div>
+
+        {showRubric && (
+  <div className="fixed top-4 left-4 bg-yellow-300 text-black px-3 py-1 rounded">
+    DEBUG: showRubric is TRUE
+  </div>
+)}
 
         {/* Rubric modal */}
         {showRubric && (
