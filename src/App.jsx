@@ -705,9 +705,13 @@ const selectedVersion =
                 <ul className="list-disc pl-6 text-sm space-y-1">
                   <li>Backend PDF/DOCX parsing for richer sources.</li>
                   <li>Model-based content generation wired to /generate & /rewrite.</li>
+                  <li>Output-specific prompts triggered by output selection.</li>
                   <li>Templated outputs and reusable blueprints per content type.</li>
                   <li>Scoring engine tied to rubrics and feedback loop.</li>
+                  <li>Sources table.</li>
+                  <li>Statement Reliability and Inferences table.</li>
                   <li>RBAC, audit logs, and enterprise integrations.</li>
+                  <li>UI re-design for visual appeal and efficient layout.</li>
                 </ul>
               </CardBody>
             </Card>
