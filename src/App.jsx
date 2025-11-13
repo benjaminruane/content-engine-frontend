@@ -58,19 +58,35 @@ const Toggle = ({ checked, onChange, label }) => (
   <label className="inline-flex items-center gap-2 cursor-pointer select-none">
     <div
       onClick={() => onChange(!checked)}
-      className={`w-10 h-6 rounded-full border flex items-center px-0.5 transition ${
-        checked ? "bg-black" : "bg-white"
-      }`}
+      style={{
+        width: "40px",
+        height: "22px",
+        borderRadius: "999px",
+        border: "1px solid #ccc",
+        padding: "2px",
+        display: "flex",
+        alignItems: "center",
+        backgroundColor: checked ? "#000" : "#fff",
+        boxSizing: "border-box",
+        transition: "background-color 0.15s ease"
+      }}
     >
       <div
-        className={`w-5 h-5 rounded-full shadow bg-white transition ${
-          checked ? "translate-x-4" : "translate-x-0"
-        }`}
+        style={{
+          width: "18px",
+          height: "18px",
+          borderRadius: "999px",
+          backgroundColor: "#fff",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+          transform: checked ? "translateX(18px)" : "translateX(0)",
+          transition: "transform 0.15s ease"
+        }}
       />
     </div>
     <span className="text-sm text-gray-700">{label}</span>
   </label>
 );
+
 
 // -----------------------------
 // Constants
@@ -711,7 +727,7 @@ const selectedVersion =
                   <li>Sources table.</li>
                   <li>Statement Reliability and Inferences table.</li>
                   <li>RBAC, audit logs, and enterprise integrations.</li>
-                  <li>UI re-design for visual appeal and efficient layout.</li>
+                  <li>UI re-design for visual appeal (including pills, icons) and efficient layout.</li>
                 </ul>
               </CardBody>
             </Card>
