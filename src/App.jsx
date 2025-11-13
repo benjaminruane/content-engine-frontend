@@ -703,19 +703,24 @@ const selectedVersion =
         </div>
 
         {/* Rubric modal */}
-        {showRubric && selectedVersion && (
+        {showRubric && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
       <h3 className="text-lg font-semibold mb-2">Quality Rubrics</h3>
       <ul className="space-y-2 text-sm">
-        {selectedVersion.metrics &&
-          Object.entries(selectedVersion.metrics).map(([k, v]) => (
-            <li key={k} className="flex justify-between">
-              <span>{k}</span>
-              <span>{Math.round(v * 100)}/100</span>
-            </li>
-          ))}
-      </ul>
+  {selectedVersion?.metrics
+    ? Object.entries(selectedVersion.metrics).map(([k, v]) => (
+        <li key={k} className="flex justify-between">
+          <span>{k}</span>
+          <span>{Math.round(v * 100)}/100</span>
+        </li>
+      ))
+    : (
+        <li className="text-sm text-gray-500">
+          No version selected or no metrics available yet.
+        </li>
+      )}
+</ul>
       <div className="text-right mt-4">
         <Button onClick={() => setShowRubric(false)}>Close</Button>
       </div>
