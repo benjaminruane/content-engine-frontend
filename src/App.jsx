@@ -408,7 +408,7 @@ const handleRewrite = async () => {
             </div>
             <div>
 <h1 className="text-2xl font-semibold">
-  AI Content Engine – v1.0
+  AI Content Engine – v2.0
 </h1>
               <p className="text-sm text-gray-500">
                 Upload sources, configure outputs, generate drafts, and track
@@ -416,7 +416,7 @@ const handleRewrite = async () => {
               </p>
             </div>
           </div>
-          <Pill>v1.0</Pill>
+          <Pill>v2.0</Pill>
         </header>
 
         <div className="grid lg:grid-cols-3 gap-6 items-start">
