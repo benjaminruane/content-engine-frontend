@@ -256,17 +256,19 @@ export default function App() {
   // -----------------------------
   const hasInitialGeneration = versions.length > 0;
 
-  const handleGenerate = async () => {
-    if (isGenerating || isRewriting) return; // prevent double clicks
-    setIsGenerating(true);
-    try {
-      const allText = [
-        ...parsed.map((p) => p.text),
-        ...urlSources.map((u) => u.text)
-      ].join("\n");
+const handleGenerate = async () => {
+  if (isGenerating || isRewriting) return; // prevent double clicks
+  setIsGenerating(true);
+
+  try {
+    const allText = [
+      ...parsed.map((p) => p.text),
+      ...urlSources.map((u) => u.text),
+    ].join("\n");
 
     const body = {
-      mode: "generate", // 👈 NEW
+      // 👇 tells the backend this is a fresh generation
+      mode: "generate",
       title,
       notes: promptNotes,
       selectedTypes,
@@ -275,87 +277,89 @@ export default function App() {
       modelId,
       temperature,
       maxTokens,
-      text: allText
+      text: allText,
     };
 
+    const out = await runGenerateRequest(body);
 
-      const out = await runGenerateRequest(body);
+    const versionNumber = versions.length + 1;
+    const newVersion = {
+      id: crypto.randomUUID(),
+      versionNumber,
+      timestamp: new Date().toISOString(),
+      content: out,
+      comment: "Initial generation",
+      score: Math.round(Math.random() * 40) + 60,
+      metrics: buildMetrics(),
+      publicSearch,
+      urls: urlSources,
+      model: { id: modelId, temperature, maxTokens },
+    };
 
-      const versionNumber = versions.length + 1;
-      const newVersion = {
-        id: crypto.randomUUID(),
-        versionNumber,
-        timestamp: new Date().toISOString(),
-        content: out,
-        comment: "Initial generation",
-        score: Math.round(Math.random() * 40) + 60,
-        metrics: buildMetrics(),
-        publicSearch,
-        urls: urlSources,
-        model: { id: modelId, temperature, maxTokens }
-      };
-
-      setVersions((prev) => [...prev, newVersion]);
-      setSelectedVersionId(newVersion.id);
-      setOutput(out);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleRewrite = async () => {
-    if (!selectedVersionId || isRewriting || isGenerating) return;
-    const base = versions.find((v) => v.id === selectedVersionId);
-    if (!base) return;
-
-    setIsRewriting(true);
-    try {
-      const allText = [
-        ...parsed.map((p) => p.text),
-        ...urlSources.map((u) => u.text)
-      ].join("\n");
-
-const body = {
-  mode: "rewrite",                    // <— NEW
-  title,
-  notes: promptNotes,
-  selectedTypes,
-  publicSearch,
-  model: { id: modelId, temperature, maxTokens },
-  modelId,
-  temperature,
-  maxTokens,
-  text: allText,                      // any extra context / sources
-  previousContent: base.content       // <— more descriptive key
+    setVersions((prev) => [...prev, newVersion]);
+    setSelectedVersionId(newVersion.id);
+    setOutput(out);
+  } finally {
+    setIsGenerating(false);
+  }
 };
 
+const handleRewrite = async () => {
+  if (!selectedVersionId || isRewriting || isGenerating) return;
 
-      const out = await runGenerateRequest(body);
+  const base = versions.find((v) => v.id === selectedVersionId);
+  if (!base) return;
 
-      const versionNumber = versions.length + 1;
-      const newVersion = {
-        id: crypto.randomUUID(),
-        versionNumber,
-        timestamp: new Date().toISOString(),
-        content: out,
-        comment: `${summarizeRewrite(promptNotes)} (${
-          promptNotes || "no explicit notes"
-        })`,
-        score: Math.round(Math.random() * 40) + 60,
-        metrics: buildMetrics(),
-        publicSearch,
-        urls: urlSources,
-        model: { id: modelId, temperature, maxTokens }
-      };
+  setIsRewriting(true);
 
-      setVersions((prev) => [...prev, newVersion]);
-      setSelectedVersionId(newVersion.id);
-      setOutput(out);
-      setPromptNotes("");
-    } finally {
-      setIsRewriting(false);
-    }
-  };
+  try {
+    const allText = [
+      ...parsed.map((p) => p.text),
+      ...urlSources.map((u) => u.text),
+    ].join("\n");
+
+    const body = {
+      // 👇 tells the backend this is a rewrite, not a fresh draft
+      mode: "rewrite",
+      title,
+      notes: promptNotes,
+      selectedTypes,
+      publicSearch,
+      model: { id: modelId, temperature, maxTokens },
+      modelId,
+      temperature,
+      maxTokens,
+      text: allText,
+      // 👇 previous draft to *tweak* rather than replace
+      previousContent: base.content,
+    };
+
+    const out = await runGenerateRequest(body);
+
+    const versionNumber = versions.length + 1;
+    const newVersion = {
+      id: crypto.randomUUID(),
+      versionNumber,
+      timestamp: new Date().toISOString(),
+      content: out,
+      comment: `${summarizeRewrite(promptNotes)} (${
+        promptNotes || "no explicit notes"
+      })`,
+      score: Math.round(Math.random() * 40) + 60,
+      metrics: buildMetrics(),
+      publicSearch,
+      urls: urlSources,
+      model: { id: modelId, temperature, maxTokens },
+    };
+
+    setVersions((prev) => [...prev, newVersion]);
+    setSelectedVersionId(newVersion.id);
+    setOutput(out);
+    setPromptNotes("");
+  } finally {
+    setIsRewriting(false);
+  }
+};
 
   const handleNewOutput = () => {
     setParsed([]);
