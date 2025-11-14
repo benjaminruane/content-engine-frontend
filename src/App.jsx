@@ -67,17 +67,34 @@ const Toggle = ({ checked, onChange }) => (
   <button
     type="button"
     onClick={() => onChange(!checked)}
-    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-      checked ? "bg-black" : "bg-gray-300"
-    }`}
+    style={{
+      width: "44px",
+      height: "24px",
+      borderRadius: "999px",
+      padding: "2px",
+      border: "1px solid #d1d5db", // light grey
+      backgroundColor: checked ? "#111827" : "#e5e7eb", // dark vs light
+      display: "flex",
+      alignItems: "center",
+      boxSizing: "border-box",
+      cursor: "pointer",
+      transition: "background-color 150ms ease"
+    }}
   >
     <span
-      className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform ${
-        checked ? "translate-x-5" : "translate-x-1"
-      }`}
+      style={{
+        width: "18px",
+        height: "18px",
+        borderRadius: "999px",
+        backgroundColor: "#ffffff",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+        transform: checked ? "translateX(18px)" : "translateX(0)",
+        transition: "transform 150ms ease"
+      }}
     />
   </button>
 );
+
 
 
 
