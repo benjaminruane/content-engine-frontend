@@ -503,23 +503,34 @@ const handleRewrite = async () => {
                 </div>
 
                 <div>
-                  <Label>Output Types</Label>
-                  <div className="space-y-2">
-                    {OUTPUT_TYPES.map((o) => (
-                      <label
-                        key={o.value}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedTypes.includes(o.value)}
-                          onChange={() => toggleType(o.value)}
-                        />
-                        {o.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                 <div>
+  <Label>Output Types</Label>
+  <p className="text-xs text-gray-500 mb-2">
+    Choose one or more content formats to generate in this run.
+  </p>
+
+  <div className="flex flex-wrap gap-2">
+    {OUTPUT_TYPES.map((o) => {
+      const active = selectedTypes.includes(o.value);
+      return (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => toggleType(o.value)}
+          className={
+            "px-3 py-1.5 rounded-full text-xs border transition " +
+            (active
+              ? "bg-black text-white border-black shadow-sm"
+              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
+          }
+        >
+          {o.label}
+        </button>
+      );
+    })}
+  </div>
+</div>
+
 
 <div className="flex items-center justify-between">
   <Label>Include public domain search</Label>
