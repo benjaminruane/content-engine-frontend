@@ -69,11 +69,11 @@ const Toggle = ({ checked, onChange, label }) => (
       type="button"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${
-        checked ? "bg-black" : "bg-gray-300"
+        checked ? "bg-black border-black" : "bg-gray-300 border-gray-300"
       }`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white border border-gray-500 shadow transition-transform ${
+        className={`inline-block h-4 w-4 transform rounded-full bg-white border border-gray-400 shadow transition-transform ${
           checked ? "translate-x-5" : "translate-x-1"
         }`}
       />
