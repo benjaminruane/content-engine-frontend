@@ -196,48 +196,53 @@ export default function App() {
     }
   };
 
-  const runGenerateRequest = async (body) => {
-    if (!apiBaseUrl) {
-      return (
-        "DEMO OUTPUT\n\n" +
-        `Title: ${body.title || "(untitled)"}\n` +
-        `Public search: ${body.publicSearch ? "ON" : "OFF"}\n` +
-        `Types: ${body.selectedTypes?.join(", ") || "(none)"}\n\n` +
-        "[This is demo text because no API Base URL is configured.]"
-      );
-    }
+const runGenerateRequest = async (body) => {
+  if (!apiBaseUrl) {
+    return (
+      "DEMO OUTPUT\n\n" +
+      `Title: ${body.title || "(untitled)"}\n` +
+      `Public search: ${body.publicSearch ? "ON" : "OFF"}\n` +
+      `Types: ${body.selectedTypes?.join(", ") || "(none)"}\n\n` +
+      "[This is demo text because no API Base URL is configured.]"
+    );
+  }
+  try {
+    console.log("Calling backend:", `${apiBaseUrl}/generate`, "with body:", body);
+
+    const res = await fetch(`${apiBaseUrl}/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const raw = await res.text();
+    console.log("Raw backend response:", raw);
+
+    let data = null;
     try {
-      const res = await fetch(`${apiBaseUrl}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      const raw = await res.text();
-      let data = null;
-      try {
-        data = JSON.parse(raw);
-      } catch {
-        // not JSON
-      }
-
-      if (!data) return raw || "[No output from backend]";
-
-      if (typeof data.output === "string" && data.output.trim().length > 0) {
-        return data.output;
-      }
-      if (Array.isArray(data.choices) && data.choices[0]?.message?.content) {
-        return data.choices[0].message.content;
-      }
-      if (typeof data.result === "string") {
-        return data.result;
-      }
-      return JSON.stringify(data, null, 2);
-    } catch (e) {
-      console.error("Backend error", e);
-      return "[Backend error while generating output]";
+      data = JSON.parse(raw);
+    } catch {
+      // not JSON
     }
-  };
+
+    if (!data) return raw || "[No output from backend]";
+
+    if (typeof data.output === "string" && data.output.trim().length > 0) {
+      return data.output;
+    }
+    if (Array.isArray(data.choices) && data.choices[0]?.message?.content) {
+      return data.choices[0].message.content;
+    }
+    if (typeof data.result === "string") {
+      return data.result;
+    }
+    return JSON.stringify(data, null, 2);
+  } catch (e) {
+    console.error("Backend error during fetch:", e);
+    return `[Backend error while generating output: ${e.message || String(e)}]`;
+  }
+};
+
 
   const buildMetrics = () => ({ clarity: 0.8, accuracy: 0.75, structure: 0.82 });
 
