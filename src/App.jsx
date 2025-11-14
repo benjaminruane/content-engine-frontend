@@ -24,6 +24,7 @@ function Pill({ children, className = "" }) {
   );
 }
 
+
 function Card({ children, className = "" }) {
   return <div className={`rounded-3xl border shadow-sm bg-white ${className}`}>{children}</div>;
 }
