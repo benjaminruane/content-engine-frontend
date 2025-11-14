@@ -402,22 +402,17 @@ const handleRewrite = async () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
       <div className="max-w-6xl mx-auto py-8 px-4">
         <header className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center text-lg font-bold">
-              CE
-            </div>
-            <div>
-<h1 className="text-2xl font-semibold">
-  AI Content Engine – v2.0
-</h1>
-              <p className="text-sm text-gray-500">
-                Upload sources, configure outputs, generate drafts, and track
-                versions.
-              </p>
-            </div>
-          </div>
-          <Pill>v2.0</Pill>
-        </header>
+  <div className="flex flex-col">
+    <h1 className="text-2xl font-semibold">
+      Brightline Content Engine – v2.0
+    </h1>
+    <p className="text-sm text-gray-500 mt-1">
+      Structured, source-anchored content generation with versioned drafts.
+    </p>
+  </div>
+  <Pill>v2.0</Pill>
+</header>
+
 
         <div className="grid lg:grid-cols-3 gap-6 items-start">
           {/* Left column: sources + configuration */}
