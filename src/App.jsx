@@ -754,13 +754,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Optional debug badge for rubrics */}
-        {showRubric && (
-          <div className="fixed top-4 left-4 bg-yellow-300 text-black px-3 py-1 rounded">
-            DEBUG: showRubric is TRUE
-          </div>
-        )}
-
         {/* Rubric modal */}
         {showRubric && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
