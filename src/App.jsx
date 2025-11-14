@@ -63,38 +63,20 @@ const Textarea = (props) => (
   <textarea className="w-full px-3 py-2 border rounded-xl text-sm" {...props} />
 );
 
-const Toggle = ({ checked, onChange, label }) => (
-  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-    <div
-      onClick={() => onChange(!checked)}
-      style={{
-        width: "40px",
-        height: "22px",
-        borderRadius: "999px",
-        border: "1px solid #ccc",
-        padding: "2px",
-        display: "flex",
-        alignItems: "center",
-        backgroundColor: checked ? "#000" : "#fff",
-        boxSizing: "border-box",
-        transition: "background-color 0.15s ease"
-      }}
-    >
-      <div
-        style={{
-          width: "18px",
-          height: "18px",
-          borderRadius: "999px",
-          backgroundColor: "#fff",
-          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
-          transform: checked ? "translateX(18px)" : "translateX(0)",
-          transition: "transform 0.15s ease"
-        }}
-      />
-    </div>
-    <span className="text-sm text-gray-700">{label}</span>
-  </label>
+const Toggle = ({ checked, onChange }) => (
+  <button
+    type="button"
+    onClick={() => onChange(!checked)}
+    className="relative inline-flex items-center w-10 h-6 rounded-full border border-gray-300 bg-white transition-colors"
+    style={{ backgroundColor: checked ? "#000" : "#fff" }}
+  >
+    <span
+      className="inline-block w-5 h-5 rounded-full bg-white shadow transition-transform"
+      style={{ transform: checked ? "translateX(16px)" : "translateX(0)" }}
+    />
+  </button>
 );
+
 
 // -----------------------------
 // Constants
@@ -492,13 +474,13 @@ export default function App() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Label>Public domain search</Label>
-                  <Toggle
-                    checked={publicSearch}
-                    onChange={setPublicSearch}
-                    label={publicSearch ? "On" : "Off"}
-                  />
-                </div>
+  <Label>Include public domain search</Label>
+  <Toggle
+    checked={publicSearch}
+    onChange={setPublicSearch}
+  />
+</div>
+
 
                 <div>
                   <Label>Prompt Notes / Rewrite Instructions</Label>
