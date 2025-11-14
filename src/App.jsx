@@ -44,6 +44,15 @@ function CardBody({ children, className = "" }) {
   return <div className={`p-4 ${className}`}>{children}</div>;
 }
 
+function Spinner() {
+  return (
+    <span
+      className="inline-block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-1"
+      aria-hidden="true"
+    />
+  );
+}
+
 const Label = ({ children }) => (
   <label className="text-sm text-gray-700 font-medium block mb-1">{children}</label>
 );
@@ -77,7 +86,7 @@ const Toggle = ({ checked, onChange, label }) => (
           height: "18px",
           borderRadius: "999px",
           backgroundColor: "#fff",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
           transform: checked ? "translateX(18px)" : "translateX(0)",
           transition: "transform 0.15s ease"
         }}
@@ -86,7 +95,6 @@ const Toggle = ({ checked, onChange, label }) => (
     <span className="text-sm text-gray-700">{label}</span>
   </label>
 );
-
 
 // -----------------------------
 // Constants
@@ -164,11 +172,15 @@ export default function App() {
 
   // Backend
   const [showAdvanced, setShowAdvanced] = useState(false);
-const [apiBaseUrl, setApiBaseUrl] = useState(
-  "https://content-engine-backend-v2.vercel.app/api"
-);
-
+  const [apiBaseUrl, setApiBaseUrl] = useState(
+    "https://content-engine-backend-v2.vercel.app/api"
+  );
   const [apiStatus, setApiStatus] = useState("Unknown");
+
+  // Diagnostics & loading
+  const [diagnostics, setDiagnostics] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isRewriting, setIsRewriting] = useState(false);
 
   const checkHealth = async () => {
     if (!apiBaseUrl) return;
@@ -241,89 +253,100 @@ const [apiBaseUrl, setApiBaseUrl] = useState(
   const hasInitialGeneration = versions.length > 0;
 
   const handleGenerate = async () => {
-    const allText = [
-      ...parsed.map((p) => p.text),
-      ...urlSources.map((u) => u.text)
-    ].join("\n");
+    if (isGenerating || isRewriting) return; // prevent double clicks
+    setIsGenerating(true);
+    try {
+      const allText = [
+        ...parsed.map((p) => p.text),
+        ...urlSources.map((u) => u.text)
+      ].join("\n");
 
-    const body = {
-      title,
-      notes: promptNotes,
-      selectedTypes,
-      publicSearch,
-      model: { id: modelId, temperature, maxTokens },
-      modelId,
-      temperature,
-      maxTokens,
-      text: allText
-    };
+      const body = {
+        title,
+        notes: promptNotes,
+        selectedTypes,
+        publicSearch,
+        model: { id: modelId, temperature, maxTokens },
+        modelId,
+        temperature,
+        maxTokens,
+        text: allText
+      };
 
-    const out = await runGenerateRequest(body);
+      const out = await runGenerateRequest(body);
 
-    const versionNumber = versions.length + 1;
-    const newVersion = {
-      id: crypto.randomUUID(),
-      versionNumber,
-      timestamp: new Date().toISOString(),
-      content: out,
-      comment: "Initial generation",
-      score: Math.round(Math.random() * 40) + 60,
-      metrics: buildMetrics(),
-      publicSearch,
-      urls: urlSources,
-      model: { id: modelId, temperature, maxTokens }
-    };
+      const versionNumber = versions.length + 1;
+      const newVersion = {
+        id: crypto.randomUUID(),
+        versionNumber,
+        timestamp: new Date().toISOString(),
+        content: out,
+        comment: "Initial generation",
+        score: Math.round(Math.random() * 40) + 60,
+        metrics: buildMetrics(),
+        publicSearch,
+        urls: urlSources,
+        model: { id: modelId, temperature, maxTokens }
+      };
 
-    setVersions((prev) => [...prev, newVersion]);
-    setSelectedVersionId(newVersion.id);
-    setOutput(out);
+      setVersions((prev) => [...prev, newVersion]);
+      setSelectedVersionId(newVersion.id);
+      setOutput(out);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleRewrite = async () => {
-    if (!selectedVersionId) return;
+    if (!selectedVersionId || isRewriting || isGenerating) return;
     const base = versions.find((v) => v.id === selectedVersionId);
     if (!base) return;
 
-    const allText = [
-      ...parsed.map((p) => p.text),
-      ...urlSources.map((u) => u.text)
-    ].join("\n");
+    setIsRewriting(true);
+    try {
+      const allText = [
+        ...parsed.map((p) => p.text),
+        ...urlSources.map((u) => u.text)
+      ].join("\n");
 
-    const body = {
-      title,
-      notes: promptNotes,
-      selectedTypes,
-      publicSearch,
-      model: { id: modelId, temperature, maxTokens },
-      modelId,
-      temperature,
-      maxTokens,
-      text: allText,
-      previous: base.content
-    };
+      const body = {
+        title,
+        notes: promptNotes,
+        selectedTypes,
+        publicSearch,
+        model: { id: modelId, temperature, maxTokens },
+        modelId,
+        temperature,
+        maxTokens,
+        text: allText,
+        previous: base.content
+      };
 
-    const out = await runGenerateRequest(body);
+      const out = await runGenerateRequest(body);
 
-    const versionNumber = versions.length + 1;
-    const newVersion = {
-      id: crypto.randomUUID(),
-      versionNumber,
-      timestamp: new Date().toISOString(),
-      content: out,
-      comment: `${summarizeRewrite(promptNotes)} (${
-        promptNotes || "no explicit notes"
-      })`,
-      score: Math.round(Math.random() * 40) + 60,
-      metrics: buildMetrics(),
-      publicSearch,
-      urls: urlSources,
-      model: { id: modelId, temperature, maxTokens }
-    };
+      const versionNumber = versions.length + 1;
+      const newVersion = {
+        id: crypto.randomUUID(),
+        versionNumber,
+        timestamp: new Date().toISOString(),
+        content: out,
+        comment: `${summarizeRewrite(promptNotes)} (${
+          promptNotes || "no explicit notes"
+        })`,
+        score: Math.round(Math.random() * 40) + 60,
+        metrics: buildMetrics(),
+        publicSearch,
+        urls: urlSources,
+        model: { id: modelId, temperature, maxTokens }
+      };
 
-    setVersions((prev) => [...prev, newVersion]);
-    setSelectedVersionId(newVersion.id);
-    setOutput(out);
-    setPromptNotes("");
+      setVersions((prev) => [...prev, newVersion]);
+      setSelectedVersionId(newVersion.id);
+      setOutput(out);
+      setPromptNotes("");
+    } finally {
+      setIsRewriting(false);
+    }
   };
 
   const handleNewOutput = () => {
@@ -338,12 +361,10 @@ const [apiBaseUrl, setApiBaseUrl] = useState(
     setShowNewConfirm(false);
   };
 
-const selectedVersion =
-  versions.find((v) => v.id === selectedVersionId) ||
-  (versions.length > 0 ? versions[versions.length - 1] : null);
-  
-  // Diagnostics
-  const [diagnostics, setDiagnostics] = useState(null);
+  const selectedVersion =
+    versions.find((v) => v.id === selectedVersionId) ||
+    (versions.length > 0 ? versions[versions.length - 1] : null);
+
   const runDiagnostics = () => {
     const msgs = [];
     if (OUTPUT_TYPES.length === 4) msgs.push("OK: Output types defined.");
@@ -391,13 +412,13 @@ const selectedVersion =
                   Upload Files
                 </Button>
                 <input
-  ref={fileInputRef}
-  type="file"
-  multiple
-  className="hidden"
-  style={{ display: "none" }}
-  onChange={(e) => addFiles(e.target.files)}
-/>
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  style={{ display: "none" }}
+                  onChange={(e) => addFiles(e.target.files)}
+                />
 
                 <div className="mt-4 space-y-2">
                   {parsed.map((p, i) => (
@@ -490,26 +511,40 @@ const selectedVersion =
                 </div>
 
                 <div className="flex gap-2 flex-wrap">
-  <Button onClick={handleGenerate} disabled={hasInitialGeneration}>
-    Generate
-  </Button>
-  <Button onClick={handleRewrite} disabled={!hasInitialGeneration}>
-    Rewrite
-  </Button>
-  <Button
-  onClick={() => {
-    console.log("View Rubrics clicked");
-    setShowRubric(true);
-  }}
->
-  View Rubrics
-</Button>
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={hasInitialGeneration || isGenerating || isRewriting}
+                  >
+                    {isGenerating && <Spinner />}
+                    {isGenerating ? "Generating..." : "Generate"}
+                  </Button>
 
-  {hasInitialGeneration && (
-    <Button onClick={() => setShowNewConfirm(true)}>New Output</Button>
-  )}
-</div>
+                  <Button
+                    onClick={handleRewrite}
+                    disabled={!hasInitialGeneration || isRewriting || isGenerating}
+                  >
+                    {isRewriting && <Spinner />}
+                    {isRewriting ? "Rewriting..." : "Rewrite"}
+                  </Button>
 
+                  <Button
+                    onClick={() => {
+                      console.log("View Rubrics clicked");
+                      setShowRubric(true);
+                    }}
+                  >
+                    View Rubrics
+                  </Button>
+
+                  {hasInitialGeneration && (
+                    <Button
+                      onClick={() => setShowNewConfirm(true)}
+                      disabled={isGenerating || isRewriting}
+                    >
+                      New Output
+                    </Button>
+                  )}
+                </div>
               </CardBody>
             </Card>
 
@@ -630,16 +665,16 @@ const selectedVersion =
                 title="Output Draft"
                 subtitle="Generated content appears here"
                 right={
-  <button
-    onClick={() => {
-      console.log("Score Rubrics clicked");
-      setShowRubric(true);
-    }}
-    className="text-sm text-gray-700 underline"
-  >
-    Score: {selectedVersion?.score ?? "–"}/100
-  </button>
-}
+                  <button
+                    onClick={() => {
+                      console.log("Score Rubrics clicked");
+                      setShowRubric(true);
+                    }}
+                    className="text-sm text-gray-700 underline"
+                  >
+                    Score: {selectedVersion?.score ?? "–"}/100
+                  </button>
+                }
               />
               <CardBody>
                 <Textarea
@@ -734,38 +769,38 @@ const selectedVersion =
           </div>
         </div>
 
+        {/* Optional debug badge for rubrics */}
         {showRubric && (
-  <div className="fixed top-4 left-4 bg-yellow-300 text-black px-3 py-1 rounded">
-    DEBUG: showRubric is TRUE
-  </div>
-)}
+          <div className="fixed top-4 left-4 bg-yellow-300 text-black px-3 py-1 rounded">
+            DEBUG: showRubric is TRUE
+          </div>
+        )}
 
         {/* Rubric modal */}
         {showRubric && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-      <h3 className="text-lg font-semibold mb-2">Quality Rubrics</h3>
-      <ul className="space-y-2 text-sm">
-  {selectedVersion?.metrics
-    ? Object.entries(selectedVersion.metrics).map(([k, v]) => (
-        <li key={k} className="flex justify-between">
-          <span>{k}</span>
-          <span>{Math.round(v * 100)}/100</span>
-        </li>
-      ))
-    : (
-        <li className="text-sm text-gray-500">
-          No version selected or no metrics available yet.
-        </li>
-      )}
-</ul>
-      <div className="text-right mt-4">
-        <Button onClick={() => setShowRubric(false)}>Close</Button>
-      </div>
-    </div>
-  </div>
-)}
-
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+              <h3 className="text-lg font-semibold mb-2">Quality Rubrics</h3>
+              <ul className="space-y-2 text-sm">
+                {selectedVersion?.metrics ? (
+                  Object.entries(selectedVersion.metrics).map(([k, v]) => (
+                    <li key={k} className="flex justify-between">
+                      <span>{k}</span>
+                      <span>{Math.round(v * 100)}/100</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm text-gray-500">
+                    No version selected or no metrics available yet.
+                  </li>
+                )}
+              </ul>
+              <div className="text-right mt-4">
+                <Button onClick={() => setShowRubric(false)}>Close</Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* New output modal */}
         {showNewConfirm && (
