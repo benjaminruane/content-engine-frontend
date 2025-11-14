@@ -391,7 +391,7 @@ export default function App() {
             </div>
             <div>
 <h1 className="text-2xl font-semibold">
-  AI Content Engine – v1.0 (DEBUG)
+  AI Content Engine – v1.0
 </h1>
               <p className="text-sm text-gray-500">
                 Upload sources, configure outputs, generate drafts, and track
