@@ -265,17 +265,19 @@ export default function App() {
         ...urlSources.map((u) => u.text)
       ].join("\n");
 
-      const body = {
-        title,
-        notes: promptNotes,
-        selectedTypes,
-        publicSearch,
-        model: { id: modelId, temperature, maxTokens },
-        modelId,
-        temperature,
-        maxTokens,
-        text: allText
-      };
+    const body = {
+      mode: "generate", // 👈 NEW
+      title,
+      notes: promptNotes,
+      selectedTypes,
+      publicSearch,
+      model: { id: modelId, temperature, maxTokens },
+      modelId,
+      temperature,
+      maxTokens,
+      text: allText
+    };
+
 
       const out = await runGenerateRequest(body);
 
@@ -313,18 +315,20 @@ export default function App() {
         ...urlSources.map((u) => u.text)
       ].join("\n");
 
-      const body = {
-        title,
-        notes: promptNotes,
-        selectedTypes,
-        publicSearch,
-        model: { id: modelId, temperature, maxTokens },
-        modelId,
-        temperature,
-        maxTokens,
-        text: allText,
-        previous: base.content
-      };
+const body = {
+  mode: "rewrite",                    // <— NEW
+  title,
+  notes: promptNotes,
+  selectedTypes,
+  publicSearch,
+  model: { id: modelId, temperature, maxTokens },
+  modelId,
+  temperature,
+  maxTokens,
+  text: allText,                      // any extra context / sources
+  previousContent: base.content       // <— more descriptive key
+};
+
 
       const out = await runGenerateRequest(body);
 
