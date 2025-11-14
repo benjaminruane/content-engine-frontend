@@ -312,7 +312,10 @@ const handleGenerate = async () => {
 const handleRewrite = async () => {
   if (!selectedVersionId || isRewriting || isGenerating) return;
 
-  const base = versions.find((v) => v.id === selectedVersionId);
+  const base =
+  versions.find((v) => v.id === selectedVersionId) ||
+  (versions.length > 0 ? versions[versions.length - 1] : null);
+
   if (!base) return;
 
   setIsRewriting(true);
