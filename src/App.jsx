@@ -490,102 +490,100 @@ const handleRewrite = async () => {
             </Card>
 
             {/* Configuration */}
-            <Card>
-              <CardHeader title="Configuration" />
-              <CardBody className="space-y-3">
-                <div>
-                  <Label>Title</Label>
-                  <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g., Q3 Portfolio Update"
-                  />
-                </div>
+           {/* Configuration */}
+<Card>
+  <CardHeader title="Configuration" />
+  <CardBody className="space-y-3">
+    <div>
+      <Label>Title</Label>
+      <Input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="e.g., Q3 Portfolio Update"
+      />
+    </div>
 
-                <div>
-                 <div>
-  <Label>Output Types</Label>
-  <p className="text-xs text-gray-500 mb-2">
-    Choose one or more content formats to generate in this run.
-  </p>
+    <div>
+      <Label>Output Types</Label>
+      <p className="text-xs text-gray-500 mb-2">
+        Choose one or more content formats to generate in this run.
+      </p>
 
-  <div className="flex flex-wrap gap-2">
-    {OUTPUT_TYPES.map((o) => {
-      const active = selectedTypes.includes(o.value);
-      return (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => toggleType(o.value)}
-          className={
-            "px-3 py-1.5 rounded-full text-xs border transition " +
-            (active
-              ? "bg-black text-white border-black shadow-sm"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-          }
+      <div className="flex flex-wrap gap-2">
+        {OUTPUT_TYPES.map((o) => {
+          const active = selectedTypes.includes(o.value);
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => toggleType(o.value)}
+              className={
+                "px-3 py-1.5 rounded-full text-xs border transition " +
+                (active
+                  ? "bg-black text-white border-black shadow-sm"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
+              }
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    <div className="flex items-center justify-between">
+      <Label>Include public domain search</Label>
+      <Toggle checked={publicSearch} onChange={setPublicSearch} />
+    </div>
+
+    <div>
+      <Label>Prompt Notes / Rewrite Instructions</Label>
+      <Textarea
+        rows={4}
+        value={promptNotes}
+        onChange={(e) => setPromptNotes(e.target.value)}
+        placeholder="Key points, tone, constraints, or rewrite instructions..."
+      />
+    </div>
+
+    <div className="flex gap-2 flex-wrap">
+      <Button
+        onClick={handleGenerate}
+        disabled={hasInitialGeneration || isGenerating || isRewriting}
+      >
+        {isGenerating && <Spinner />}
+        {isGenerating ? "Generating..." : "Generate"}
+      </Button>
+
+      <Button
+        onClick={handleRewrite}
+        disabled={!hasInitialGeneration || isRewriting || isGenerating}
+      >
+        {isRewriting && <Spinner />}
+        {isRewriting ? "Rewriting..." : "Rewrite"}
+      </Button>
+
+      <Button
+        onClick={() => {
+          console.log("View Rubrics clicked");
+          setShowRubric(true);
+        }}
+      >
+        View Rubrics
+      </Button>
+
+      {hasInitialGeneration && (
+        <Button
+          onClick={() => setShowNewConfirm(true)}
+          disabled={isGenerating || isRewriting}
         >
-          {o.label}
-        </button>
-      );
-    })}
-  </div>
-</div>
+          New Output
+        </Button>
+      )}
+    </div>
+  </CardBody>
+</Card>
 
-
-<div className="flex items-center justify-between">
-  <Label>Include public domain search</Label>
-  <Toggle checked={publicSearch} onChange={setPublicSearch} />
-</div>
-
-
-
-                <div>
-                  <Label>Prompt Notes / Rewrite Instructions</Label>
-                  <Textarea
-                    rows={4}
-                    value={promptNotes}
-                    onChange={(e) => setPromptNotes(e.target.value)}
-                    placeholder="Key points, tone, constraints, or rewrite instructions..."
-                  />
-                </div>
-
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={hasInitialGeneration || isGenerating || isRewriting}
-                  >
-                    {isGenerating && <Spinner />}
-                    {isGenerating ? "Generating..." : "Generate"}
-                  </Button>
-
-                  <Button
-                    onClick={handleRewrite}
-                    disabled={!hasInitialGeneration || isRewriting || isGenerating}
-                  >
-                    {isRewriting && <Spinner />}
-                    {isRewriting ? "Rewriting..." : "Rewrite"}
-                  </Button>
-
-                  <Button
-                    onClick={() => {
-                      console.log("View Rubrics clicked");
-                      setShowRubric(true);
-                    }}
-                  >
-                    View Rubrics
-                  </Button>
-
-                  {hasInitialGeneration && (
-                    <Button
-                      onClick={() => setShowNewConfirm(true)}
-                      disabled={isGenerating || isRewriting}
-                    >
-                      New Output
-                    </Button>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
 
             {/* Minimal model */}
             <Card>
