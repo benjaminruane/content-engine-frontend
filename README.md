@@ -1,4 +1,4 @@
-# AI Content Engine – v2.0
+# Brightline Content Engine – v2.0
 
 **Current frontend version:** `v2.0`
 
