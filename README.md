@@ -1,4 +1,6 @@
-AI Content Engine
+# AI Content Engine – v2.0
+
+**Current frontend version:** `v2.0`
 
 This repository contains the frontend application for the AI Content Engine, a prototype tool that enables structured content generation using source documents, URLs, predefined output types, and version tracking.
 
