@@ -1,10 +1,9 @@
-name: Prettier Check
+name: Prettier Auto-Format
 
 on:
   push:
     branches:
       - main
-      - master
   pull_request:
 
 jobs:
@@ -20,9 +19,8 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Prettier
-        run: npm install --save-dev prettier
+      - name: Install dependencies (including Prettier)
+        run: npm install
 
-- name: Run Prettier (format)
-  run: npx prettier --write .
-
+      - name: Run Prettier (auto-format)
+        run: npx prettier --write .
