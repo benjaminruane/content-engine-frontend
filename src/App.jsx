@@ -762,26 +762,37 @@ const handleRewrite = async () => {
             {/* Diagnostics */}
             <Card>
               <CardHeader
-                title="Diagnostics"
-                subtitle="Light test checks"
-              />
+  title="Diagnostics"
+  subtitle="Quick sanity checks for this session."
+/>
               <CardBody>
-                <div className="flex gap-2 mb-2">
-                  <Button onClick={runDiagnostics}>Run diagnostics</Button>
-                  {diagnostics && (
-                    <Button onClick={() => setDiagnostics(null)}>
-                      Clear
-                    </Button>
-                  )}
-                </div>
-                {diagnostics && (
-                  <ul className="list-disc pl-6 text-sm space-y-1">
-                    {diagnostics.map((d, i) => (
-                      <li key={i}>{d}</li>
-                    ))}
-                  </ul>
-                )}
-              </CardBody>
+  {diagnostics ? (
+    <>
+      <div className="flex gap-2 mb-3">
+        <Button onClick={runDiagnostics}>Re-run diagnostics</Button>
+        <Button onClick={() => setDiagnostics(null)}>
+          Clear
+        </Button>
+      </div>
+      <ul className="space-y-1 text-sm">
+        {diagnostics.map((d, i) => (
+          <li
+            key={i}
+            className="px-2 py-1 rounded-md bg-gray-50 text-gray-700"
+          >
+            {d}
+          </li>
+        ))}
+      </ul>
+    </>
+  ) : (
+    <div className="flex flex-col items-start gap-2 text-sm text-gray-500">
+      <p>No diagnostics run yet for this session.</p>
+      <Button onClick={runDiagnostics}>Run diagnostics</Button>
+    </div>
+  )}
+</CardBody>
+
             </Card>
           </div>
 
