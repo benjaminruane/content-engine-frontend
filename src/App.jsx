@@ -905,24 +905,29 @@ const handleRewrite = async () => {
 
 
             <Card>
-              <CardHeader
-                title="Roadmap Hooks"
-                subtitle="Future backend & product evolution"
-              />
-              <CardBody>
-                <ul className="list-disc pl-6 text-sm space-y-1">
-                  <li>Backend PDF/DOCX parsing for richer sources.</li>
-                  <li>Model-based content generation wired to /generate & /rewrite.</li>
-                  <li>Output-specific prompts triggered by output selection.</li>
-                  <li>Templated outputs and reusable blueprints per content type.</li>
-                  <li>Scoring engine tied to rubrics and feedback loop.</li>
-                  <li>Sources table.</li>
-                  <li>Statement Reliability and Inferences table.</li>
-                  <li>RBAC, audit logs, and enterprise integrations.</li>
-                  <li>UI re-design for visual appeal (including pills, icons) and efficient layout.</li>
-                </ul>
-              </CardBody>
-            </Card>
+  <CardHeader
+    title="Future roadmap"
+    subtitle="Planned capabilities for this content engine."
+  />
+  <CardBody className="space-y-2">
+    <p className="text-xs text-gray-500">
+      These items are not yet live. They outline where the product is heading as the
+      prototype matures.
+    </p>
+    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
+      <li>Richer source ingestion (PDF, DOCX and structured data feeds).</li>
+      <li>Deeper model integration for drafting and rewriting via /generate.</li>
+      <li>Output-specific prompts based on selected content types.</li>
+      <li>Templated outputs and reusable blueprints per document family.</li>
+      <li>Scoring engine tied to detailed rubrics and a feedback loop.</li>
+      <li>Dedicated sources table with traceability and filtering.</li>
+      <li>Statement reliability and inference tracking views.</li>
+      <li>Role-based access controls, audit logs and enterprise integrations.</li>
+      <li>Additional UI polish, theming options and efficiency tweaks.</li>
+    </ul>
+  </CardBody>
+</Card>
+
           </div>
         </div>
 
