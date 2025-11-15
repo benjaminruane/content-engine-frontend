@@ -801,73 +801,72 @@ const handleRewrite = async () => {
             </Card>
 
             <Card>
-              <CardHeader
-                title="Versions"
-                subtitle="Saved versions with comments and scores"
-              />
-              <CardBody>
-                {versions.length === 0 ? (
-                  <p className="text-sm text-gray-500">No versions yet.</p>
-                ) : (
-                  versions.map((v) => (
-  <div
-    key={v.id}
-    className={`p-4 rounded-2xl border mb-3 space-y-2 ${
-      selectedVersionId === v.id
-        ? "bg-gray-50 border-gray-400"
-        : "bg-white"
-    }`}
-  >
-    {/* Header row */}
-    <div className="flex justify-between items-center">
-      <Button onClick={() => setSelectedVersionId(v.id)}>
-        View
-      </Button>
-      <div className="text-xs text-gray-600">
-        V{v.versionNumber} · {new Date(v.timestamp).toLocaleString()}
-      </div>
-    </div>
+  <CardHeader
+    title="Versions"
+    subtitle="Saved versions with comments and scores"
+  />
+  <CardBody>
+    {versions.length === 0 ? (
+      <p className="text-sm text-gray-500">No versions yet.</p>
+    ) : (
+      versions.map((v) => (
+        <div
+          key={v.id}
+          className={`p-4 rounded-2xl border mb-3 space-y-2 ${
+            selectedVersionId === v.id
+              ? "bg-gray-50 border-gray-400"
+              : "bg-white"
+          }`}
+        >
+          {/* Header row */}
+          <div className="flex justify-between items-center">
+            <Button onClick={() => setSelectedVersionId(v.id)}>
+              View
+            </Button>
+            <div className="text-xs text-gray-600">
+              V{v.versionNumber} · {new Date(v.timestamp).toLocaleString()}
+            </div>
+          </div>
 
-    {/* Comment */}
-    <div className="text-sm text-gray-800">{v.comment}</div>
+          {/* Comment */}
+          <div className="text-sm text-gray-800">{v.comment}</div>
 
-    {/* Metadata */}
-    <div className="text-xs text-gray-500">
-      Public search: {v.publicSearch ? "Enabled" : "Disabled"}
-    </div>
+          {/* Metadata */}
+          <div className="text-xs text-gray-500">
+            Public search: {v.publicSearch ? "Enabled" : "Disabled"}
+          </div>
 
-    {Array.isArray(v.urls) && v.urls.length > 0 && (
-      <div className="text-xs text-gray-500">
-        URLs: {v.urls.map((u) => u.url).join(", ")}
-      </div>
+          {Array.isArray(v.urls) && v.urls.length > 0 && (
+            <div className="text-xs text-gray-500">
+              URLs: {v.urls.map((u) => u.url).join(", ")}
+            </div>
+          )}
+
+          {/* Score + model */}
+          <div className="flex items-center gap-3 text-xs text-gray-600">
+            <Pill className="bg-gray-100 text-gray-800 border-gray-300">
+              {getModelLabel(v.model?.id)}
+            </Pill>
+            <span>Score: {v.score}</span>
+          </div>
+
+          {/* Delete */}
+          <div className="text-right">
+            <Button
+              className="text-red-600 border-red-200"
+              onClick={() =>
+                setVersions((prev) => prev.filter((x) => x.id !== v.id))
+              }
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      ))
     )}
+  </CardBody>
+</Card>
 
-    {/* Score + model */}
-    <div className="flex items-center gap-3 text-xs text-gray-600">
-      <Pill className="bg-gray-100 text-gray-800 border-gray-300">
-        {getModelLabel(v.model?.id)}
-      </Pill>
-      <span>Score: {v.score}</span>
-    </div>
-
-    {/* Delete */}
-    <div className="text-right">
-      <Button
-        className="text-red-600 border-red-200"
-        onClick={() =>
-          setVersions((prev) => prev.filter((x) => x.id !== v.id))
-        }
-      >
-        Delete
-      </Button>
-    </div>
-  </div>
-))
-
-                  ))
-                )}
-              </CardBody>
-            </Card>
 
             <Card>
               <CardHeader
