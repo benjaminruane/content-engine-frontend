@@ -420,14 +420,25 @@ const handleRewrite = async () => {
     </div>
   </div>
 
-  {/* Middle: navigation */}
-  <nav className="hidden md:flex items-center gap-6 text-sm">
-    <button className="text-gray-900 font-medium">Dashboard</button>
-    <button className="text-gray-500 hover:text-gray-900">Projects</button>
-    <button className="text-gray-500 hover:text-gray-900">Sources</button>
-    <button className="text-gray-500 hover:text-gray-900">Outputs</button>
-    <button className="text-gray-500 hover:text-gray-900">Templates</button>
+    {/* Middle: navigation */}
+  <nav className="hidden md:flex items-center gap-4 text-sm">
+    <button className="px-3 py-1.5 rounded-full bg-black text-white font-medium">
+      Dashboard
+    </button>
+    <button className="text-gray-500 hover:text-gray-900">
+      Projects
+    </button>
+    <button className="text-gray-500 hover:text-gray-900">
+      Sources
+    </button>
+    <button className="text-gray-500 hover:text-gray-900">
+      Outputs
+    </button>
+    <button className="text-gray-500 hover:text-gray-900">
+      Templates
+    </button>
   </nav>
+
 
   {/* Right: version + user badge */}
   <div className="flex items-center gap-4">
