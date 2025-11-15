@@ -570,8 +570,12 @@ const handleRewrite = async () => {
             {/* Configuration */}
            {/* Configuration */}
 <Card>
-  <CardHeader title="Configuration" />
+  <CardHeader
+    title="Configuration"
+    subtitle="Control how the engine drafts and rewrites content."
+  />
   <CardBody className="space-y-3">
+
     <div>
       <Label>Title</Label>
       <Input
@@ -615,14 +619,19 @@ const handleRewrite = async () => {
     </div>
 
     <div>
-      <Label>Prompt Notes / Rewrite Instructions</Label>
-      <Textarea
-        rows={4}
-        value={promptNotes}
-        onChange={(e) => setPromptNotes(e.target.value)}
-        placeholder="Key points, tone, constraints, or rewrite instructions..."
-      />
-    </div>
+  <Label>Prompt Notes / Rewrite Instructions</Label>
+  <Textarea
+    rows={4}
+    value={promptNotes}
+    onChange={(e) => setPromptNotes(e.target.value)}
+    placeholder="Key points, tone, constraints, or rewrite instructions..."
+  />
+  <p className="mt-1 text-xs text-gray-500">
+    Use this to guide the initial draft or to tell the engine how to change the
+    current version (e.g. &quot;shorter, more formal, add risk section&quot;).
+  </p>
+</div>
+
 
     <div className="flex gap-2 flex-wrap">
       <Button
