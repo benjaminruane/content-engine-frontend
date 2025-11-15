@@ -480,10 +480,18 @@ const handleRewrite = async () => {
           <main className="flex-1">
             <div className="grid lg:grid-cols-3 gap-6 items-start">
 
-          {/* Left column: sources + configuration */}
-          <div className="space-y-6 lg:col-span-1">
-            {/* Source documents */}
-           <Card>
+         {/* Left column: sources + configuration */}
+<div className="space-y-6 lg:col-span-1">
+  <div className="mb-2">
+    <h2 className="text-lg font-semibold">Inputs</h2>
+    <p className="text-sm text-gray-500">
+      Add and configure the sources used for drafting.
+    </p>
+  </div>
+
+  {/* Source documents */}
+  <Card>
+
   <CardHeader
   title="Source documents"
   subtitle="Upload files or add URLs as input sources."
