@@ -444,7 +444,30 @@ const handleRewrite = async () => {
 
 
 
-        <div className="grid lg:grid-cols-3 gap-6 items-start">
+                <div className="mt-6 flex gap-6">
+          {/* Sidebar */}
+          <aside className="hidden md:flex w-56 shrink-0 flex-col gap-4">
+            <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+              <h2 className="text-sm font-semibold mb-2">Workspace</h2>
+              <p className="text-xs text-gray-500">
+                Title, notes & output types for this session.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+              <h3 className="text-sm font-semibold mb-2">Status</h3>
+              <ul className="text-xs text-gray-500 space-y-1">
+                <li>• Sources: {parsed.length + urlSources.length}</li>
+                <li>• Output versions: {versions.length}</li>
+                <li>• Model: {getModelLabel(selectedModel)}</li>
+              </ul>
+            </div>
+          </aside>
+
+          {/* Main content */}
+          <main className="flex-1">
+            <div className="grid lg:grid-cols-3 gap-6 items-start">
+
           {/* Left column: sources + configuration */}
           <div className="space-y-6 lg:col-span-1">
             {/* Source documents */}
@@ -823,8 +846,12 @@ const handleRewrite = async () => {
           </div>
         </div>
 
+          </main>
+        </div>
+
         {/* Rubric modal */}
         {showRubric && (
+
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
               <h3 className="text-lg font-semibold mb-2">Quality Rubrics</h3>
