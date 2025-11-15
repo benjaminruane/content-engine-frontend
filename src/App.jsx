@@ -808,7 +808,7 @@ const handleRewrite = async () => {
             <Card>
               <CardHeader
   title="Output draft"
-  subtitle="View and lightly edit the current draft."
+  subtitle="Review and refine the generated draft. Click Rewrite to generate an updated version."
   right={
     <div className="flex items-center gap-2">
       <button
