@@ -31,11 +31,18 @@ function Button({ variant = "default", className = "", children, ...props }) {
 }
 
 
-function Pill({ children, className = "" }) {
+function Pill({ variant = "subtle", children, className = "" }) {
+  const base =
+    "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium";
+
+  const variants = {
+    subtle: "bg-gray-50 text-gray-700 border border-gray-200",
+    outline: "bg-white text-gray-700 border border-gray-300",
+    solid: "bg-gray-900 text-white border border-gray-900",
+  };
+
   return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border bg-white ${className}`}
-    >
+    <span className={`${base} ${variants[variant]} ${className}`}>
       {children}
     </span>
   );
@@ -524,12 +531,13 @@ const handleRewrite = async () => {
   title="Source documents"
   subtitle="Upload files or add URLs as input sources."
   right={
-    <div className="inline-flex items-center justify-center rounded-full border border-gray-900 bg-black px-3 py-1 text-[11px] font-medium text-white">
+    <Pill variant="outline" className="px-3">
       {parsed.length + urlSources.length} source
       {parsed.length + urlSources.length === 1 ? "" : "s"}
-    </div>
+    </Pill>
   }
 />
+
 
 
 
@@ -913,9 +921,9 @@ const handleRewrite = async () => {
 
           {/* Score + model */}
           <div className="flex items-center gap-3 text-xs text-gray-600">
-            <Pill className="bg-gray-100 text-gray-800 border-gray-300">
-              {getModelLabel(v.model?.id)}
-            </Pill>
+            <Pill variant="subtle">
+  {getModelLabel(v.model?.id)}
+</Pill>
             <span>Score: {v.score}</span>
           </div>
 
