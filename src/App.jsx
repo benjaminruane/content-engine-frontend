@@ -431,9 +431,10 @@ const handleRewrite = async () => {
 
   {/* Right: version + user badge */}
   <div className="flex items-center gap-3">
-    <Pill className="hidden sm:inline-flex bg-black text-white border-black">
-      v2.0.0
-    </Pill>
+    <Pill className="inline-flex bg-black text-white border-black">
+  v2.0.0
+</Pill>
+
     <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-700">
       BR
     </div>
