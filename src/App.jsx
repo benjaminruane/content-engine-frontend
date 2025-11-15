@@ -674,11 +674,12 @@ const handleRewrite = async () => {
 
             {/* Minimal model */}
             <Card>
-              <CardHeader
-                title="Minimal Model"
-                subtitle="Used for version metadata"
-              />
-              <CardBody className="space-y-3">
+  <CardHeader
+    title="Model & controls"
+    subtitle="Select the model and basic generation settings."
+  />
+  <CardBody className="space-y-3">
+
                 <div>
                   <Label>Model</Label>
                   <select
@@ -695,22 +696,23 @@ const handleRewrite = async () => {
                 </div>
 
                 <div>
-                  <Label>Temperature</Label>
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={temperature}
-                    onChange={(e) =>
-                      setTemperature(parseFloat(e.target.value))
-                    }
-                    className="w-full"
-                  />
-                  <div className="text-xs text-gray-600">
-                    {temperature.toFixed(2)}
-                  </div>
-                </div>
+  <Label>Temperature</Label>
+  <input
+    type="range"
+    min={0}
+    max={1}
+    step={0.05}
+    value={temperature}
+    onChange={(e) => setTemperature(parseFloat(e.target.value))}
+    className="w-full"
+  />
+  <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+    <span>More stable</span>
+    <span>{temperature.toFixed(2)}</span>
+    <span>More creative</span>
+  </div>
+</div>
+
 
                 <div>
                   <Label>Max tokens</Label>
@@ -729,30 +731,31 @@ const handleRewrite = async () => {
                 </div>
 
                 <div className="mt-2">
-                  <button
-                    type="button"
-                    className="text-xs underline"
-                    onClick={() => setShowAdvanced((v) => !v)}
-                  >
-                    {showAdvanced ? "Hide Advanced" : "Show Advanced"}
-                  </button>
-                  {showAdvanced && (
-                    <div className="mt-2 space-y-2">
-                      <Label>API Base URL</Label>
-                      <Input
-                        placeholder="https://content-engine-backend-v2.vercel.app/api"
-                        value={apiBaseUrl}
-                        onChange={(e) => setApiBaseUrl(e.target.value)}
-                      />
-                      <div className="flex items-center gap-2">
-                        <Button onClick={checkHealth}>Check connection</Button>
-                        <span className="text-xs text-gray-500">
-                          Status: {apiStatus}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+  <button
+    type="button"
+    className="text-xs text-gray-700 underline"
+    onClick={() => setShowAdvanced((v) => !v)}
+  >
+    {showAdvanced ? "Hide advanced settings" : "Show advanced settings"}
+  </button>
+  {showAdvanced && (
+    <div className="mt-2 space-y-2">
+      <Label>API base URL</Label>
+      <Input
+        placeholder="https://content-engine-backend-v2.vercel.app/api"
+        value={apiBaseUrl}
+        onChange={(e) => setApiBaseUrl(e.target.value)}
+      />
+      <div className="flex items-center gap-2">
+        <Button onClick={checkHealth}>Check connection</Button>
+        <span className="text-xs text-gray-500">
+          Status: {apiStatus}
+        </span>
+      </div>
+    </div>
+  )}
+</div>
+
               </CardBody>
             </Card>
 
