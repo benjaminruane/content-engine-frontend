@@ -3,16 +3,33 @@ import React, { useState, useRef } from "react";
 // -----------------------------
 // UI Primitive Components
 // -----------------------------
-function Button({ className = "", children, ...props }) {
+function Button({ variant = "default", className = "", children, ...props }) {
+  const base =
+    "px-3 py-2 rounded-xl text-sm font-medium transition active:scale-[.98]";
+
+  const variants = {
+    default:
+      "bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 shadow-sm",
+    primary:
+      "bg-black text-white border border-black hover:bg-gray-900",
+    secondary:
+      "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200",
+    quiet:
+      "bg-transparent text-gray-600 hover:bg-gray-100 border border-transparent",
+    danger:
+      "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100",
+  };
+
   return (
     <button
-      className={`px-3 py-2 rounded-2xl shadow-sm border bg-white hover:bg-gray-50 active:scale-[.99] transition text-sm ${className}`}
+      className={`${base} ${variants[variant]} ${className}`}
       {...props}
     >
       {children}
     </button>
   );
 }
+
 
 function Pill({ children, className = "" }) {
   return (
@@ -646,9 +663,11 @@ const handleRewrite = async () => {
 
     <div className="flex gap-2 flex-wrap">
       <Button
-        onClick={handleGenerate}
-        disabled={hasInitialGeneration || isGenerating || isRewriting}
-      >
+  variant="primary"
+  onClick={handleGenerate}
+  disabled={...}
+>
+
         {isGenerating && <Spinner />}
         {isGenerating ? "Generating..." : "Generate"}
       </Button>
@@ -662,21 +681,22 @@ const handleRewrite = async () => {
       </Button>
 
       <Button
-        onClick={() => {
-          console.log("View Rubrics clicked");
-          setShowRubric(true);
-        }}
-      >
-        View Rubrics
-      </Button>
+  variant="quiet"
+  onClick={() => setShowRubric(true)}
+>
+  View Rubrics
+</Button>
+
 
       {hasInitialGeneration && (
-        <Button
-          onClick={() => setShowNewConfirm(true)}
-          disabled={isGenerating || isRewriting}
-        >
-          New Output
-        </Button>
+<Button
+  variant="secondary"
+  onClick={() => setShowNewConfirm(true)}
+  disabled={...}
+>
+  New Output
+</Button>
+
       )}
     </div>
   </CardBody>
@@ -741,14 +761,14 @@ const handleRewrite = async () => {
                   />
                 </div>
 
-                <div className="mt-2">
-  <button
-    type="button"
-    className="text-xs text-gray-700 underline"
+<div className="mt-2">
+  <Button
+    variant="quiet"
     onClick={() => setShowAdvanced((v) => !v)}
+    className="text-xs"
   >
     {showAdvanced ? "Hide advanced settings" : "Show advanced settings"}
-  </button>
+  </Button>
   {showAdvanced && (
     <div className="mt-2 space-y-2">
       <Label>API base URL</Label>
@@ -822,12 +842,14 @@ const handleRewrite = async () => {
   subtitle="Review and refine the generated draft. Click Rewrite to generate an updated version."
   right={
     <div className="flex items-center gap-2">
-      <button
-        onClick={() => setShowRubric(true)}
-        className="text-xs text-gray-700 underline"
-      >
-        Score: {selectedVersion?.score ?? "–"}/100
-      </button>
+      <Button
+  variant="quiet"
+  onClick={() => setShowRubric(true)}
+  className="text-xs"
+>
+  Score: {selectedVersion?.score ?? "–"}/100
+</Button>
+
     </div>
   }
 />
@@ -899,14 +921,10 @@ const handleRewrite = async () => {
 
           {/* Delete */}
           <div className="text-right">
-            <Button
-              className="text-red-600 border-red-200"
-              onClick={() =>
-                setVersions((prev) => prev.filter((x) => x.id !== v.id))
-              }
-            >
-              Delete
-            </Button>
+            <Button variant="danger" onClick={() => ...}>
+  Delete
+</Button>
+
           </div>
         </div>
       ))
