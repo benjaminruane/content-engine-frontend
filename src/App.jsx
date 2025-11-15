@@ -441,10 +441,22 @@ const handleRewrite = async () => {
   </div>
 </header>
 
+{/* Page toolbar / intro */}
+<div className="flex items-center justify-between mt-2 mb-4">
+  <div>
+    <h2 className="text-lg font-semibold">Dashboard</h2>
+    <p className="text-sm text-gray-500">
+      Manage sources, generate drafts, and track versions.
+    </p>
+  </div>
+  <div className="flex gap-2">
+    <Button type="button">New project</Button>
+    <Button type="button">View history</Button>
+  </div>
+</div>
 
+<div className="mt-2 flex gap-6">
 
-
-                <div className="mt-6 flex gap-6">
           {/* Sidebar */}
           <aside className="hidden md:flex w-56 shrink-0 flex-col gap-4">
             <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
