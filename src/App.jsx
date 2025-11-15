@@ -483,12 +483,23 @@ const handleRewrite = async () => {
           {/* Left column: sources + configuration */}
           <div className="space-y-6 lg:col-span-1">
             {/* Source documents */}
-            <Card>
-              <CardHeader
-                title="Source Documents"
-                subtitle="Upload TXT or add URLs"
-                right={<Pill>Local & Web</Pill>}
-              />
+           <Card>
+  <CardHeader
+    title="Source documents"
+    subtitle="Upload files or add URLs as input sources."
+    right={
+      <div className="flex items-center gap-2 text-xs">
+        <Pill className="border-gray-200 text-gray-600 bg-white">
+          Local & Web
+        </Pill>
+        <Pill className="border-gray-900 bg-black text-white">
+          {parsed.length + urlSources.length} source
+          {parsed.length + urlSources.length === 1 ? "" : "s"}
+        </Pill>
+      </div>
+    }
+  />
+
               <CardBody>
                 <Button onClick={() => fileInputRef.current?.click()}>
                   Upload Files
@@ -502,42 +513,52 @@ const handleRewrite = async () => {
                   onChange={(e) => addFiles(e.target.files)}
                 />
 
-                <div className="mt-4 space-y-2">
-                  {parsed.map((p, i) => (
-                    <div
-                      key={i}
-                      className="text-sm border p-2 rounded-xl bg-gray-50"
-                    >
-                      <b>{p.file.name}</b>
-                      <div className="text-xs text-gray-500">
-                        {String(p.text || "").slice(0, 160)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                   {/* Existing sources */}
+    <div className="mt-4 space-y-2">
+      {parsed.length === 0 && urlSources.length === 0 ? (
+        <p className="text-xs text-gray-500">
+          No sources added yet. Upload one or more files, or paste a URL to pull
+          in public content for this drafting session.
+        </p>
+      ) : (
+        <>
+          {parsed.map((p, i) => (
+            <div
+              key={i}
+              className="text-sm border p-2 rounded-xl bg-gray-50"
+            >
+              <b>{p.file.name}</b>
+              <div className="text-xs text-gray-500">
+                {String(p.text || "").slice(0, 160)}
+              </div>
+            </div>
+          ))}
 
-                <div className="mt-4 flex gap-2">
-                  <Input
-                    placeholder="https://example.com/article"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                  />
-                  <Button onClick={addUrlSource}>Add URL</Button>
-                </div>
+          {urlSources.map((u, i) => (
+            <div
+              key={`url-${i}`}
+              className="text-sm border p-2 rounded-xl bg-gray-50"
+            >
+              <b>{u.url}</b>
+              <div className="text-xs text-gray-500">
+                {String(u.text || "").slice(0, 160)}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
 
-                <div className="mt-2 space-y-2">
-                  {urlSources.map((u, i) => (
-                    <div
-                      key={i}
-                      className="text-sm border p-2 rounded-xl bg-gray-50"
-                    >
-                      <b>{u.url}</b>
-                      <div className="text-xs text-gray-500">
-                        {String(u.text || "").slice(0, 160)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+    {/* URL input row */}
+    <div className="mt-4 flex gap-2">
+      <Input
+        placeholder="https://example.com/article"
+        value={urlInput}
+        onChange={(e) => setUrlInput(e.target.value)}
+      />
+      <Button onClick={addUrlSource}>Add URL</Button>
+    </div>
+
               </CardBody>
             </Card>
 
