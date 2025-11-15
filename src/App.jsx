@@ -808,7 +808,7 @@ const handleRewrite = async () => {
             <Card>
               <CardHeader
   title="Output draft"
-  subtitle="Generated content appears here."
+  subtitle="View and lightly edit the current draft."
   right={
     <div className="flex items-center gap-2">
       <button
@@ -821,14 +821,19 @@ const handleRewrite = async () => {
   }
 />
 
-              <CardBody>
-                <Textarea
-                  rows={18}
-                  value={output || selectedVersion?.content || ""}
-                  onChange={(e) => setOutput(e.target.value)}
-                  placeholder="Generated content..."
-                />
-              </CardBody>
+                <CardBody className="space-y-2">
+    <Textarea
+      rows={18}
+      value={output || selectedVersion?.content || ""}
+      onChange={(e) => setOutput(e.target.value)}
+      placeholder="Generated content..."
+    />
+    <p className="text-xs text-gray-500">
+      You can edit this draft directly. Use <strong>Rewrite</strong> with new
+      instructions to generate an alternate version while keeping this one saved.
+    </p>
+  </CardBody>
+
             </Card>
 
             <Card>
