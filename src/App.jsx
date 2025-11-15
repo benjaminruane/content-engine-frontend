@@ -496,17 +496,13 @@ const handleRewrite = async () => {
   title="Source documents"
   subtitle="Upload files or add URLs as input sources."
   right={
-    <div className="flex items-center gap-2 text-xs">
-      <Pill className="border-gray-200 text-gray-600 bg-white">
-        Local & Web
-      </Pill>
-      <div className="inline-flex items-center justify-center rounded-full border border-gray-900 bg-black px-3 py-1 text-[11px] font-medium text-white">
-        {parsed.length + urlSources.length} source
-        {parsed.length + urlSources.length === 1 ? "" : "s"}
-      </div>
+    <div className="inline-flex items-center justify-center rounded-full border border-gray-900 bg-black px-3 py-1 text-[11px] font-medium text-white">
+      {parsed.length + urlSources.length} source
+      {parsed.length + urlSources.length === 1 ? "" : "s"}
     </div>
   }
 />
+
 
 
               <CardBody>
