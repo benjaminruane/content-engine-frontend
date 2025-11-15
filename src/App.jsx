@@ -459,7 +459,7 @@ const handleRewrite = async () => {
               <ul className="text-xs text-gray-500 space-y-1">
                 <li>• Sources: {parsed.length + urlSources.length}</li>
                 <li>• Output versions: {versions.length}</li>
-                <li>• Model: {getModelLabel(selectedModel)}</li>
+                <li>• Model: {getModelLabel(modelId)}</li>
               </ul>
             </div>
           </aside>
