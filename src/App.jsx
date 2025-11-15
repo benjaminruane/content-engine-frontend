@@ -478,7 +478,7 @@ const handleRewrite = async () => {
 </header>
 
 {/* Page toolbar / intro */}
-<div className="flex items-center justify-between mt-2 mb-4">
+<div className="flex items-center justify-between mt-4 mb-6">
   <div>
     <h2 className="text-lg font-semibold">Dashboard</h2>
     <p className="text-sm text-gray-500">
@@ -486,10 +486,13 @@ const handleRewrite = async () => {
     </p>
   </div>
   <div className="flex gap-2">
-    <Button type="button">New project</Button>
-    <Button type="button">View history</Button>
+    <Button type="button" variant="primary">
+      New project
+    </Button>
+    <Button type="button" variant="secondary">
+      View history
+    </Button>
   </div>
-</div>
 
 <div className="mt-2 flex gap-6">
 
