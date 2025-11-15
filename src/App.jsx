@@ -769,11 +769,15 @@ const handleRewrite = async () => {
             </Card>
           </div>
 
-          {/* Right column header */}
-          <h2 className="text-lg font-semibold mt-2 mb-2">Output</h2>
-              
-          {/* Right column: output + versions */}
-          <div className="lg:col-span-2 space-y-6">
+{/* Right column: output + versions */}
+<div className="lg:col-span-2 space-y-6">
+  <div className="mb-2">
+    <h2 className="text-lg font-semibold">Output</h2>
+    <p className="text-sm text-gray-500">
+      Review generated drafts and manage versions.
+    </p>
+  </div>
+
             <Card>
               <CardHeader
   title="Output draft"
