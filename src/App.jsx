@@ -665,12 +665,12 @@ const handleRewrite = async () => {
       <Button
   variant="primary"
   onClick={handleGenerate}
-  disabled={...}
+  disabled={hasInitialGeneration || isGenerating || isRewriting}
 >
+  {isGenerating && <Spinner />}
+  {isGenerating ? "Generating..." : "Generate"}
+</Button>
 
-        {isGenerating && <Spinner />}
-        {isGenerating ? "Generating..." : "Generate"}
-      </Button>
 
       <Button
         onClick={handleRewrite}
@@ -689,15 +689,15 @@ const handleRewrite = async () => {
 
 
       {hasInitialGeneration && (
-<Button
-  variant="secondary"
-  onClick={() => setShowNewConfirm(true)}
-  disabled={...}
->
-  New Output
-</Button>
+  <Button
+    variant="secondary"
+    onClick={() => setShowNewConfirm(true)}
+    disabled={isGenerating || isRewriting}
+  >
+    New Output
+  </Button>
+)}
 
-      )}
     </div>
   </CardBody>
 </Card>
@@ -921,11 +921,16 @@ const handleRewrite = async () => {
 
           {/* Delete */}
           <div className="text-right">
-            <Button variant="danger" onClick={() => ...}>
-  Delete
-</Button>
+  <Button
+    variant="danger"
+    onClick={() =>
+      setVersions((prev) => prev.filter((x) => x.id !== v.id))
+    }
+  >
+    Delete
+  </Button>
+</div>
 
-          </div>
         </div>
       ))
     )}
