@@ -40,11 +40,19 @@ function Button({
   );
 }
 
-function Pill({ level = "default", children, className = "" }) {
+function Pill({ level, variant = "subtle", children, className = "" }) {
   const base =
     "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border";
 
-  const variants = {
+  // Old behaviour (subtle / outline / solid)
+  const variantStyles = {
+    subtle: "bg-gray-50 text-gray-700 border-gray-200",
+    outline: "bg-white text-gray-700 border-gray-300",
+    solid: "bg-gray-900 text-white border-gray-900",
+  };
+
+  // Score-based colour levels
+  const levelStyles = {
     default: "bg-gray-100 text-gray-700 border-gray-300",
     good: "bg-emerald-50 text-emerald-800 border-emerald-400",
     average: "bg-amber-50 text-amber-800 border-amber-400",
@@ -52,12 +60,18 @@ function Pill({ level = "default", children, className = "" }) {
     info: "bg-blue-50 text-blue-800 border-blue-300",
   };
 
+  const style =
+    level && levelStyles[level]
+      ? levelStyles[level]
+      : variantStyles[variant] || variantStyles.subtle;
+
   return (
-    <span className={`${base} ${variants[level]} ${className}`}>
+    <span className={`${base} ${style} ${className}`}>
       {children}
     </span>
   );
 }
+
 
 function Card({ children, className = "" }) {
   return (
@@ -744,11 +758,12 @@ export default function App() {
                     />
                     <CardBody>
                       <Button
-                        variant="secondary"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Upload files
-                      </Button>
+  variant="primary"
+  onClick={() => fileInputRef.current?.click()}
+>
+  Upload files
+</Button>
+
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -1043,12 +1058,24 @@ export default function App() {
                                       {v.comment}
                                     </div>
                                     <div className="flex items-center gap-2 text-xs text-gray-600">
-                                      <Pill
-                                        variant="subtle"
-                                        className={`px-2 ${vScoreMeta.className}`}
-                                      >
-                                        {vScoreMeta.label}
-                                      </Pill>
+                                      <div className="flex items-center gap-2 text-xs text-gray-600">
+  <Pill
+    level={
+      v.score >= 85
+        ? "good"
+        : v.score >= 70
+        ? "average"
+        : "poor"
+    }
+    className="px-2"
+  >
+    {vScoreMeta.label}
+  </Pill>
+  <Pill variant="outline" className="px-2">
+    {getModelLabel(v.model?.id)}
+  </Pill>
+</div>
+
                                       <Pill variant="outline" className="px-2">
                                         {getModelLabel(v.model?.id)}
                                       </Pill>
