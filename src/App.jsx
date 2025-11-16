@@ -3,7 +3,13 @@ import React, { useState, useRef } from "react";
 // -----------------------------
 // UI Primitive Components
 // -----------------------------
-function Button({ variant = "default", className = "", children, ...props }) {
+function Button({
+  variant = "default",
+  className = "",
+  children,
+  disabled,
+  ...props
+}) {
   const base =
     "px-3 py-2 rounded-xl text-sm font-medium transition active:scale-[.98]";
 
@@ -19,9 +25,15 @@ function Button({ variant = "default", className = "", children, ...props }) {
       "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100",
   };
 
+  // Visually greyed out when disabled
+  const disabledStyles = disabled
+    ? "opacity-40 cursor-not-allowed hover:bg-inherit"
+    : "";
+
   return (
     <button
-      className={`${base} ${variants[variant]} ${className}`}
+      className={`${base} ${variants[variant]} ${disabledStyles} ${className}`}
+      disabled={disabled}
       {...props}
     >
       {children}
@@ -297,7 +309,7 @@ export default function App() {
     MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
 
   // -----------------------------
-  // Handlers
+  // Handlers & derived state
   // -----------------------------
   const hasInitialGeneration = versions.length > 0;
   const hasSources = parsed.length + urlSources.length > 0;
@@ -434,6 +446,11 @@ export default function App() {
     setDiagnostics(msgs);
   };
 
+  // newest → oldest for display
+  const sortedVersions = [...versions].sort(
+    (a, b) => b.versionNumber - a.versionNumber
+  );
+
   // -----------------------------
   // Render
   // -----------------------------
@@ -509,23 +526,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Inputs / Output headings row */}
-        <div className="grid lg:grid-cols-3 gap-6 items-end mb-4">
-          <div>
-            <h2 className="text-lg font-semibold">Inputs & configuration</h2>
-            <p className="text-sm text-gray-500">
-              Add sources and control how the engine drafts content.
-            </p>
-          </div>
-          <div className="lg:col-span-2">
-            <h2 className="text-lg font-semibold">Output</h2>
-            <p className="text-sm text-gray-500">
-              Review generated drafts and manage versions.
-            </p>
-          </div>
-        </div>
-
-        {/* Main content area */}
         <div className="mt-2 flex gap-6">
           {/* Sidebar */}
           <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
@@ -632,9 +632,7 @@ export default function App() {
                       <Input
                         placeholder="https://content-engine-backend-v2.vercel.app/api"
                         value={apiBaseUrl}
-                        onChange={(e) =>
-                          setApiBaseUrl(e.target.value)
-                        }
+                        onChange={(e) => setApiBaseUrl(e.target.value)}
                       />
                       <div className="flex items-center gap-2">
                         <Button onClick={checkHealth}>
@@ -692,118 +690,10 @@ export default function App() {
 
           {/* Main content */}
           <main className="flex-1">
-            <div className="grid lg:grid-cols-3 gap-6 items-start">
-              {/* Left column: configuration + sources */}
-              <div className="space-y-6 lg:col-span-1">
-                {/* Configuration card */}
-                <Card>
-                  <CardHeader
-                    title="Configuration"
-                    subtitle="Control how the engine drafts and rewrites content."
-                  />
-                  <CardBody className="space-y-3">
-                    <div>
-                      <Label>Title</Label>
-                      <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g., Q3 Portfolio Update"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Output types</Label>
-                      <p className="text-xs text-gray-500 mb-2">
-                        Choose one or more content formats to generate in this
-                        run.
-                      </p>
-
-                      <div className="flex flex-wrap gap-2">
-                        {OUTPUT_TYPES.map((o) => {
-                          const active = selectedTypes.includes(o.value);
-                          return (
-                            <button
-                              key={o.value}
-                              type="button"
-                              onClick={() => toggleType(o.value)}
-                              className={
-                                "px-3 py-1.5 rounded-full text-xs border transition " +
-                                (active
-                                  ? "bg-black text-white border-black shadow-sm"
-                                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-                              }
-                            >
-                              {o.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Label>Include public domain search</Label>
-                      <Toggle
-                        checked={publicSearch}
-                        onChange={setPublicSearch}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Prompt notes / rewrite instructions</Label>
-                      <Textarea
-                        rows={4}
-                        value={promptNotes}
-                        onChange={(e) => setPromptNotes(e.target.value)}
-                        placeholder="Key points, tone, constraints, or rewrite instructions..."
-                        className="placeholder:text-gray-400"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Use this to guide the initial draft or to tell the engine
-                        how to change the current version (e.g. &quot;shorter, more
-                        formal, add risk section&quot;).
-                      </p>
-                    </div>
-
-                    {/* Buttons row */}
-                    <div className="flex gap-2 flex-wrap">
-                      <Button
-                        variant="primary"
-                        onClick={handleGenerate}
-                        disabled={
-                          hasInitialGeneration ||
-                          isGenerating ||
-                          isRewriting ||
-                          !hasSources ||
-                          !hasOutputTypes
-                        }
-                      >
-                        {isGenerating && <Spinner />}
-                        {isGenerating ? "Generating..." : "Generate"}
-                      </Button>
-
-                      <Button
-                        onClick={handleRewrite}
-                        disabled={
-                          !hasInitialGeneration ||
-                          isRewriting ||
-                          isGenerating
-                        }
-                      >
-                        {isRewriting && <Spinner />}
-                        {isRewriting ? "Rewriting..." : "Rewrite"}
-                      </Button>
-
-                      <Button
-                        variant="quiet"
-                        onClick={() => setShowRubric(true)}
-                      >
-                        View rubrics
-                      </Button>
-                    </div>
-                  </CardBody>
-                </Card>
-
-                {/* Source documents card */}
+            <div className="space-y-6">
+              {/* Top row: Sources + Configuration side by side */}
+              <div className="grid lg:grid-cols-2 gap-6 items-start">
+                {/* Source documents */}
                 <Card>
                   <CardHeader
                     title="Source documents"
@@ -881,10 +771,118 @@ export default function App() {
                     </div>
                   </CardBody>
                 </Card>
+
+                {/* Configuration */}
+                <Card>
+                  <CardHeader
+                    title="Configuration"
+                    subtitle="Control how the engine drafts and rewrites content."
+                  />
+                  <CardBody className="space-y-3">
+                    <div>
+                      <Label>Title</Label>
+                      <Input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="e.g., Q3 Portfolio Update"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Output types</Label>
+                      <p className="text-xs text-gray-500 mb-2">
+                        Choose one or more content formats to generate in this
+                        run.
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {OUTPUT_TYPES.map((o) => {
+                          const active = selectedTypes.includes(o.value);
+                          return (
+                            <button
+                              key={o.value}
+                              type="button"
+                              onClick={() => toggleType(o.value)}
+                              className={
+                                "px-3 py-1.5 rounded-full text-xs border transition " +
+                                (active
+                                  ? "bg-black text-white border-black shadow-sm"
+                                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
+                              }
+                            >
+                              {o.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label>Include public domain search</Label>
+                      <Toggle
+                        checked={publicSearch}
+                        onChange={setPublicSearch}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Prompt notes / rewrite instructions</Label>
+                      <Textarea
+                        rows={4}
+                        value={promptNotes}
+                        onChange={(e) => setPromptNotes(e.target.value)}
+                        placeholder="Key points, tone, constraints, or rewrite instructions..."
+                        className="placeholder:text-gray-400"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Use this to guide the initial draft or to tell the engine
+                        how to change the current version (e.g. &quot;shorter, more
+                        formal, add risk section&quot;).
+                      </p>
+                    </div>
+
+                    {/* Buttons row with state-based disabling */}
+                    <div className="flex gap-2 flex-wrap">
+                      <Button
+                        variant="primary"
+                        onClick={handleGenerate}
+                        disabled={
+                          hasInitialGeneration ||
+                          isGenerating ||
+                          isRewriting ||
+                          !hasSources ||
+                          !hasOutputTypes
+                        }
+                      >
+                        {isGenerating && <Spinner />}
+                        {isGenerating ? "Generating..." : "Generate"}
+                      </Button>
+
+                      <Button
+                        onClick={handleRewrite}
+                        disabled={
+                          !hasInitialGeneration ||
+                          isRewriting ||
+                          isGenerating
+                        }
+                      >
+                        {isRewriting && <Spinner />}
+                        {isRewriting ? "Rewriting..." : "Rewrite"}
+                      </Button>
+
+                      <Button
+                        variant="quiet"
+                        onClick={() => setShowRubric(true)}
+                      >
+                        View rubrics
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
               </div>
 
-              {/* Right column: output + versions + roadmap */}
-              <div className="lg:col-span-2 space-y-6">
+              {/* Second block: Output, Versions, Roadmap stacked */}
+              <div className="space-y-6">
                 {/* Draft output */}
                 <Card>
                   <CardHeader
@@ -916,15 +914,17 @@ export default function App() {
                   </CardBody>
                 </Card>
 
-                {/* Versions – timeline style */}
+                {/* Versions – timeline style, newest first */}
                 <Card>
                   <CardHeader
                     title="Versions"
                     subtitle="Saved versions with comments and scores."
                   />
                   <CardBody>
-                    {versions.length === 0 ? (
-                      <p className="text-sm text-gray-500">No versions yet.</p>
+                    {sortedVersions.length === 0 ? (
+                      <p className="text-sm text-gray-500">
+                        No versions yet.
+                      </p>
                     ) : (
                       <div className="relative">
                         {/* Vertical timeline line */}
@@ -934,7 +934,7 @@ export default function App() {
                         />
 
                         <div className="space-y-4">
-                          {versions.map((v) => {
+                          {sortedVersions.map((v) => {
                             const isSelected = selectedVersionId === v.id;
 
                             return (
@@ -972,9 +972,7 @@ export default function App() {
                                       )}
                                     </div>
                                     <div className="text-xs text-gray-500">
-                                      {new Date(
-                                        v.timestamp
-                                      ).toLocaleString()}
+                                      {new Date(v.timestamp).toLocaleString()}
                                     </div>
                                   </div>
 
@@ -1128,7 +1126,7 @@ export default function App() {
           </div>
         )}
 
-        {/* New output / project modal */}
+        {/* New output modal */}
         {showNewConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
