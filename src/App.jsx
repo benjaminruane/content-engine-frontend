@@ -861,15 +861,7 @@ export default function App() {
                         View rubrics
                       </Button>
 
-                      {hasInitialGeneration && (
-                        <Button
-                          variant="secondary"
-                          onClick={() => setShowNewConfirm(true)}
-                          disabled={isGenerating || isRewriting}
-                        >
-                          New output
-                        </Button>
-                      )}
+                      
                     </div>
                   </CardBody>
                 </Card>
