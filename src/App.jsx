@@ -856,7 +856,7 @@ export default function App() {
 
               {/* Right column: output + versions */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="mb-2">
+                <div className="mt-4 mb-3">
                   <h2 className="text-lg font-semibold">Output</h2>
                   <p className="text-sm text-gray-500">
                     Review generated drafts and manage versions.
@@ -866,28 +866,27 @@ export default function App() {
                 {/* Output draft */}
                 <Card>
                   <CardHeader
-                    title="Output draft"
-                    subtitle="Review and refine the generated draft. Use Rewrite to generate an updated version."
-                    right={
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="quiet"
-                          onClick={() => setShowRubric(true)}
-                          className="text-xs"
-                        >
-                          Score: {selectedVersion?.score ?? "–"}/100
-                        </Button>
-                      </div>
-                    }
-                  />
-                  <CardBody className="space-y-2">
+  title="Draft output"
+  subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+  right={
+    <Button
+      variant="quiet"
+      onClick={() => setShowRubric(true)}
+      className="text-xs"
+    >
+      Score: {selectedVersion?.score ?? "–"}/100
+    </Button>
+  }
+/>
+
+                  <CardBody className="space-y-3">
                     <Textarea
                       rows={18}
                       value={output || selectedVersion?.content || ""}
                       onChange={(e) => setOutput(e.target.value)}
                       placeholder="Generated content..."
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 mt-1">
                       You can edit this draft directly. Use{" "}
                       <strong>Rewrite</strong> with new instructions to
                       generate an alternate version while keeping this one
