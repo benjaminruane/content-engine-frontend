@@ -989,150 +989,129 @@ export default function App() {
                   </CardBody>
                 </Card>
 
-                {/* Versions – timeline style, newest first */}
-                <Card>
-                  <CardHeader
-                    title="Versions"
-                    subtitle="Saved versions with comments and scores."
-                  />
-                  <CardBody>
-                    {sortedVersions.length === 0 ? (
-                      <p className="text-sm text-gray-500">
-                        No versions yet.
-                      </p>
-                    ) : (
-                      <div className="relative">
-                        {/* Vertical timeline line */}
-                        <div
-                          className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
-                          aria-hidden="true"
-                        />
+               {/* Versions – timeline style, newest first */}
+<Card>
+  <CardHeader
+    title="Versions"
+    subtitle="Saved versions with comments and scores."
+  />
+  <CardBody>
+    {sortedVersions.length === 0 ? (
+      <p className="text-sm text-gray-500">No versions yet.</p>
+    ) : (
+      <div className="relative">
+        {/* Vertical timeline line */}
+        <div
+          className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
+          aria-hidden="true"
+        />
 
-                        <div className="space-y-4">
-                          {sortedVersions.map((v) => {
-                            const isSelected = selectedVersionId === v.id;
-                            const vScoreMeta = getScoreMeta(v.score);
+        <div className="space-y-4">
+          {sortedVersions.map((v) => {
+            const isSelected = selectedVersionId === v.id;
+            const vScoreMeta = getScoreMeta(v.score);
 
-                            return (
-                              <div key={v.id} className="relative pl-6">
-                                {/* Dot on the timeline */}
-                                <span
-                                  className={
-                                    "absolute left-1 top-3 w-2 h-2 rounded-full border " +
-                                    (isSelected
-                                      ? "bg-black border-black"
-                                      : "bg-white border-gray-400")
-                                  }
-                                  aria-hidden="true"
-                                />
+            return (
+              <div key={v.id} className="relative pl-6">
+                {/* Dot on the timeline */}
+                <span
+                  className={
+                    "absolute left-1 top-3 w-2 h-2 rounded-full border " +
+                    (isSelected
+                      ? "bg-black border-black"
+                      : "bg-white border-gray-400")
+                  }
+                  aria-hidden="true"
+                />
 
-                                {/* Version card */}
-                                <div
-                                  className={
-                                    "rounded-2xl border p-3 space-y-2 transition " +
-                                    (isSelected
-                                      ? "bg-gray-50 border-gray-500"
-                                      : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
-                                  }
-                                >
-                                  {/* Top row: version label + timestamp */}
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-2">
-                                      <Pill variant="subtle" className="px-2">
-                                        V{v.versionNumber}
-                                      </Pill>
-                                      {isSelected && (
-                                        <span className="text-[11px] text-gray-500">
-                                          Currently viewing
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      {new Date(v.timestamp).toLocaleString()}
-                                    </div>
-                                  </div>
+                {/* Version card */}
+                <div
+                  className={
+                    "rounded-2xl border p-3 space-y-2 transition " +
+                    (isSelected
+                      ? "bg-gray-50 border-gray-500"
+                      : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
+                  }
+                >
+                  {/* Top row: version label + timestamp */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Pill className="px-2 bg-gray-50 text-gray-700 border-gray-200">
+                        V{v.versionNumber}
+                      </Pill>
+                      {isSelected && (
+                        <span className="text-[11px] text-gray-500">
+                          Currently viewing
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(v.timestamp).toLocaleString()}
+                    </div>
+                  </div>
 
-                                  {/* Comment + score/model pills on same row */}
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                    <div className="text-sm text-gray-800">
-                                      {v.comment}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                                      <div className="flex items-center gap-2 text-xs text-gray-600">
-  <Pill
-    level={
-      v.score >= 85
-        ? "good"
-        : v.score >= 70
-        ? "average"
-        : "poor"
-    }
-    className="px-2"
-  >
-    {vScoreMeta.label}
-  </Pill>
-  <Pill variant="outline" className="px-2">
-    {getModelLabel(v.model?.id)}
-  </Pill>
-</div>
+                  {/* Comment + score/model pills on same row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="text-sm text-gray-800">
+                      {v.comment}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      {/* coloured score pill */}
+                      <Pill className={`px-2 ${vScoreMeta.className}`}>
+                        {vScoreMeta.label}
+                      </Pill>
 
-                                      <Pill variant="outline" className="px-2">
-                                        {getModelLabel(v.model?.id)}
-                                      </Pill>
-                                    </div>
-                                  </div>
+                      {/* single model pill */}
+                      <Pill className="px-2 bg-white text-gray-700 border-gray-300">
+                        {getModelLabel(v.model?.id)}
+                      </Pill>
+                    </div>
+                  </div>
 
-                                  {/* Metadata row */}
-                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                                    <span>
-                                      Public search:{" "}
-                                      {v.publicSearch
-                                        ? "Enabled"
-                                        : "Disabled"}
-                                    </span>
-                                    {Array.isArray(v.urls) &&
-                                      v.urls.length > 0 && (
-                                        <span className="truncate">
-                                          URLs:{" "}
-                                          {v.urls
-                                            .map((u) => u.url)
-                                            .join(", ")}
-                                        </span>
-                                      )}
-                                  </div>
-
-                                  {/* Actions row */}
-                                  <div className="flex items-center justify-end gap-2 pt-1">
-                                    <Button
-                                      variant="quiet"
-                                      onClick={() =>
-                                        setSelectedVersionId(v.id)
-                                      }
-                                      className="text-xs"
-                                    >
-                                      View
-                                    </Button>
-                                    <Button
-                                      variant="danger"
-                                      onClick={() =>
-                                        setVersions((prev) =>
-                                          prev.filter((x) => x.id !== v.id)
-                                        )
-                                      }
-                                      className="text-xs"
-                                    >
-                                      Delete
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                  {/* Metadata row */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                    <span>
+                      Public search:{" "}
+                      {v.publicSearch ? "Enabled" : "Disabled"}
+                    </span>
+                    {Array.isArray(v.urls) && v.urls.length > 0 && (
+                      <span className="truncate">
+                        URLs: {v.urls.map((u) => u.url).join(", ")}
+                      </span>
                     )}
-                  </CardBody>
-                </Card>
+                  </div>
+
+                  {/* Actions row */}
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <Button
+                      variant="quiet"
+                      onClick={() => setSelectedVersionId(v.id)}
+                      className="text-xs"
+                    >
+                      View
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() =>
+                        setVersions((prev) =>
+                          prev.filter((x) => x.id !== v.id)
+                        )
+                      }
+                      className="text-xs"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    )}
+  </CardBody>
+</Card>
+
 
                 {/* Roadmap */}
                 <Card>
@@ -1146,44 +1125,33 @@ export default function App() {
                       product is heading as the prototype matures.
                     </p>
                     <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
-                      <li>
-                        Richer source ingestion (PDF, DOCX and structured data
-                        feeds).
-                      </li>
-                      <li>
-                        Deeper model integration for drafting and rewriting via
-                        /generate.
-                      </li>
-                      <li>
-                        Output-specific prompts based on selected content types.
-                      </li>
-                      <li>
-                        Templated outputs and reusable blueprints per document
-                        family.
-                      </li>
-                      <li>
-                        Scoring engine tied to detailed rubrics and a feedback
-                        loop.
-                      </li>
-                      <li>
-                        Dedicated sources table with traceability and filtering.
-                      </li>
-                      <li>
-                        Statement reliability and inference tracking views.
-                      </li>
-                      <li>
-                        Role-based access controls, audit logs and enterprise
-                        integrations.
-                      </li>
-                      <li>
-                        Persistent projects stored under the Projects tab with
-                        saved workspaces.
-                      </li>
-                      <li>
-                        Additional UI polish, theming options and efficiency
-                        tweaks.
-                      </li>
-                    </ul>
+  <li>Richer source ingestion (PDF, DOCX and structured data feeds).</li>
+  <li>Deeper model integration for drafting and rewriting via /generate.</li>
+  <li>Output-specific prompts based on selected content types.</li>
+  <li>Templated outputs and reusable blueprints per document family.</li>
+  <li>Scoring engine tied to detailed rubrics and a feedback loop.</li>
+  <li>Dedicated sources table with traceability and filtering.</li>
+  <li>Statement reliability and inference tracking views.</li>
+  <li>Role-based access controls, audit logs and enterprise integrations.</li>
+  <li>Persistent projects stored under the Projects tab with saved workspaces.</li>
+  <li>Additional UI polish, theming options and efficiency tweaks.</li>
+
+  {/* New “for later” work items */}
+  <li>
+    Performance instrumentation and optimisation for differences between
+    Generate and Rewrite (token counts, latency, profiling).
+  </li>
+  <li>
+    Replace random scores with a rubric-based quality scoring engine that
+    captures structure, clarity, tone and spelling (e.g. penalise intentional
+    typos appropriately).
+  </li>
+  <li>
+    Stricter enforcement of output constraints such as maximum word counts,
+    using both prompt design and post-processing to trim to target length.
+  </li>
+</ul>
+
                   </CardBody>
                 </Card>
               </div>
