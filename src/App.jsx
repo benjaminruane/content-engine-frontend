@@ -268,6 +268,7 @@ export default function App() {
   const [selectedVersionId, setSelectedVersionId] = useState(null);
   const [showRubric, setShowRubric] = useState(false);
   const [showNewConfirm, setShowNewConfirm] = useState(false);
+  const [showRoadmap, setShowRoadmap] = useState(false);
 
   // Model config
   const [modelId, setModelId] = useState("gpt-4o-mini");
@@ -1051,22 +1052,34 @@ export default function App() {
                   </div>
 
                   {/* Comment + score/model pills on same row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="text-sm text-gray-800">
-                      {v.comment}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      {/* coloured score pill */}
-                      <Pill className={`px-2 ${vScoreMeta.className}`}>
-                        {vScoreMeta.label}
-                      </Pill>
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div className="text-sm text-gray-800">
+    {v.comment}
+  </div>
+  <div className="flex items-center gap-2 text-xs text-gray-600">
+    {/* coloured score pill */}
+    <Pill
+      level={
+        typeof v.score === "number"
+          ? v.score >= 85
+            ? "good"
+            : v.score >= 70
+            ? "average"
+            : "poor"
+          : "default"
+      }
+      className="px-2"
+    >
+      {vScoreMeta.label}
+    </Pill>
 
-                      {/* single model pill */}
-                      <Pill className="px-2 bg-white text-gray-700 border-gray-300">
-                        {getModelLabel(v.model?.id)}
-                      </Pill>
-                    </div>
-                  </div>
+    {/* single model pill */}
+    <Pill className="px-2 bg-white text-gray-700 border-gray-300">
+      {getModelLabel(v.model?.id)}
+    </Pill>
+  </div>
+</div>
+
 
                   {/* Metadata row */}
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
@@ -1114,46 +1127,57 @@ export default function App() {
 
 
                 {/* Roadmap */}
-                <Card>
-                  <CardHeader
-                    title="Future roadmap"
-                    subtitle="Planned capabilities for this content engine."
-                  />
-                  <CardBody className="space-y-2">
-                    <p className="text-xs text-gray-500">
-                      These items are not yet live. They outline where the
-                      product is heading as the prototype matures.
-                    </p>
-                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
-  <li>Richer source ingestion (PDF, DOCX and structured data feeds).</li>
-  <li>Deeper model integration for drafting and rewriting via /generate.</li>
-  <li>Output-specific prompts based on selected content types.</li>
-  <li>Templated outputs and reusable blueprints per document family.</li>
-  <li>Scoring engine tied to detailed rubrics and a feedback loop.</li>
-  <li>Dedicated sources table with traceability and filtering.</li>
-  <li>Statement reliability and inference tracking views.</li>
-  <li>Role-based access controls, audit logs and enterprise integrations.</li>
-  <li>Persistent projects stored under the Projects tab with saved workspaces.</li>
-  <li>Additional UI polish, theming options and efficiency tweaks.</li>
+<Card>
+  <CardHeader
+    title="Future roadmap"
+    subtitle="Planned capabilities for this content engine."
+    right={
+      <Button
+        variant="quiet"
+        className="text-xs"
+        onClick={() => setShowRoadmap((v) => !v)}
+      >
+        {showRoadmap ? "Hide" : "Show"}
+      </Button>
+    }
+  />
+  {showRoadmap && (
+    <CardBody className="space-y-2">
+      <p className="text-xs text-gray-500">
+        These items are not yet live. They outline where the
+        product is heading as the prototype matures.
+      </p>
+      <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
+        <li>Richer source ingestion (PDF, DOCX and structured data feeds).</li>
+        <li>Deeper model integration for drafting and rewriting via /generate.</li>
+        <li>Output-specific prompts based on selected content types.</li>
+        <li>Templated outputs and reusable blueprints per document family.</li>
+        <li>Scoring engine tied to detailed rubrics and a feedback loop.</li>
+        <li>Dedicated sources table with traceability and filtering.</li>
+        <li>Statement reliability and inference tracking views.</li>
+        <li>Role-based access controls, audit logs and enterprise integrations.</li>
+        <li>Persistent projects stored under the Projects tab with saved workspaces.</li>
+        <li>Additional UI polish, theming options and efficiency tweaks.</li>
 
-  {/* New “for later” work items */}
-  <li>
-    Performance instrumentation and optimisation for differences between
-    Generate and Rewrite (token counts, latency, profiling).
-  </li>
-  <li>
-    Replace random scores with a rubric-based quality scoring engine that
-    captures structure, clarity, tone and spelling (e.g. penalise intentional
-    typos appropriately).
-  </li>
-  <li>
-    Stricter enforcement of output constraints such as maximum word counts,
-    using both prompt design and post-processing to trim to target length.
-  </li>
-</ul>
+        {/* New “for later” work items */}
+        <li>
+          Performance instrumentation and optimisation for differences between
+          Generate and Rewrite (token counts, latency, profiling).
+        </li>
+        <li>
+          Replace random scores with a rubric-based quality scoring engine that
+          captures structure, clarity, tone and spelling (e.g. penalise intentional
+          typos appropriately).
+        </li>
+        <li>
+          Stricter enforcement of output constraints such as maximum word counts,
+          using both prompt design and post-processing to trim to target length.
+        </li>
+      </ul>
+    </CardBody>
+  )}
+</Card>
 
-                  </CardBody>
-                </Card>
               </div>
             </div>
           </main>
