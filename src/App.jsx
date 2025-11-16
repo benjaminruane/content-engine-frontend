@@ -185,10 +185,11 @@ const getModelLabel = (id) =>
 
 // Quality score → label + Tailwind classes
 const getScoreMeta = (score) => {
+  // No score yet (new project / no versions selected)
   if (typeof score !== "number" || Number.isNaN(score)) {
     return {
-      label: "–/100",
-      className: "bg-gray-50 text-gray-700 border-gray-200",
+      label: "No score yet",
+      className: "bg-transparent text-gray-400 border-gray-300",
     };
   }
 
@@ -211,6 +212,7 @@ const getScoreMeta = (score) => {
     className: "bg-red-50 text-red-800 border-red-400",
   };
 };
+
 
 // -----------------------------
 // App Component
@@ -954,26 +956,27 @@ export default function App() {
               {/* Second block: Output, Versions, Roadmap stacked */}
               <div className="space-y-6">
                 {/* Draft output */}
-                <Card>
-                  <CardHeader
-                    title="Draft output"
-                    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-                    right={
-                      <Pill
-  level={
-    selectedVersion?.score >= 85
-      ? "good"
-      : selectedVersion?.score >= 70
-      ? "average"
-      : "poor"
+                <CardHeader
+  title="Draft output"
+  subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+  right={
+    <Pill
+      level={
+        typeof selectedVersion?.score === "number"
+          ? selectedVersion.score >= 85
+            ? "good"
+            : selectedVersion.score >= 70
+            ? "average"
+            : "poor"
+          : undefined // no colour when there is no score yet
+      }
+      className="px-3"
+    >
+      {selectedScoreMeta.label}
+    </Pill>
   }
-  className="px-3"
->
-  {selectedScoreMeta.label}
-</Pill>
+/>
 
-                    }
-                  />
                   <CardBody className="space-y-3">
                     <Textarea
                       rows={18}
