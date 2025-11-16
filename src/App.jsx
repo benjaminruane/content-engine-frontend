@@ -49,7 +49,7 @@ function Pill({ variant = "subtle", children, className = "" }) {
 
 function Card({ children, className = "" }) {
   return (
-    <div className={`rounded-3xl border shadow-sm bg-white ${className}`}>
+    <div className={`rounded-3xl border border-gray-100 shadow-sm bg-white ${className}`}>
       {children}
     </div>
   );
@@ -93,7 +93,10 @@ const Input = (props) => (
 );
 
 const Textarea = (props) => (
-  <textarea className="w-full px-3 py-2 border rounded-xl text-sm" {...props} />
+  <textarea
+  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300"
+  {...props}
+/>
 );
 
 const Toggle = ({ checked, onChange }) => (
@@ -870,23 +873,24 @@ export default function App() {
   subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
   right={
     <Button
-      variant="quiet"
-      onClick={() => setShowRubric(true)}
-      className="text-xs"
-    >
-      Score: {selectedVersion?.score ?? "–"}/100
-    </Button>
+  variant="quiet"
+  onClick={() => setShowRubric(true)}
+  className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+>
+  Score: {selectedVersion?.score ?? "–"}/100
+</Button>
   }
 />
 
                   <CardBody className="space-y-3">
                     <Textarea
-                      rows={18}
-                      value={output || selectedVersion?.content || ""}
-                      onChange={(e) => setOutput(e.target.value)}
-                      placeholder="Generated content..."
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
+  rows={18}
+  value={output || selectedVersion?.content || ""}
+  onChange={(e) => setOutput(e.target.value)}
+  placeholder="Generated content..."
+  className="placeholder:text-gray-400"
+/>
+
                       You can edit this draft directly. Use{" "}
                       <strong>Rewrite</strong> with new instructions to
                       generate an alternate version while keeping this one
