@@ -923,89 +923,118 @@ export default function App() {
   />
   <CardBody>
     {versions.length === 0 ? (
-      <p className="text-sm text-gray-500">
-        No versions yet.
-      </p>
+      <p className="text-sm text-gray-500">No versions yet.</p>
     ) : (
-      versions.map((v) => {
-        const isSelected = selectedVersionId === v.id;
-        return (
-          <div
-            key={v.id}
-            className={
-              "p-3 rounded-2xl border mb-3 space-y-2 transition " +
-              (isSelected
-                ? "bg-gray-50 border-gray-400"
-                : "bg-white hover:bg-gray-50")
-            }
-          >
-            {/* Top row: version label + timestamp */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Pill variant="subtle" className="px-2">
-                  V{v.versionNumber}
-                </Pill>
-                {isSelected && (
-                  <span className="text-[11px] text-gray-500">
-                    Currently viewing
-                  </span>
-                )}
-              </div>
-              <div className="text-xs text-gray-500">
-                {new Date(v.timestamp).toLocaleString()}
-              </div>
-            </div>
+      <div className="relative">
+        {/* Vertical timeline line */}
+        <div
+          className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
+          aria-hidden="true"
+        />
 
-            {/* Comment / summary */}
-            <div className="text-sm text-gray-800">
-              {v.comment}
-            </div>
+        <div className="space-y-4">
+          {versions.map((v) => {
+            const isSelected = selectedVersionId === v.id;
 
-            {/* Metadata row */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-              <span>
-                Public search: {v.publicSearch ? "Enabled" : "Disabled"}
-              </span>
-              {Array.isArray(v.urls) && v.urls.length > 0 && (
-                <span className="truncate">
-                  URLs: {v.urls.map((u) => u.url).join(", ")}
-                </span>
-              )}
-            </div>
-
-            {/* Score + model + actions */}
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <div className="flex items-center gap-3 text-xs text-gray-600">
-                <Pill variant="outline">
-                  {getModelLabel(v.model?.id)}
-                </Pill>
-                <span>Score: {v.score}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="quiet"
-                  onClick={() => setSelectedVersionId(v.id)}
-                  className="text-xs"
-                >
-                  View
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() =>
-                    setVersions((prev) => prev.filter((x) => x.id !== v.id))
+            return (
+              <div
+                key={v.id}
+                className="relative pl-6"
+              >
+                {/* Dot on the timeline */}
+                <span
+                  className={
+                    "absolute left-1 top-3 w-2 h-2 rounded-full border " +
+                    (isSelected
+                      ? "bg-black border-black"
+                      : "bg-white border-gray-400")
                   }
-                  className="text-xs"
+                  aria-hidden="true"
+                />
+
+                {/* Version card */}
+                <div
+                  className={
+                    "rounded-2xl border p-3 space-y-2 transition " +
+                    (isSelected
+                      ? "bg-gray-50 border-gray-500"
+                      : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
+                  }
                 >
-                  Delete
-                </Button>
+                  {/* Top row: version label + timestamp */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Pill variant="subtle" className="px-2">
+                        V{v.versionNumber}
+                      </Pill>
+                      {isSelected && (
+                        <span className="text-[11px] text-gray-500">
+                          Currently viewing
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(v.timestamp).toLocaleString()}
+                    </div>
+                  </div>
+
+                  {/* Comment / summary */}
+                  <div className="text-sm text-gray-800">
+                    {v.comment}
+                  </div>
+
+                  {/* Metadata row */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                    <span>
+                      Public search:{" "}
+                      {v.publicSearch ? "Enabled" : "Disabled"}
+                    </span>
+                    {Array.isArray(v.urls) && v.urls.length > 0 && (
+                      <span className="truncate">
+                        URLs: {v.urls.map((u) => u.url).join(", ")}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Score + model + actions */}
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-3 text-xs text-gray-600">
+                      <Pill variant="outline">
+                        {getModelLabel(v.model?.id)}
+                      </Pill>
+                      <span>Score: {v.score}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="quiet"
+                        onClick={() => setSelectedVersionId(v.id)}
+                        className="text-xs"
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() =>
+                          setVersions((prev) =>
+                            prev.filter((x) => x.id !== v.id)
+                          )
+                        }
+                        className="text-xs"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        );
-      })
+            );
+          })}
+        </div>
+      </div>
     )}
   </CardBody>
 </Card>
+
 
                 {/* Roadmap */}
                 <Card>
