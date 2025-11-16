@@ -170,36 +170,39 @@ const getModelLabel = (id) =>
 
 // tone class now *only* controls text + border colours (no bg),
 // so it plays nicely with Pill variants.
-const getScoreStyle = (score) => {
+
+// Quality score → label + Tailwind classes
+const getScoreMeta = (score) => {
   if (typeof score !== "number" || Number.isNaN(score)) {
     return {
-      label: "Not scored",
-      className: "text-gray-600 border-gray-200 bg-gray-50",
+      label: "–/100",
+      className: "bg-gray-50 text-gray-700 border-gray-200",
     };
   }
 
-  // High band
   if (score >= 85) {
+    // High
     return {
       label: `${score}/100`,
-      className: "text-emerald-800 border-emerald-300 bg-emerald-50",
+      className: "bg-emerald-50 text-emerald-800 border-emerald-400",
     };
   }
 
-  // Medium band
   if (score >= 70) {
+    // Medium
     return {
       label: `${score}/100`,
-      className: "text-amber-800 border-amber-300 bg-amber-50",
+      className: "bg-amber-50 text-amber-800 border-amber-400",
     };
   }
 
-  // Low band
+  // Low
   return {
     label: `${score}/100`,
-    className: "text-red-800 border-red-300 bg-red-50",
+    className: "bg-red-50 text-red-800 border-red-400",
   };
 };
+
 
 
 // -----------------------------
@@ -945,34 +948,24 @@ export default function App() {
               {/* Second block: Output, Versions, Roadmap stacked */}
               <div className="space-y-6">
                 {/* Draft output */}
+                
+const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
+
                 <Card>
-                  <CardHeader
-                    title="Draft output"
-                    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-                    right={
-                      <Pill
-                        variant="outline"
-                        className={`px-3 ${selectedScoreTone}`}
-                      >
-                        Score {selectedScoreLabel}
-                      </Pill>
-                    }
-                  />
-                  <CardBody className="space-y-3">
-                    <Textarea
-                      rows={18}
-                      value={output || selectedVersion?.content || ""}
-                      onChange={(e) => setOutput(e.target.value)}
-                      placeholder="Generated content..."
-                      className="placeholder:text-gray-400"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      You can edit this draft directly. Use{" "}
-                      <strong>Rewrite</strong> to generate an updated
-                      version while keeping this one saved.
-                    </p>
-                  </CardBody>
-                </Card>
+  <CardHeader
+    title="Draft output"
+    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+    right={
+      <Pill
+        variant="subtle"
+        className={`px-3 ${selectedScoreMeta.className}`}
+      >
+        Score {selectedScoreMeta.label}
+      </Pill>
+    }
+  />
+  {/* ...CardBody stays as you have it... */}
+</Card>
 
                 {/* Versions – timeline style, newest first */}
                 <Card>
