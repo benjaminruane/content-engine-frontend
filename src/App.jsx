@@ -532,7 +532,7 @@ export default function App() {
                 <Card>
                   <CardHeader
                     title="Source documents"
-                    subtitle="Upload files or add URLs as input sources."
+                    subtitle="Bring in files or web pages as drafting sources."
                     right={
                       <Pill variant="outline" className="px-3">
                         {parsed.length + urlSources.length} source
@@ -541,9 +541,13 @@ export default function App() {
                     }
                   />
                   <CardBody>
-                    <Button onClick={() => fileInputRef.current?.click()}>
-                      Upload files
-                    </Button>
+                    <Button
+  variant="primary"
+  onClick={() => fileInputRef.current?.click()}
+>
+  Upload files
+</Button>
+
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -597,7 +601,9 @@ export default function App() {
                         value={urlInput}
                         onChange={(e) => setUrlInput(e.target.value)}
                       />
-                      <Button onClick={addUrlSource}>Add URL</Button>
+                      <Button variant="secondary" onClick={addUrlSource}>
+                      Add URL
+                      </Button>
                     </div>
                   </CardBody>
                 </Card>
