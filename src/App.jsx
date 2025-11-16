@@ -168,7 +168,6 @@ const MODEL_OPTIONS = [
 const getModelLabel = (id) =>
   MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
 
-// Returns label + Tailwind classes for score colouring
 const getScoreStyle = (score) => {
   if (typeof score !== "number" || Number.isNaN(score)) {
     return {
@@ -487,7 +486,6 @@ export default function App() {
     (a, b) => b.versionNumber - a.versionNumber
   );
 
-  // Score styling for currently selected version
   const {
     label: selectedScoreLabel,
     className: selectedScoreTone,
@@ -635,7 +633,7 @@ export default function App() {
                     }
                     className="w-full"
                   />
-                <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+                  <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
                     <span>More stable</span>
                     <span>{temperature.toFixed(2)}</span>
                     <span>More creative</span>
@@ -735,86 +733,113 @@ export default function App() {
             <div className="space-y-6">
               {/* Top row: Sources + Configuration side by side */}
               <div className="grid lg:grid-cols-2 gap-6 items-start">
-                {/* Source documents */}
-                <Card>
-                  <CardHeader
-                    title="Source documents"
-                    subtitle="Bring in files or web pages as drafting sources."
-                    right={
-                      <Pill variant="outline" className="px-3">
-                        {parsed.length + urlSources.length} source
-                        {parsed.length + urlSources.length === 1 ? "" : "s"}
-                      </Pill>
-                    }
-                  />
-                  <CardBody>
-                    <Button
-                      variant="secondary"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Upload files
-                    </Button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      className="hidden"
-                      style={{ display: "none" }}
-                      onChange={(e) => addFiles(e.target.files)}
+                {/* Left column: Sources + Public search */}
+                <div className="space-y-4">
+                  {/* Source documents */}
+                  <Card>
+                    <CardHeader
+                      title="Source documents"
+                      subtitle="Bring in files or web pages as drafting sources."
+                      right={
+                        <Pill variant="outline" className="px-3">
+                          {parsed.length + urlSources.length} source
+                          {parsed.length + urlSources.length === 1 ? "" : "s"}
+                        </Pill>
+                      }
                     />
-
-                    {/* Existing sources */}
-                    <div className="mt-4 space-y-2">
-                      {parsed.length === 0 && urlSources.length === 0 ? (
-                        <p className="text-xs text-gray-500">
-                          No sources added yet. Upload one or more files, or paste
-                          a URL to pull in public content for this drafting
-                          session.
-                        </p>
-                      ) : (
-                        <>
-                          {parsed.map((p, i) => (
-                            <div
-                              key={i}
-                              className="text-sm border p-2 rounded-xl bg-gray-50"
-                            >
-                              <b>{p.file.name}</b>
-                              <div className="text-xs text-gray-500">
-                                {String(p.text || "").slice(0, 160)}
-                              </div>
-                            </div>
-                          ))}
-
-                          {urlSources.map((u, i) => (
-                            <div
-                              key={`url-${i}`}
-                              className="text-sm border p-2 rounded-xl bg-gray-50"
-                            >
-                              <b>{u.url}</b>
-                              <div className="text-xs text-gray-500">
-                                {String(u.text || "").slice(0, 160)}
-                              </div>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
-
-                    {/* URL input row */}
-                    <div className="mt-4 flex gap-2">
-                      <Input
-                        placeholder="https://example.com/article"
-                        value={urlInput}
-                        onChange={(e) => setUrlInput(e.target.value)}
-                      />
-                      <Button variant="secondary" onClick={addUrlSource}>
-                        Add URL
+                    <CardBody>
+                      <Button
+                        variant="secondary"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Upload files
                       </Button>
-                    </div>
-                  </CardBody>
-                </Card>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        style={{ display: "none" }}
+                        onChange={(e) => addFiles(e.target.files)}
+                      />
 
-                {/* Configuration */}
+                      {/* Existing sources */}
+                      <div className="mt-4 space-y-2">
+                        {parsed.length === 0 && urlSources.length === 0 ? (
+                          <p className="text-xs text-gray-500">
+                            No sources added yet. Upload one or more files, or paste
+                            a URL to pull in public content for this drafting
+                            session.
+                          </p>
+                        ) : (
+                          <>
+                            {parsed.map((p, i) => (
+                              <div
+                                key={i}
+                                className="text-sm border p-2 rounded-xl bg-gray-50"
+                              >
+                                <b>{p.file.name}</b>
+                                <div className="text-xs text-gray-500">
+                                  {String(p.text || "").slice(0, 160)}
+                                </div>
+                              </div>
+                            ))}
+
+                            {urlSources.map((u, i) => (
+                              <div
+                                key={`url-${i}`}
+                                className="text-sm border p-2 rounded-xl bg-gray-50"
+                              >
+                                <b>{u.url}</b>
+                                <div className="text-xs text-gray-500">
+                                  {String(u.text || "").slice(0, 160)}
+                                </div>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                      </div>
+
+                      {/* URL input row */}
+                      <div className="mt-4 flex gap-2">
+                        <Input
+                          placeholder="https://example.com/article"
+                          value={urlInput}
+                          onChange={(e) => setUrlInput(e.target.value)}
+                        />
+                        <Button variant="secondary" onClick={addUrlSource}>
+                          Add URL
+                        </Button>
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  {/* Public domain search card */}
+                  <Card>
+                    <CardHeader
+                      title="Public domain search"
+                      subtitle="Allow the engine to draw additional context from the open web."
+                    />
+                    <CardBody>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 font-medium">
+                          Include public domain search
+                        </span>
+                        <Toggle
+                          checked={publicSearch}
+                          onChange={setPublicSearch}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-gray-500">
+                        When enabled, the backend may fetch extra public information
+                        to enrich the draft. Uploaded sources remain private and are
+                        always treated as primary.
+                      </p>
+                    </CardBody>
+                  </Card>
+                </div>
+
+                {/* Right column: Configuration */}
                 <Card>
                   <CardHeader
                     title="Configuration"
@@ -857,14 +882,6 @@ export default function App() {
                           );
                         })}
                       </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Label>Include public domain search</Label>
-                      <Toggle
-                        checked={publicSearch}
-                        onChange={setPublicSearch}
-                      />
                     </div>
 
                     <div>
