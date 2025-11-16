@@ -168,35 +168,33 @@ const MODEL_OPTIONS = [
 const getModelLabel = (id) =>
   MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
 
+// tone class now *only* controls text + border colours (no bg),
+// so it plays nicely with Pill variants.
 const getScoreStyle = (score) => {
   if (typeof score !== "number" || Number.isNaN(score)) {
     return {
       label: "Not scored",
-      className:
-        "bg-gray-100 text-gray-500 border border-gray-200",
+      className: "text-gray-500 border-gray-200",
     };
   }
 
   if (score >= 85) {
     return {
       label: `${score}/100`,
-      className:
-        "bg-emerald-50 text-emerald-700 border border-emerald-300",
+      className: "text-emerald-700 border-emerald-300",
     };
   }
 
   if (score >= 70) {
     return {
       label: `${score}/100`,
-      className:
-        "bg-amber-50 text-amber-700 border border-amber-300",
+      className: "text-amber-700 border-amber-300",
     };
   }
 
   return {
     label: `${score}/100`,
-    className:
-      "bg-red-50 text-red-700 border border-red-300",
+    className: "text-red-700 border-red-300",
   };
 };
 
@@ -633,7 +631,7 @@ export default function App() {
                     }
                     className="w-full"
                   />
-                  <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+                <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
                     <span>More stable</span>
                     <span>{temperature.toFixed(2)}</span>
                     <span>More creative</span>
@@ -948,13 +946,12 @@ export default function App() {
                     title="Draft output"
                     subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
                     right={
-                      <Button
-                        variant="quiet"
-                        onClick={() => setShowRubric(true)}
-                        className={`text-xs px-2 py-1 rounded-full ${selectedScoreTone}`}
+                      <Pill
+                        variant="outline"
+                        className={`px-3 ${selectedScoreTone}`}
                       >
                         Score {selectedScoreLabel}
-                      </Button>
+                      </Pill>
                     }
                   />
                   <CardBody className="space-y-3">
@@ -1039,9 +1036,22 @@ export default function App() {
                                     </div>
                                   </div>
 
-                                  {/* Comment / summary */}
-                                  <div className="text-sm text-gray-800">
-                                    {v.comment}
+                                  {/* Comment + pills on the same row */}
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <div className="text-sm text-gray-800">
+                                      {v.comment}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                                      <Pill
+                                        variant="outline"
+                                        className={`px-2 ${vScoreTone}`}
+                                      >
+                                        {vScoreLabel}
+                                      </Pill>
+                                      <Pill variant="subtle" className="px-2">
+                                        {getModelLabel(v.model?.id)}
+                                      </Pill>
+                                    </div>
                                   </div>
 
                                   {/* Metadata row */}
@@ -1063,41 +1073,28 @@ export default function App() {
                                       )}
                                   </div>
 
-                                  {/* Score + model + actions */}
-                                  <div className="flex items-center justify-between gap-3 pt-1">
-                                    <div className="flex items-center gap-3 text-xs text-gray-600">
-                                      <Pill variant="outline">
-                                        {getModelLabel(v.model?.id)}
-                                      </Pill>
-                                      <Pill
-                                        variant="outline"
-                                        className={`px-2 ${vScoreTone}`}
-                                      >
-                                        {vScoreLabel}
-                                      </Pill>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        variant="quiet"
-                                        onClick={() =>
-                                          setSelectedVersionId(v.id)
-                                        }
-                                        className="text-xs"
-                                      >
-                                        View
-                                      </Button>
-                                      <Button
-                                        variant="danger"
-                                        onClick={() =>
-                                          setVersions((prev) =>
-                                            prev.filter((x) => x.id !== v.id)
-                                          )
-                                        }
-                                        className="text-xs"
-                                      >
-                                        Delete
-                                      </Button>
-                                    </div>
+                                  {/* Actions row only */}
+                                  <div className="flex items-center justify-end gap-2 pt-1">
+                                    <Button
+                                      variant="quiet"
+                                      onClick={() =>
+                                        setSelectedVersionId(v.id)
+                                      }
+                                      className="text-xs"
+                                    >
+                                      View
+                                    </Button>
+                                    <Button
+                                      variant="danger"
+                                      onClick={() =>
+                                        setVersions((prev) =>
+                                          prev.filter((x) => x.id !== v.id)
+                                        )
+                                      }
+                                      className="text-xs"
+                                    >
+                                      Delete
+                                    </Button>
                                   </div>
                                 </div>
                               </div>
