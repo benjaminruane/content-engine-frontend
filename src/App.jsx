@@ -917,88 +917,95 @@ export default function App() {
 
                 {/* Versions */}
                 <Card>
-                  <CardHeader
-                    title="Versions"
-                    subtitle="Saved versions with comments and scores."
-                  />
-                  <CardBody>
-                    {versions.length === 0 ? (
-                      <p className="text-sm text-gray-500">
-                        No versions yet.
-                      </p>
-                    ) : (
-                      versions.map((v) => (
-                        <div
-                          key={v.id}
-                          className={`p-4 rounded-2xl border mb-3 space-y-2 ${
-                            selectedVersionId === v.id
-                              ? "bg-gray-50 border-gray-400"
-                              : "bg-white"
-                          }`}
-                        >
-                          <div className="flex justify-between items-center">
-                            <Button
-                              onClick={() =>
-                                setSelectedVersionId(v.id)
-                              }
-                            >
-                              View
-                            </Button>
-                            <div className="text-xs text-gray-600">
-                              V{v.versionNumber} ·{" "}
-                              {new Date(
-                                v.timestamp
-                              ).toLocaleString()}
-                            </div>
-                          </div>
+  <CardHeader
+    title="Versions"
+    subtitle="Saved versions with comments and scores."
+  />
+  <CardBody>
+    {versions.length === 0 ? (
+      <p className="text-sm text-gray-500">
+        No versions yet.
+      </p>
+    ) : (
+      versions.map((v) => {
+        const isSelected = selectedVersionId === v.id;
+        return (
+          <div
+            key={v.id}
+            className={
+              "p-3 rounded-2xl border mb-3 space-y-2 transition " +
+              (isSelected
+                ? "bg-gray-50 border-gray-400"
+                : "bg-white hover:bg-gray-50")
+            }
+          >
+            {/* Top row: version label + timestamp */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Pill variant="subtle" className="px-2">
+                  V{v.versionNumber}
+                </Pill>
+                {isSelected && (
+                  <span className="text-[11px] text-gray-500">
+                    Currently viewing
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-gray-500">
+                {new Date(v.timestamp).toLocaleString()}
+              </div>
+            </div>
 
-                          <div className="text-sm text-gray-800">
-                            {v.comment}
-                          </div>
+            {/* Comment / summary */}
+            <div className="text-sm text-gray-800">
+              {v.comment}
+            </div>
 
-                          <div className="text-xs text-gray-500">
-                            Public search:{" "}
-                            {v.publicSearch
-                              ? "Enabled"
-                              : "Disabled"}
-                          </div>
+            {/* Metadata row */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+              <span>
+                Public search: {v.publicSearch ? "Enabled" : "Disabled"}
+              </span>
+              {Array.isArray(v.urls) && v.urls.length > 0 && (
+                <span className="truncate">
+                  URLs: {v.urls.map((u) => u.url).join(", ")}
+                </span>
+              )}
+            </div>
 
-                          {Array.isArray(v.urls) &&
-                            v.urls.length > 0 && (
-                              <div className="text-xs text-gray-500">
-                                URLs:{" "}
-                                {v.urls
-                                  .map((u) => u.url)
-                                  .join(", ")}
-                              </div>
-                            )}
-
-                          <div className="flex items-center gap-3 text-xs text-gray-600">
-                            <Pill variant="subtle">
-                              {getModelLabel(v.model?.id)}
-                            </Pill>
-                            <span>Score: {v.score}</span>
-                          </div>
-
-                          <div className="text-right">
-                            <Button
-                              variant="danger"
-                              onClick={() =>
-                                setVersions((prev) =>
-                                  prev.filter(
-                                    (x) => x.id !== v.id
-                                  )
-                                )
-                              }
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </CardBody>
-                </Card>
+            {/* Score + model + actions */}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <div className="flex items-center gap-3 text-xs text-gray-600">
+                <Pill variant="outline">
+                  {getModelLabel(v.model?.id)}
+                </Pill>
+                <span>Score: {v.score}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="quiet"
+                  onClick={() => setSelectedVersionId(v.id)}
+                  className="text-xs"
+                >
+                  View
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() =>
+                    setVersions((prev) => prev.filter((x) => x.id !== v.id))
+                  }
+                  className="text-xs"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })
+    )}
+  </CardBody>
+</Card>
 
                 {/* Roadmap */}
                 <Card>
