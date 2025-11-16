@@ -489,774 +489,612 @@ export default function App() {
 
         {/* Page toolbar / intro */}
         <div className="flex items-center justify-between mt-4 mb-6">
-  <div>
-    <h2 className="text-lg font-semibold">Dashboard</h2>
-    <p className="text-sm text-gray-500">
-      Manage sources, generate drafts, and track versions.
-    </p>
-  </div>
-  <div className="flex gap-2">
-    <Button
-      type="button"
-      variant="primary"
-      onClick={() => setShowNewConfirm(true)}
-    >
-      New project
-    </Button>
-    <Button type="button" variant="secondary">
-      View history
-    </Button>
-  </div>
-</div>
-
-
-<div className="mt-2 flex gap-6">
-  {/* Sidebar */}
-  <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
-    <Card className="p-4">
-      <h2 className="text-sm font-semibold mb-1">Workspace</h2>
-      <p className="text-xs text-gray-500">
-        Overview of your drafting session.
-      </p>
-    </Card>
-
-    <Card className="p-4">
-      <h3 className="text-sm font-semibold mb-1">Status</h3>
-      <div className="flex flex-col gap-1 text-xs text-gray-600">
-        <div className="flex justify-between">
-          <span>Sources</span>
-          <span className="font-medium">
-            {parsed.length + urlSources.length}
-          </span>
+          <div>
+            <h2 className="text-lg font-semibold">Dashboard</h2>
+            <p className="text-sm text-gray-500">
+              Manage sources, generate drafts, and track versions.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => setShowNewConfirm(true)}
+            >
+              New project
+            </Button>
+            <Button type="button" variant="secondary">
+              View history
+            </Button>
+          </div>
         </div>
 
-        <div className="flex justify-between">
-          <span>Versions</span>
-          <span className="font-medium">{versions.length}</span>
+        {/* Inputs / Output headings row */}
+        <div className="grid lg:grid-cols-3 gap-6 items-end mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">Inputs & configuration</h2>
+            <p className="text-sm text-gray-500">
+              Add sources and control how the engine drafts content.
+            </p>
+          </div>
+          <div className="lg:col-span-2">
+            <h2 className="text-lg font-semibold">Output</h2>
+            <p className="text-sm text-gray-500">
+              Review generated drafts and manage versions.
+            </p>
+          </div>
         </div>
 
-        <div className="flex justify-between">
-          <span>Model</span>
-          <span className="font-medium">{getModelLabel(modelId)}</span>
-        </div>
-      </div>
-    </Card>
+        {/* Main content area */}
+        <div className="mt-2 flex gap-6">
+          {/* Sidebar */}
+          <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
+            <Card className="p-4">
+              <h2 className="text-sm font-semibold mb-1">Workspace</h2>
+              <p className="text-xs text-gray-500">
+                Overview of your drafting session.
+              </p>
+            </Card>
 
-  {/* Model & controls */}
+            <Card className="p-4">
+              <h3 className="text-sm font-semibold mb-1">Status</h3>
+              <div className="flex flex-col gap-1 text-xs text-gray-600">
+                <div className="flex justify-between">
+                  <span>Sources</span>
+                  <span className="font-medium">
+                    {parsed.length + urlSources.length}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Versions</span>
+                  <span className="font-medium">{versions.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Model</span>
+                  <span className="font-medium">
+                    {getModelLabel(modelId)}
+                  </span>
+                </div>
+              </div>
+            </Card>
+
+            {/* Model & controls */}
+            <Card>
+              <CardHeader
+                title="Model & controls"
+                subtitle="Select the model and basic generation settings."
+              />
+              <CardBody className="space-y-3">
+                <div>
+                  <Label>Model</Label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-xl text-sm"
+                    value={modelId}
+                    onChange={(e) => setModelId(e.target.value)}
+                  >
+                    {MODEL_OPTIONS.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label>Temperature</Label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={temperature}
+                    onChange={(e) =>
+                      setTemperature(parseFloat(e.target.value))
+                    }
+                    className="w-full"
+                  />
+                  <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+                    <span>More stable</span>
+                    <span>{temperature.toFixed(2)}</span>
+                    <span>More creative</span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Max tokens</Label>
+                  <Input
+                    type="number"
+                    min={100}
+                    max={4000}
+                    step={50}
+                    value={maxTokens}
+                    onChange={(e) =>
+                      setMaxTokens(
+                        parseInt(e.target.value || "0", 10) || 0
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="mt-2">
+                  <Button
+                    variant="quiet"
+                    onClick={() => setShowAdvanced((v) => !v)}
+                    className="text-xs"
+                  >
+                    {showAdvanced
+                      ? "Hide advanced settings"
+                      : "Show advanced settings"}
+                  </Button>
+                  {showAdvanced && (
+                    <div className="mt-2 space-y-2">
+                      <Label>API base URL</Label>
+                      <Input
+                        placeholder="https://content-engine-backend-v2.vercel.app/api"
+                        value={apiBaseUrl}
+                        onChange={(e) =>
+                          setApiBaseUrl(e.target.value)
+                        }
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button onClick={checkHealth}>
+                          Check connection
+                        </Button>
+                        <span className="text-xs text-gray-500">
+                          Status: {apiStatus}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+
+            {/* Diagnostics */}
+            <Card>
+              <CardHeader
+                title="Diagnostics"
+                subtitle="Quick sanity checks for this session."
+              />
+              <CardBody>
+                {diagnostics ? (
+                  <>
+                    <div className="flex gap-2 mb-3">
+                      <Button onClick={runDiagnostics}>
+                        Re-run diagnostics
+                      </Button>
+                      <Button onClick={() => setDiagnostics(null)}>
+                        Clear
+                      </Button>
+                    </div>
+                    <ul className="space-y-1 text-sm">
+                      {diagnostics.map((d, i) => (
+                        <li
+                          key={i}
+                          className="px-2 py-1 rounded-md bg-gray-50 text-gray-700"
+                        >
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-start gap-2 text-sm text-gray-500">
+                    <p>No diagnostics run yet for this session.</p>
+                    <Button onClick={runDiagnostics}>
+                      Run diagnostics
+                    </Button>
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          </aside>
+
+          {/* Main content */}
+          <main className="flex-1">
+            <div className="grid lg:grid-cols-3 gap-6 items-start">
+              {/* Left column: configuration + sources */}
+              <div className="space-y-6 lg:col-span-1">
+                {/* Configuration card */}
                 <Card>
                   <CardHeader
-                    title="Model & controls"
-                    subtitle="Select the model and basic generation settings."
+                    title="Configuration"
+                    subtitle="Control how the engine drafts and rewrites content."
                   />
                   <CardBody className="space-y-3">
                     <div>
-                      <Label>Model</Label>
-                      <select
-                        className="w-full px-3 py-2 border rounded-xl text-sm"
-                        value={modelId}
-                        onChange={(e) => setModelId(e.target.value)}
-                      >
-                        {MODEL_OPTIONS.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.label}
-                          </option>
-                        ))}
-                      </select>
+                      <Label>Title</Label>
+                      <Input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="e.g., Q3 Portfolio Update"
+                      />
                     </div>
 
                     <div>
-                      <Label>Temperature</Label>
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        value={temperature}
-                        onChange={(e) =>
-                          setTemperature(parseFloat(e.target.value))
-                        }
-                        className="w-full"
-                      />
-                      <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
-                        <span>More stable</span>
-                        <span>{temperature.toFixed(2)}</span>
-                        <span>More creative</span>
+                      <Label>Output types</Label>
+                      <p className="text-xs text-gray-500 mb-2">
+                        Choose one or more content formats to generate in this
+                        run.
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {OUTPUT_TYPES.map((o) => {
+                          const active = selectedTypes.includes(o.value);
+                          return (
+                            <button
+                              key={o.value}
+                              type="button"
+                              onClick={() => toggleType(o.value)}
+                              className={
+                                "px-3 py-1.5 rounded-full text-xs border transition " +
+                                (active
+                                  ? "bg-black text-white border-black shadow-sm"
+                                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
+                              }
+                            >
+                              {o.label}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    <div>
-                      <Label>Max tokens</Label>
-                      <Input
-                        type="number"
-                        min={100}
-                        max={4000}
-                        step={50}
-                        value={maxTokens}
-                        onChange={(e) =>
-                          setMaxTokens(
-                            parseInt(e.target.value || "0", 10) || 0
-                          )
-                        }
+                    <div className="flex items-center justify-between">
+                      <Label>Include public domain search</Label>
+                      <Toggle
+                        checked={publicSearch}
+                        onChange={setPublicSearch}
                       />
                     </div>
 
-                    <div className="mt-2">
+                    <div>
+                      <Label>Prompt notes / rewrite instructions</Label>
+                      <Textarea
+                        rows={4}
+                        value={promptNotes}
+                        onChange={(e) => setPromptNotes(e.target.value)}
+                        placeholder="Key points, tone, constraints, or rewrite instructions..."
+                        className="placeholder:text-gray-400"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Use this to guide the initial draft or to tell the engine
+                        how to change the current version (e.g. &quot;shorter, more
+                        formal, add risk section&quot;).
+                      </p>
+                    </div>
+
+                    {/* Buttons row */}
+                    <div className="flex gap-2 flex-wrap">
+                      <Button
+                        variant="primary"
+                        onClick={handleGenerate}
+                        disabled={
+                          hasInitialGeneration ||
+                          isGenerating ||
+                          isRewriting ||
+                          !hasSources ||
+                          !hasOutputTypes
+                        }
+                      >
+                        {isGenerating && <Spinner />}
+                        {isGenerating ? "Generating..." : "Generate"}
+                      </Button>
+
+                      <Button
+                        onClick={handleRewrite}
+                        disabled={
+                          !hasInitialGeneration ||
+                          isRewriting ||
+                          isGenerating
+                        }
+                      >
+                        {isRewriting && <Spinner />}
+                        {isRewriting ? "Rewriting..." : "Rewrite"}
+                      </Button>
+
                       <Button
                         variant="quiet"
-                        onClick={() => setShowAdvanced((v) => !v)}
-                        className="text-xs"
+                        onClick={() => setShowRubric(true)}
                       >
-                        {showAdvanced
-                          ? "Hide advanced settings"
-                          : "Show advanced settings"}
+                        View rubrics
                       </Button>
-                      {showAdvanced && (
-                        <div className="mt-2 space-y-2">
-                          <Label>API base URL</Label>
-                          <Input
-                            placeholder="https://content-engine-backend-v2.vercel.app/api"
-                            value={apiBaseUrl}
-                            onChange={(e) =>
-                              setApiBaseUrl(e.target.value)
-                            }
-                          />
-                          <div className="flex items-center gap-2">
-                            <Button onClick={checkHealth}>
-                              Check connection
-                            </Button>
-                            <span className="text-xs text-gray-500">
-                              Status: {apiStatus}
-                            </span>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </CardBody>
                 </Card>
 
-                {/* Diagnostics */}
+                {/* Source documents card */}
                 <Card>
                   <CardHeader
-                    title="Diagnostics"
-                    subtitle="Quick sanity checks for this session."
+                    title="Source documents"
+                    subtitle="Bring in files or web pages as drafting sources."
+                    right={
+                      <Pill variant="outline" className="px-3">
+                        {parsed.length + urlSources.length} source
+                        {parsed.length + urlSources.length === 1 ? "" : "s"}
+                      </Pill>
+                    }
                   />
                   <CardBody>
-                    {diagnostics ? (
-                      <>
-                        <div className="flex gap-2 mb-3">
-                          <Button onClick={runDiagnostics}>
-                            Re-run diagnostics
-                          </Button>
-                          <Button onClick={() => setDiagnostics(null)}>
-                            Clear
-                          </Button>
-                        </div>
-                        <ul className="space-y-1 text-sm">
-                          {diagnostics.map((d, i) => (
-                            <li
+                    <Button
+                      variant="secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload files
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      className="hidden"
+                      style={{ display: "none" }}
+                      onChange={(e) => addFiles(e.target.files)}
+                    />
+
+                    {/* Existing sources */}
+                    <div className="mt-4 space-y-2">
+                      {parsed.length === 0 && urlSources.length === 0 ? (
+                        <p className="text-xs text-gray-500">
+                          No sources added yet. Upload one or more files, or paste
+                          a URL to pull in public content for this drafting
+                          session.
+                        </p>
+                      ) : (
+                        <>
+                          {parsed.map((p, i) => (
+                            <div
                               key={i}
-                              className="px-2 py-1 rounded-md bg-gray-50 text-gray-700"
+                              className="text-sm border p-2 rounded-xl bg-gray-50"
                             >
-                              {d}
-                            </li>
+                              <b>{p.file.name}</b>
+                              <div className="text-xs text-gray-500">
+                                {String(p.text || "").slice(0, 160)}
+                              </div>
+                            </div>
                           ))}
-                        </ul>
-                      </>
+
+                          {urlSources.map((u, i) => (
+                            <div
+                              key={`url-${i}`}
+                              className="text-sm border p-2 rounded-xl bg-gray-50"
+                            >
+                              <b>{u.url}</b>
+                              <div className="text-xs text-gray-500">
+                                {String(u.text || "").slice(0, 160)}
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+
+                    {/* URL input row */}
+                    <div className="mt-4 flex gap-2">
+                      <Input
+                        placeholder="https://example.com/article"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                      />
+                      <Button variant="secondary" onClick={addUrlSource}>
+                        Add URL
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              </div>
+
+              {/* Right column: output + versions + roadmap */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Draft output */}
+                <Card>
+                  <CardHeader
+                    title="Draft output"
+                    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+                    right={
+                      <Button
+                        variant="quiet"
+                        onClick={() => setShowRubric(true)}
+                        className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                      >
+                        Score: {selectedVersion?.score ?? "–"}/100
+                      </Button>
+                    }
+                  />
+                  <CardBody className="space-y-3">
+                    <Textarea
+                      rows={18}
+                      value={output || selectedVersion?.content || ""}
+                      onChange={(e) => setOutput(e.target.value)}
+                      placeholder="Generated content..."
+                      className="placeholder:text-gray-400"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      You can edit this draft directly. Use{" "}
+                      <strong>Rewrite</strong> to generate an updated
+                      version while keeping this one saved.
+                    </p>
+                  </CardBody>
+                </Card>
+
+                {/* Versions – timeline style */}
+                <Card>
+                  <CardHeader
+                    title="Versions"
+                    subtitle="Saved versions with comments and scores."
+                  />
+                  <CardBody>
+                    {versions.length === 0 ? (
+                      <p className="text-sm text-gray-500">No versions yet.</p>
                     ) : (
-                      <div className="flex flex-col items-start gap-2 text-sm text-gray-500">
-                        <p>No diagnostics run yet for this session.</p>
-                        <Button onClick={runDiagnostics}>
-                          Run diagnostics
-                        </Button>
+                      <div className="relative">
+                        {/* Vertical timeline line */}
+                        <div
+                          className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
+                          aria-hidden="true"
+                        />
+
+                        <div className="space-y-4">
+                          {versions.map((v) => {
+                            const isSelected = selectedVersionId === v.id;
+
+                            return (
+                              <div key={v.id} className="relative pl-6">
+                                {/* Dot on the timeline */}
+                                <span
+                                  className={
+                                    "absolute left-1 top-3 w-2 h-2 rounded-full border " +
+                                    (isSelected
+                                      ? "bg-black border-black"
+                                      : "bg-white border-gray-400")
+                                  }
+                                  aria-hidden="true"
+                                />
+
+                                {/* Version card */}
+                                <div
+                                  className={
+                                    "rounded-2xl border p-3 space-y-2 transition " +
+                                    (isSelected
+                                      ? "bg-gray-50 border-gray-500"
+                                      : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
+                                  }
+                                >
+                                  {/* Top row: version label + timestamp */}
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2">
+                                      <Pill variant="subtle" className="px-2">
+                                        V{v.versionNumber}
+                                      </Pill>
+                                      {isSelected && (
+                                        <span className="text-[11px] text-gray-500">
+                                          Currently viewing
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {new Date(
+                                        v.timestamp
+                                      ).toLocaleString()}
+                                    </div>
+                                  </div>
+
+                                  {/* Comment / summary */}
+                                  <div className="text-sm text-gray-800">
+                                    {v.comment}
+                                  </div>
+
+                                  {/* Metadata row */}
+                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                                    <span>
+                                      Public search:{" "}
+                                      {v.publicSearch
+                                        ? "Enabled"
+                                        : "Disabled"}
+                                    </span>
+                                    {Array.isArray(v.urls) &&
+                                      v.urls.length > 0 && (
+                                        <span className="truncate">
+                                          URLs:{" "}
+                                          {v.urls
+                                            .map((u) => u.url)
+                                            .join(", ")}
+                                        </span>
+                                      )}
+                                  </div>
+
+                                  {/* Score + model + actions */}
+                                  <div className="flex items-center justify-between gap-3 pt-1">
+                                    <div className="flex items-center gap-3 text-xs text-gray-600">
+                                      <Pill variant="outline">
+                                        {getModelLabel(v.model?.id)}
+                                      </Pill>
+                                      <span>Score: {v.score}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="quiet"
+                                        onClick={() =>
+                                          setSelectedVersionId(v.id)
+                                        }
+                                        className="text-xs"
+                                      >
+                                        View
+                                      </Button>
+                                      <Button
+                                        variant="danger"
+                                        onClick={() =>
+                                          setVersions((prev) =>
+                                            prev.filter((x) => x.id !== v.id)
+                                          )
+                                        }
+                                        className="text-xs"
+                                      >
+                                        Delete
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </CardBody>
                 </Card>
-  
-  
-  </aside>
 
-  {/* Main content */}
-  <main className="flex-1">
-
-            <div className="grid lg:grid-cols-3 gap-6 items-start">
-              {/* Inputs / Output headings row */}
-<div className="grid lg:grid-cols-3 gap-6 items-end mb-4">
-  <div>
-    <h2 className="text-lg font-semibold">Inputs & configuration</h2>
-    <p className="text-sm text-gray-500">
-      Add sources and control how the engine drafts content.
-    </p>
-  </div>
-  <div className="lg:col-span-2">
-    <h2 className="text-lg font-semibold">Output</h2>
-    <p className="text-sm text-gray-500">
-      Review generated drafts and manage versions.
-    </p>
-  </div>
-</div>
-
-<div className="mt-2 flex gap-6">
-  {/* Sidebar */}
-  <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
-    <Card className="p-4">
-      <h2 className="text-sm font-semibold mb-1">Workspace</h2>
-      <p className="text-xs text-gray-500">
-        Overview of your drafting session.
-      </p>
-    </Card>
-
-    <Card className="p-4">
-      <h3 className="text-sm font-semibold mb-1">Status</h3>
-      <div className="flex flex-col gap-1 text-xs text-gray-600">
-        <div className="flex justify-between">
-          <span>Sources</span>
-          <span className="font-medium">
-            {parsed.length + urlSources.length}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Versions</span>
-          <span className="font-medium">{versions.length}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Model</span>
-          <span className="font-medium">
-            {getModelLabel(modelId)}
-          </span>
-        </div>
-      </div>
-    </Card>
-
-    {/* Model & controls */}
-    <Card>
-      <CardHeader
-        title="Model & controls"
-        subtitle="Select the model and basic generation settings."
-      />
-      <CardBody className="space-y-3">
-        <div>
-          <Label>Model</Label>
-          <select
-            className="w-full px-3 py-2 border rounded-xl text-sm"
-            value={modelId}
-            onChange={(e) => setModelId(e.target.value)}
-          >
-            {MODEL_OPTIONS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <Label>Temperature</Label>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={temperature}
-            onChange={(e) =>
-              setTemperature(parseFloat(e.target.value))
-            }
-            className="w-full"
-          />
-          <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
-            <span>More stable</span>
-            <span>{temperature.toFixed(2)}</span>
-            <span>More creative</span>
-          </div>
-        </div>
-
-        <div>
-          <Label>Max tokens</Label>
-          <Input
-            type="number"
-            min={100}
-            max={4000}
-            step={50}
-            value={maxTokens}
-            onChange={(e) =>
-              setMaxTokens(
-                parseInt(e.target.value || "0", 10) || 0
-              )
-            }
-          />
-        </div>
-
-        <div className="mt-2">
-          <Button
-            variant="quiet"
-            onClick={() => setShowAdvanced((v) => !v)}
-            className="text-xs"
-          >
-            {showAdvanced
-              ? "Hide advanced settings"
-              : "Show advanced settings"}
-          </Button>
-          {showAdvanced && (
-            <div className="mt-2 space-y-2">
-              <Label>API base URL</Label>
-              <Input
-                placeholder="https://content-engine-backend-v2.vercel.app/api"
-                value={apiBaseUrl}
-                onChange={(e) => setApiBaseUrl(e.target.value)}
-              />
-              <div className="flex items-center gap-2">
-                <Button onClick={checkHealth}>
-                  Check connection
-                </Button>
-                <span className="text-xs text-gray-500">
-                  Status: {apiStatus}
-                </span>
+                {/* Roadmap */}
+                <Card>
+                  <CardHeader
+                    title="Future roadmap"
+                    subtitle="Planned capabilities for this content engine."
+                  />
+                  <CardBody className="space-y-2">
+                    <p className="text-xs text-gray-500">
+                      These items are not yet live. They outline where the
+                      product is heading as the prototype matures.
+                    </p>
+                    <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
+                      <li>
+                        Richer source ingestion (PDF, DOCX and structured data
+                        feeds).
+                      </li>
+                      <li>
+                        Deeper model integration for drafting and rewriting via
+                        /generate.
+                      </li>
+                      <li>
+                        Output-specific prompts based on selected content types.
+                      </li>
+                      <li>
+                        Templated outputs and reusable blueprints per document
+                        family.
+                      </li>
+                      <li>
+                        Scoring engine tied to detailed rubrics and a feedback
+                        loop.
+                      </li>
+                      <li>
+                        Dedicated sources table with traceability and filtering.
+                      </li>
+                      <li>
+                        Statement reliability and inference tracking views.
+                      </li>
+                      <li>
+                        Role-based access controls, audit logs and enterprise
+                        integrations.
+                      </li>
+                      <li>
+                        Additional UI polish, theming options and efficiency
+                        tweaks.
+                      </li>
+                    </ul>
+                  </CardBody>
+                </Card>
               </div>
             </div>
-          )}
+          </main>
         </div>
-      </CardBody>
-    </Card>
-
-    {/* Diagnostics */}
-    <Card>
-      <CardHeader
-        title="Diagnostics"
-        subtitle="Quick sanity checks for this session."
-      />
-      <CardBody>
-        {diagnostics ? (
-          <>
-            <div className="flex gap-2 mb-3">
-              <Button onClick={runDiagnostics}>
-                Re-run diagnostics
-              </Button>
-              <Button onClick={() => setDiagnostics(null)}>
-                Clear
-              </Button>
-            </div>
-            <ul className="space-y-1 text-sm">
-              {diagnostics.map((d, i) => (
-                <li
-                  key={i}
-                  className="px-2 py-1 rounded-md bg-gray-50 text-gray-700"
-                >
-                  {d}
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <div className="flex flex-col items-start gap-2 text-sm text-gray-500">
-            <p>No diagnostics run yet for this session.</p>
-            <Button onClick={runDiagnostics}>
-              Run diagnostics
-            </Button>
-          </div>
-        )}
-      </CardBody>
-    </Card>
-  </aside>
-
-  {/* Main content */}
-  <main className="flex-1">
-    <div className="grid lg:grid-cols-3 gap-6 items-start">
-      {/* Left column: configuration + sources */}
-      <div className="space-y-6 lg:col-span-1">
-        {/* Configuration card now at top */}
-        <Card>
-          <CardHeader
-            title="Configuration"
-            subtitle="Control how the engine drafts and rewrites content."
-          />
-          <CardBody className="space-y-3">
-            <div>
-              <Label>Title</Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Q3 Portfolio Update"
-              />
-            </div>
-
-            <div>
-              <Label>Output types</Label>
-              <p className="text-xs text-gray-500 mb-2">
-                Choose one or more content formats to generate in this
-                run.
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {OUTPUT_TYPES.map((o) => {
-                  const active = selectedTypes.includes(o.value);
-                  return (
-                    <button
-                      key={o.value}
-                      type="button"
-                      onClick={() => toggleType(o.value)}
-                      className={
-                        "px-3 py-1.5 rounded-full text-xs border transition " +
-                        (active
-                          ? "bg-black text-white border-black shadow-sm"
-                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-                      }
-                    >
-                      {o.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label>Include public domain search</Label>
-              <Toggle
-                checked={publicSearch}
-                onChange={setPublicSearch}
-              />
-            </div>
-
-            <div>
-              <Label>Prompt notes / rewrite instructions</Label>
-              <Textarea
-                rows={4}
-                value={promptNotes}
-                onChange={(e) => setPromptNotes(e.target.value)}
-                placeholder="Key points, tone, constraints, or rewrite instructions..."
-                className="placeholder:text-gray-400"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Use this to guide the initial draft or to tell the engine
-                how to change the current version (e.g. &quot;shorter, more
-                formal, add risk section&quot;).
-              </p>
-            </div>
-
-            {/* Buttons row (uses new logic) */}
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant="primary"
-                onClick={handleGenerate}
-                disabled={
-                  hasInitialGeneration ||
-                  isGenerating ||
-                  isRewriting ||
-                  !hasSources ||
-                  !hasOutputTypes
-                }
-              >
-                {isGenerating && <Spinner />}
-                {isGenerating ? "Generating..." : "Generate"}
-              </Button>
-
-              <Button
-                onClick={handleRewrite}
-                disabled={
-                  !hasInitialGeneration ||
-                  isRewriting ||
-                  isGenerating
-                }
-              >
-                {isRewriting && <Spinner />}
-                {isRewriting ? "Rewriting..." : "Rewrite"}
-              </Button>
-
-              <Button
-                variant="quiet"
-                onClick={() => setShowRubric(true)}
-              >
-                View rubrics
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-
-        {/* Source documents card now below configuration */}
-        <Card>
-          <CardHeader
-            title="Source documents"
-            subtitle="Bring in files or web pages as drafting sources."
-            right={
-              <Pill variant="outline" className="px-3">
-                {parsed.length + urlSources.length} source
-                {parsed.length + urlSources.length === 1 ? "" : "s"}
-              </Pill>
-            }
-          />
-          <CardBody>
-            <Button
-              variant="secondary"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Upload files
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              style={{ display: "none" }}
-              onChange={(e) => addFiles(e.target.files)}
-            />
-
-            {/* Existing sources */}
-            <div className="mt-4 space-y-2">
-              {parsed.length === 0 && urlSources.length === 0 ? (
-                <p className="text-xs text-gray-500">
-                  No sources added yet. Upload one or more files, or paste
-                  a URL to pull in public content for this drafting
-                  session.
-                </p>
-              ) : (
-                <>
-                  {parsed.map((p, i) => (
-                    <div
-                      key={i}
-                      className="text-sm border p-2 rounded-xl bg-gray-50"
-                    >
-                      <b>{p.file.name}</b>
-                      <div className="text-xs text-gray-500">
-                        {String(p.text || "").slice(0, 160)}
-                      </div>
-                    </div>
-                  ))}
-
-                  {urlSources.map((u, i) => (
-                    <div
-                      key={`url-${i}`}
-                      className="text-sm border p-2 rounded-xl bg-gray-50"
-                    >
-                      <b>{u.url}</b>
-                      <div className="text-xs text-gray-500">
-                        {String(u.text || "").slice(0, 160)}
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-
-            {/* URL input row */}
-            <div className="mt-4 flex gap-2">
-              <Input
-                placeholder="https://example.com/article"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-              />
-              <Button variant="secondary" onClick={addUrlSource}>
-                Add URL
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      {/* Right column: output + versions + roadmap */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Draft output */}
-        <Card>
-          <CardHeader
-            title="Draft output"
-            subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-            right={
-              <Button
-                variant="quiet"
-                onClick={() => setShowRubric(true)}
-                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
-              >
-                Score: {selectedVersion?.score ?? "–"}/100
-              </Button>
-            }
-          />
-          <CardBody className="space-y-3">
-            <Textarea
-              rows={18}
-              value={output || selectedVersion?.content || ""}
-              onChange={(e) => setOutput(e.target.value)}
-              placeholder="Generated content..."
-              className="placeholder:text-gray-400"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              You can edit this draft directly. Use{" "}
-              <strong>Rewrite</strong> to generate an updated
-              version while keeping this one saved.
-            </p>
-          </CardBody>
-        </Card>
-
-        {/* Versions – timeline style */}
-        <Card>
-          <CardHeader
-            title="Versions"
-            subtitle="Saved versions with comments and scores."
-          />
-          <CardBody>
-            {versions.length === 0 ? (
-              <p className="text-sm text-gray-500">No versions yet.</p>
-            ) : (
-              <div className="relative">
-                {/* Vertical timeline line */}
-                <div
-                  className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
-                  aria-hidden="true"
-                />
-
-                <div className="space-y-4">
-                  {versions.map((v) => {
-                    const isSelected = selectedVersionId === v.id;
-
-                    return (
-                      <div key={v.id} className="relative pl-6">
-                        {/* Dot on the timeline */}
-                        <span
-                          className={
-                            "absolute left-1 top-3 w-2 h-2 rounded-full border " +
-                            (isSelected
-                              ? "bg-black border-black"
-                              : "bg-white border-gray-400")
-                          }
-                          aria-hidden="true"
-                        />
-
-                        {/* Version card */}
-                        <div
-                          className={
-                            "rounded-2xl border p-3 space-y-2 transition " +
-                            (isSelected
-                              ? "bg-gray-50 border-gray-500"
-                              : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
-                          }
-                        >
-                          {/* Top row: version label + timestamp */}
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                              <Pill variant="subtle" className="px-2">
-                                V{v.versionNumber}
-                              </Pill>
-                              {isSelected && (
-                                <span className="text-[11px] text-gray-500">
-                                  Currently viewing
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(v.timestamp).toLocaleString()}
-                            </div>
-                          </div>
-
-                          {/* Comment / summary */}
-                          <div className="text-sm text-gray-800">
-                            {v.comment}
-                          </div>
-
-                          {/* Metadata row */}
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                            <span>
-                              Public search:{" "}
-                              {v.publicSearch ? "Enabled" : "Disabled"}
-                            </span>
-                            {Array.isArray(v.urls) && v.urls.length > 0 && (
-                              <span className="truncate">
-                                URLs:{" "}
-                                {v.urls.map((u) => u.url).join(", ")}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Score + model + actions */}
-                          <div className="flex items-center justify-between gap-3 pt-1">
-                            <div className="flex items-center gap-3 text-xs text-gray-600">
-                              <Pill variant="outline">
-                                {getModelLabel(v.model?.id)}
-                              </Pill>
-                              <span>Score: {v.score}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="quiet"
-                                onClick={() =>
-                                  setSelectedVersionId(v.id)
-                                }
-                                className="text-xs"
-                              >
-                                View
-                              </Button>
-                              <Button
-                                variant="danger"
-                                onClick={() =>
-                                  setVersions((prev) =>
-                                    prev.filter((x) => x.id !== v.id)
-                                  )
-                                }
-                                className="text-xs"
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </CardBody>
-        </Card>
-
-        {/* Roadmap */}
-        <Card>
-          <CardHeader
-            title="Future roadmap"
-            subtitle="Planned capabilities for this content engine."
-          />
-          <CardBody className="space-y-2">
-            <p className="text-xs text-gray-500">
-              These items are not yet live. They outline where the
-              product is heading as the prototype matures.
-            </p>
-            <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
-              <li>
-                Richer source ingestion (PDF, DOCX and structured data
-                feeds).
-              </li>
-              <li>
-                Deeper model integration for drafting and rewriting via
-                /generate.
-              </li>
-              <li>
-                Output-specific prompts based on selected content types.
-              </li>
-              <li>
-                Templated outputs and reusable blueprints per document
-                family.
-              </li>
-              <li>
-                Scoring engine tied to detailed rubrics and a feedback
-                loop.
-              </li>
-              <li>
-                Dedicated sources table with traceability and filtering.
-              </li>
-              <li>
-                Statement reliability and inference tracking views.
-              </li>
-              <li>
-                Role-based access controls, audit logs and enterprise
-                integrations.
-              </li>
-              <li>
-                Additional UI polish, theming options and efficiency
-                tweaks.
-              </li>
-            </ul>
-          </CardBody>
-        </Card>
-      </div>
-    </div>
-  </main>
-</div>
-
 
         {/* Rubric modal */}
         {showRubric && (
@@ -1290,7 +1128,7 @@ export default function App() {
           </div>
         )}
 
-        {/* New output modal */}
+        {/* New output / project modal */}
         {showNewConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
