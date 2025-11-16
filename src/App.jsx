@@ -163,6 +163,45 @@ const MODEL_OPTIONS = [
 ];
 
 // -----------------------------
+// Helper functions
+// -----------------------------
+const getModelLabel = (id) =>
+  MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
+
+// Returns label + Tailwind classes for score colouring
+const getScoreStyle = (score) => {
+  if (typeof score !== "number" || Number.isNaN(score)) {
+    return {
+      label: "Not scored",
+      className:
+        "bg-gray-100 text-gray-500 border border-gray-200",
+    };
+  }
+
+  if (score >= 85) {
+    return {
+      label: `${score}/100`,
+      className:
+        "bg-emerald-50 text-emerald-700 border border-emerald-300",
+    };
+  }
+
+  if (score >= 70) {
+    return {
+      label: `${score}/100`,
+      className:
+        "bg-amber-50 text-amber-700 border border-amber-300",
+    };
+  }
+
+  return {
+    label: `${score}/100`,
+    className:
+      "bg-red-50 text-red-700 border border-red-300",
+  };
+};
+
+// -----------------------------
 // App Component
 // -----------------------------
 export default function App() {
@@ -304,9 +343,6 @@ export default function App() {
     if (trimmed.length <= 80) return `Rewrite: ${trimmed}`;
     return `Rewrite: ${trimmed.slice(0, 77)}...`;
   };
-
-  const getModelLabel = (id) =>
-    MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
 
   // -----------------------------
   // Handlers & derived state
@@ -451,6 +487,12 @@ export default function App() {
     (a, b) => b.versionNumber - a.versionNumber
   );
 
+  // Score styling for currently selected version
+  const {
+    label: selectedScoreLabel,
+    className: selectedScoreTone,
+  } = getScoreStyle(selectedVersion?.score);
+
   // -----------------------------
   // Render
   // -----------------------------
@@ -593,7 +635,7 @@ export default function App() {
                     }
                     className="w-full"
                   />
-                  <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+                <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
                     <span>More stable</span>
                     <span>{temperature.toFixed(2)}</span>
                     <span>More creative</span>
@@ -892,9 +934,9 @@ export default function App() {
                       <Button
                         variant="quiet"
                         onClick={() => setShowRubric(true)}
-                        className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                        className={`text-xs px-2 py-1 rounded-full ${selectedScoreTone}`}
                       >
-                        Score: {selectedVersion?.score ?? "–"}/100
+                        Score {selectedScoreLabel}
                       </Button>
                     }
                   />
@@ -936,6 +978,10 @@ export default function App() {
                         <div className="space-y-4">
                           {sortedVersions.map((v) => {
                             const isSelected = selectedVersionId === v.id;
+                            const {
+                              label: vScoreLabel,
+                              className: vScoreTone,
+                            } = getScoreStyle(v.score);
 
                             return (
                               <div key={v.id} className="relative pl-6">
@@ -1006,7 +1052,12 @@ export default function App() {
                                       <Pill variant="outline">
                                         {getModelLabel(v.model?.id)}
                                       </Pill>
-                                      <span>Score: {v.score}</span>
+                                      <Pill
+                                        variant="outline"
+                                        className={`px-2 ${vScoreTone}`}
+                                      >
+                                        {vScoreLabel}
+                                      </Pill>
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <Button
@@ -1081,6 +1132,10 @@ export default function App() {
                       <li>
                         Role-based access controls, audit logs and enterprise
                         integrations.
+                      </li>
+                      <li>
+                        Persistent projects stored under the Projects tab with
+                        saved workspaces.
                       </li>
                       <li>
                         Additional UI polish, theming options and efficiency
