@@ -956,6 +956,7 @@ export default function App() {
               {/* Second block: Output, Versions, Roadmap stacked */}
               <div className="space-y-6">
                 {/* Draft output */}
+                <Card>
                 <CardHeader
   title="Draft output"
   subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
