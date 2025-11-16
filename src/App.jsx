@@ -25,7 +25,6 @@ function Button({
       "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100",
   };
 
-  // Visually greyed out when disabled
   const disabledStyles = disabled
     ? "opacity-40 cursor-not-allowed hover:bg-inherit"
     : "";
@@ -163,13 +162,10 @@ const MODEL_OPTIONS = [
 ];
 
 // -----------------------------
-// Helper functions
+// Helpers
 // -----------------------------
 const getModelLabel = (id) =>
   MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
-
-// tone class now *only* controls text + border colours (no bg),
-// so it plays nicely with Pill variants.
 
 // Quality score → label + Tailwind classes
 const getScoreMeta = (score) => {
@@ -181,7 +177,6 @@ const getScoreMeta = (score) => {
   }
 
   if (score >= 85) {
-    // High
     return {
       label: `${score}/100`,
       className: "bg-emerald-50 text-emerald-800 border-emerald-400",
@@ -189,21 +184,17 @@ const getScoreMeta = (score) => {
   }
 
   if (score >= 70) {
-    // Medium
     return {
       label: `${score}/100`,
       className: "bg-amber-50 text-amber-800 border-amber-400",
     };
   }
 
-  // Low
   return {
     label: `${score}/100`,
     className: "bg-red-50 text-red-800 border-red-400",
   };
 };
-
-
 
 // -----------------------------
 // App Component
@@ -472,9 +463,16 @@ export default function App() {
     setShowNewConfirm(false);
   };
 
+  // selection + score meta
   const selectedVersion =
     versions.find((v) => v.id === selectedVersionId) ||
     (versions.length > 0 ? versions[versions.length - 1] : null);
+
+  const sortedVersions = [...versions].sort(
+    (a, b) => b.versionNumber - a.versionNumber
+  );
+
+  const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
 
   const runDiagnostics = () => {
     const msgs = [];
@@ -485,16 +483,6 @@ export default function App() {
       msgs.push("OK: Public search is boolean.");
     setDiagnostics(msgs);
   };
-
-  // newest → oldest for display
-  const sortedVersions = [...versions].sort(
-    (a, b) => b.versionNumber - a.versionNumber
-  );
-
-  const {
-    label: selectedScoreLabel,
-    className: selectedScoreTone,
-  } = getScoreStyle(selectedVersion?.score);
 
   // -----------------------------
   // Render
@@ -638,7 +626,7 @@ export default function App() {
                     }
                     className="w-full"
                   />
-                <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+                  <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
                     <span>More stable</span>
                     <span>{temperature.toFixed(2)}</span>
                     <span>More creative</span>
@@ -948,24 +936,34 @@ export default function App() {
               {/* Second block: Output, Versions, Roadmap stacked */}
               <div className="space-y-6">
                 {/* Draft output */}
-                
-const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
-
                 <Card>
-  <CardHeader
-    title="Draft output"
-    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-    right={
-      <Pill
-        variant="subtle"
-        className={`px-3 ${selectedScoreMeta.className}`}
-      >
-        Score {selectedScoreMeta.label}
-      </Pill>
-    }
-  />
-  {/* ...CardBody stays as you have it... */}
-</Card>
+                  <CardHeader
+                    title="Draft output"
+                    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+                    right={
+                      <Pill
+                        variant="subtle"
+                        className={`px-3 ${selectedScoreMeta.className}`}
+                      >
+                        {selectedScoreMeta.label}
+                      </Pill>
+                    }
+                  />
+                  <CardBody className="space-y-3">
+                    <Textarea
+                      rows={18}
+                      value={output || selectedVersion?.content || ""}
+                      onChange={(e) => setOutput(e.target.value)}
+                      placeholder="Generated content..."
+                      className="placeholder:text-gray-400"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      You can edit this draft directly. Use{" "}
+                      <strong>Rewrite</strong> to generate an updated
+                      version while keeping this one saved.
+                    </p>
+                  </CardBody>
+                </Card>
 
                 {/* Versions – timeline style, newest first */}
                 <Card>
@@ -989,10 +987,7 @@ const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
                         <div className="space-y-4">
                           {sortedVersions.map((v) => {
                             const isSelected = selectedVersionId === v.id;
-                            const {
-                              label: vScoreLabel,
-                              className: vScoreTone,
-                            } = getScoreStyle(v.score);
+                            const vScoreMeta = getScoreMeta(v.score);
 
                             return (
                               <div key={v.id} className="relative pl-6">
@@ -1033,19 +1028,19 @@ const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
                                     </div>
                                   </div>
 
-                                  {/* Comment + pills on the same row */}
+                                  {/* Comment + score/model pills on same row */}
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div className="text-sm text-gray-800">
                                       {v.comment}
                                     </div>
                                     <div className="flex items-center gap-2 text-xs text-gray-600">
                                       <Pill
-                                        variant="outline"
-                                        className={`px-2 ${vScoreTone}`}
+                                        variant="subtle"
+                                        className={`px-2 ${vScoreMeta.className}`}
                                       >
-                                        {vScoreLabel}
+                                        {vScoreMeta.label}
                                       </Pill>
-                                      <Pill variant="subtle" className="px-2">
+                                      <Pill variant="outline" className="px-2">
                                         {getModelLabel(v.model?.id)}
                                       </Pill>
                                     </div>
@@ -1070,7 +1065,7 @@ const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
                                       )}
                                   </div>
 
-                                  {/* Actions row only */}
+                                  {/* Actions row */}
                                   <div className="flex items-center justify-end gap-2 pt-1">
                                     <Button
                                       variant="quiet"
