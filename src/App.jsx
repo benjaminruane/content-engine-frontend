@@ -174,29 +174,33 @@ const getScoreStyle = (score) => {
   if (typeof score !== "number" || Number.isNaN(score)) {
     return {
       label: "Not scored",
-      className: "text-gray-500 border-gray-200",
+      className: "text-gray-600 border-gray-200 bg-gray-50",
     };
   }
 
+  // High band
   if (score >= 85) {
     return {
       label: `${score}/100`,
-      className: "text-emerald-700 border-emerald-300",
+      className: "text-emerald-800 border-emerald-300 bg-emerald-50",
     };
   }
 
+  // Medium band
   if (score >= 70) {
     return {
       label: `${score}/100`,
-      className: "text-amber-700 border-amber-300",
+      className: "text-amber-800 border-amber-300 bg-amber-50",
     };
   }
 
+  // Low band
   return {
     label: `${score}/100`,
-    className: "text-red-700 border-red-300",
+    className: "text-red-800 border-red-300 bg-red-50",
   };
 };
+
 
 // -----------------------------
 // App Component
