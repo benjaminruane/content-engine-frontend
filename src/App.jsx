@@ -503,28 +503,42 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mt-2 flex gap-6">
-          {/* Sidebar */}
-          <aside className="hidden md:flex w-56 shrink-0 flex-col gap-4">
-            <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-              <h2 className="text-sm font-semibold mb-2">Workspace</h2>
-              <p className="text-xs text-gray-500">
-                Title, notes & output types for this session.
-              </p>
-            </div>
+<div className="mt-2 flex gap-6">
+  {/* Sidebar */}
+  <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
+    <Card className="p-4">
+      <h2 className="text-sm font-semibold mb-1">Workspace</h2>
+      <p className="text-xs text-gray-500">
+        Overview of your drafting session.
+      </p>
+    </Card>
 
-            <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-              <h3 className="text-sm font-semibold mb-2">Status</h3>
-              <ul className="text-xs text-gray-500 space-y-1">
-                <li>• Sources: {parsed.length + urlSources.length}</li>
-                <li>• Output versions: {versions.length}</li>
-                <li>• Model: {getModelLabel(modelId)}</li>
-              </ul>
-            </div>
-          </aside>
+    <Card className="p-4">
+      <h3 className="text-sm font-semibold mb-1">Status</h3>
+      <div className="flex flex-col gap-1 text-xs text-gray-600">
+        <div className="flex justify-between">
+          <span>Sources</span>
+          <span className="font-medium">
+            {parsed.length + urlSources.length}
+          </span>
+        </div>
 
-          {/* Main content */}
-          <main className="flex-1">
+        <div className="flex justify-between">
+          <span>Versions</span>
+          <span className="font-medium">{versions.length}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span>Model</span>
+          <span className="font-medium">{getModelLabel(modelId)}</span>
+        </div>
+      </div>
+    </Card>
+  </aside>
+
+  {/* Main content */}
+  <main className="flex-1">
+
             <div className="grid lg:grid-cols-3 gap-6 items-start">
               {/* Left column: sources + configuration */}
               <div className="space-y-6 lg:col-span-1">
