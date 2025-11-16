@@ -40,18 +40,20 @@ function Button({
   );
 }
 
-function Pill({ variant = "subtle", children, className = "" }) {
+function Pill({ level = "default", children, className = "" }) {
   const base =
-    "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium";
+    "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border";
 
   const variants = {
-    subtle: "bg-gray-50 text-gray-700 border border-gray-200",
-    outline: "bg-white text-gray-700 border border-gray-300",
-    solid: "bg-gray-900 text-white border border-gray-900",
+    default: "bg-gray-100 text-gray-700 border-gray-300",
+    good: "bg-emerald-50 text-emerald-800 border-emerald-400",
+    average: "bg-amber-50 text-amber-800 border-amber-400",
+    poor: "bg-red-50 text-red-800 border-red-400",
+    info: "bg-blue-50 text-blue-800 border-blue-300",
   };
 
   return (
-    <span className={`${base} ${variants[variant]} ${className}`}>
+    <span className={`${base} ${variants[level]} ${className}`}>
       {children}
     </span>
   );
@@ -942,11 +944,18 @@ export default function App() {
                     subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
                     right={
                       <Pill
-                        variant="subtle"
-                        className={`px-3 ${selectedScoreMeta.className}`}
-                      >
-                        {selectedScoreMeta.label}
-                      </Pill>
+  level={
+    selectedVersion?.score >= 85
+      ? "good"
+      : selectedVersion?.score >= 70
+      ? "average"
+      : "poor"
+  }
+  className="px-3"
+>
+  {selectedScoreMeta.label}
+</Pill>
+
                     }
                   />
                   <CardBody className="space-y-3">
