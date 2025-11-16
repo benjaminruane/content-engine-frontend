@@ -10,8 +10,7 @@ function Button({ variant = "default", className = "", children, ...props }) {
   const variants = {
     default:
       "bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 shadow-sm",
-    primary:
-      "bg-black text-white border border-black hover:bg-gray-900",
+    primary: "bg-black text-white border border-black hover:bg-gray-900",
     secondary:
       "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200",
     quiet:
@@ -49,7 +48,9 @@ function Pill({ variant = "subtle", children, className = "" }) {
 
 function Card({ children, className = "" }) {
   return (
-    <div className={`rounded-3xl border border-gray-100 shadow-sm bg-white ${className}`}>
+    <div
+      className={`rounded-3xl border border-gray-100 shadow-sm bg-white ${className}`}
+    >
       {children}
     </div>
   );
@@ -88,15 +89,18 @@ const Label = ({ children }) => (
   </label>
 );
 
-const Input = (props) => (
-  <input className="w-full px-3 py-2 border rounded-xl text-sm" {...props} />
+const Input = ({ className = "", ...props }) => (
+  <input
+    className={`w-full px-3 py-2 border rounded-xl text-sm ${className}`}
+    {...props}
+  />
 );
 
-const Textarea = (props) => (
+const Textarea = ({ className = "", ...props }) => (
   <textarea
-  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300"
-  {...props}
-/>
+    className={`w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 ${className}`}
+    {...props}
+  />
 );
 
 const Toggle = ({ checked, onChange }) => (
@@ -545,12 +549,11 @@ export default function App() {
                   />
                   <CardBody>
                     <Button
-  variant="primary"
-  onClick={() => fileInputRef.current?.click()}
->
-  Upload files
-</Button>
-
+                      variant="primary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload files
+                    </Button>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -605,7 +608,7 @@ export default function App() {
                         onChange={(e) => setUrlInput(e.target.value)}
                       />
                       <Button variant="secondary" onClick={addUrlSource}>
-                      Add URL
+                        Add URL
                       </Button>
                     </div>
                   </CardBody>
@@ -671,6 +674,7 @@ export default function App() {
                         value={promptNotes}
                         onChange={(e) => setPromptNotes(e.target.value)}
                         placeholder="Key points, tone, constraints, or rewrite instructions..."
+                        className="placeholder:text-gray-400"
                       />
                       <p className="mt-1 text-xs text-gray-500">
                         Use this to guide the initial draft or to tell the engine
@@ -828,9 +832,7 @@ export default function App() {
                           <Button onClick={runDiagnostics}>
                             Re-run diagnostics
                           </Button>
-                          <Button
-                            onClick={() => setDiagnostics(null)}
-                          >
+                          <Button onClick={() => setDiagnostics(null)}>
                             Clear
                           </Button>
                         </div>
@@ -869,32 +871,30 @@ export default function App() {
                 {/* Output draft */}
                 <Card>
                   <CardHeader
-  title="Draft output"
-  subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-  right={
-    <Button
-  variant="quiet"
-  onClick={() => setShowRubric(true)}
-  className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
->
-  Score: {selectedVersion?.score ?? "–"}/100
-</Button>
-  }
-/>
-
+                    title="Draft output"
+                    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+                    right={
+                      <Button
+                        variant="quiet"
+                        onClick={() => setShowRubric(true)}
+                        className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                      >
+                        Score: {selectedVersion?.score ?? "–"}/100
+                      </Button>
+                    }
+                  />
                   <CardBody className="space-y-3">
                     <Textarea
-  rows={18}
-  value={output || selectedVersion?.content || ""}
-  onChange={(e) => setOutput(e.target.value)}
-  placeholder="Generated content..."
-  className="placeholder:text-gray-400"
-/>
-
+                      rows={18}
+                      value={output || selectedVersion?.content || ""}
+                      onChange={(e) => setOutput(e.target.value)}
+                      placeholder="Generated content..."
+                      className="placeholder:text-gray-400"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
                       You can edit this draft directly. Use{" "}
-                      <strong>Rewrite</strong> with new instructions to
-                      generate an alternate version while keeping this one
-                      saved.
+                      <strong>Rewrite</strong> to generate an updated
+                      version while keeping this one saved.
                     </p>
                   </CardBody>
                 </Card>
@@ -1084,10 +1084,7 @@ export default function App() {
                 <Button onClick={() => setShowNewConfirm(false)}>
                   Cancel
                 </Button>
-                <Button
-                  variant="danger"
-                  onClick={handleNewOutput}
-                >
+                <Button variant="danger" onClick={handleNewOutput}>
                   Confirm
                 </Button>
               </div>
