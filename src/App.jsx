@@ -275,6 +275,8 @@ export default function App() {
   const [showRubric, setShowRubric] = useState(false);
   const [showNewConfirm, setShowNewConfirm] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
+  const [activePage, setActivePage] = useState("dashboard");
+
 
   // Toast notifications
   const [toast, setToast] = useState(null);
@@ -594,23 +596,70 @@ const downloadOutput = (format = "txt") => {
           </div>
 
           {/* Middle: navigation */}
-          <nav className="hidden md:flex items-center gap-4 text-sm">
-            <button className="px-3 py-1.5 rounded-full bg-black text-white font-medium">
-              Dashboard
-            </button>
-            <button className="text-gray-500 hover:text-gray-900">
-              Projects
-            </button>
-            <button className="text-gray-500 hover:text-gray-900">
-              Sources
-            </button>
-            <button className="text-gray-500 hover:text-gray-900">
-              Outputs
-            </button>
-            <button className="text-gray-500 hover:text-gray-900">
-              Templates
-            </button>
-          </nav>
+          <nav className="hidden md:flex items-center gap-3 text-sm">
+
+  {/* Dashboard */}
+  <button
+    onClick={() => setActivePage("dashboard")}
+    className={
+      activePage === "dashboard"
+        ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
+        : "px-3 py-1.5 text-gray-600 hover:text-black transition"
+    }
+  >
+    Dashboard
+  </button>
+
+  {/* Projects */}
+  <button
+    onClick={() => setActivePage("projects")}
+    className={
+      activePage === "projects"
+        ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
+        : "px-3 py-1.5 text-gray-600 hover:text-black transition"
+    }
+  >
+    Projects
+  </button>
+
+  {/* Sources */}
+  <button
+    onClick={() => setActivePage("sources")}
+    className={
+      activePage === "sources"
+        ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
+        : "px-3 py-1.5 text-gray-600 hover:text-black transition"
+    }
+  >
+    Sources
+  </button>
+
+  {/* Outputs */}
+  <button
+    onClick={() => setActivePage("outputs")}
+    className={
+      activePage === "outputs"
+        ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
+        : "px-3 py-1.5 text-gray-600 hover:text-black transition"
+    }
+  >
+    Outputs
+  </button>
+
+  {/* Templates */}
+  <button
+    onClick={() => setActivePage("templates")}
+    className={
+      activePage === "templates"
+        ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
+        : "px-3 py-1.5 text-gray-600 hover:text-black transition"
+    }
+  >
+    Templates
+  </button>
+
+</nav>
+
 
           {/* Right: version + user badge */}
           <div className="flex items-center gap-4">
@@ -809,6 +858,8 @@ const downloadOutput = (format = "txt") => {
 
           {/* Main content */}
           <main className="flex-1">
+              {/* Dashboard page */}
+                {activePage === "dashboard" && (
             <div className="space-y-6">
               {/* Top row: Sources + Configuration side by side */}
               <div className="grid lg:grid-cols-2 gap-6 items-start">
@@ -1024,77 +1075,98 @@ const downloadOutput = (format = "txt") => {
               {/* Second block: Output, Versions, Roadmap stacked */}
               <div className="space-y-6">
                 {/* Draft output */}
-                <Card>
-                <CardHeader
-  title="Draft output"
-  subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-  right={
-  <div className="flex items-center gap-2">
+                
+                {/* Draft output */}
+<Card>
+  <CardHeader
+    title="Draft output"
+    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+    right={
+      <Pill
+        level={
+          typeof selectedVersion?.score === "number"
+            ? selectedVersion.score >= 85
+              ? "good"
+              : selectedVersion.score >= 70
+              ? "average"
+              : "poor"
+            : undefined // no colour when there is no score yet
+        }
+        className="px-3"
+      >
+        {selectedScoreMeta.label}
+      </Pill>
+    }
+  />
 
-    {/* Score pill */}
-    <Pill
-      level={
-        typeof selectedVersion?.score === "number"
-          ? selectedVersion.score >= 85
-            ? "good"
-            : selectedVersion.score >= 70
-            ? "average"
-            : "poor"
-          : undefined
-      }
-      className="px-3"
-    >
-      {selectedScoreMeta.label}
-    </Pill>
+  <CardBody className="space-y-3">
+    <Textarea
+      rows={18}
+      value={output || selectedVersion?.content || ""}
+      onChange={(e) => setOutput(e.target.value)}
+      placeholder="Generated content..."
+      className="placeholder:text-gray-400"
+    />
 
-    {/* Copy button */}
-    <Button variant="quiet" className="text-xs" onClick={copyOutput}>
-      Copy
-    </Button>
-
-    {/* Download TXT */}
-    <Button variant="quiet" className="text-xs" onClick={() => downloadOutput("txt")}>
-      .TXT
-    </Button>
-
-    {/* Download DOC */}
-    <Button variant="quiet" className="text-xs" onClick={() => downloadOutput("doc")}>
-      .DOC
-    </Button>
-
-    {/* PDF placeholder */}
-    <Button variant="quiet" className="text-xs opacity-60 cursor-not-allowed" disabled>
-      .PDF (soon)
-    </Button>
-    
-  </div>
-}
-/>
-
-                  <CardBody className="space-y-3">
-                    <Textarea
-                      rows={18}
-                      value={output || selectedVersion?.content || ""}
-                      onChange={(e) => setOutput(e.target.value)}
-                      placeholder="Generated content..."
-                      className="placeholder:text-gray-400"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      You can edit this draft directly. Use{" "}
-                      <strong>Rewrite</strong> to generate an updated
-                      version while keeping this one saved.
-                    </p>
-
-                    {!hasInitialGeneration && (
-    <p className="text-xs text-gray-400">
-      To get started, upload at least one source, choose one or
-      more output types, then click <strong>Generate</strong>.
-      Your first draft will appear in this editor.
+    <p className="text-xs text-gray-500 mt-1">
+      You can edit this draft directly. Use{" "}
+      <strong>Rewrite</strong> to generate an updated
+      version while keeping this one saved.
     </p>
-  )}
-                    
-                  </CardBody>
-                </Card>
+
+    {!hasInitialGeneration && (
+      <p className="text-xs text-gray-400">
+        To get started, upload at least one source, choose one or
+        more output types, then click <strong>Generate</strong>.
+        Your first draft will appear in this editor.
+      </p>
+    )}
+
+    {/* Export options block – now BELOW the editor */}
+    <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+        <div className="text-sm font-medium text-gray-800">
+          Export &amp; download
+        </div>
+        <p className="text-xs text-gray-500">
+          Copy the draft or download a file to use in Word or other tools.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="quiet"
+          className="text-xs"
+          onClick={copyOutput}
+        >
+          Copy to clipboard
+        </Button>
+        <Button
+          variant="quiet"
+          className="text-xs"
+          onClick={() => downloadOutput("txt")}
+        >
+          Download .TXT
+        </Button>
+        <Button
+          variant="quiet"
+          className="text-xs"
+          onClick={() => downloadOutput("doc")}
+        >
+          Download .DOC
+        </Button>
+        <Button
+          variant="quiet"
+          className="text-xs opacity-60 cursor-not-allowed"
+          disabled
+        >
+          .PDF (coming soon)
+        </Button>
+      </div>
+    </div>
+  </CardBody>
+</Card>
+
 
                {/* Versions – timeline style, newest first */}
 <Card>
@@ -1289,8 +1361,50 @@ const downloadOutput = (format = "txt") => {
   )}
 </Card>
 
-              </div>
-            </div>
+                    </div>
+    </div>
+  )}
+
+              {/* Placeholder: Projects */}
+  {activePage === "projects" && (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold mb-2">Projects</h2>
+      <p className="text-sm text-gray-500">
+        A full Projects workspace will appear here in a future release.
+      </p>
+    </Card>
+  )}
+
+  {/* Placeholder: Sources */}
+  {activePage === "sources" && (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold mb-2">Sources</h2>
+      <p className="text-sm text-gray-500">
+        This page will manage uploaded files and URL sources once implemented.
+      </p>
+    </Card>
+  )}
+
+  {/* Placeholder: Outputs */}
+  {activePage === "outputs" && (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold mb-2">Outputs</h2>
+      <p className="text-sm text-gray-500">
+        A central repository for your generated documents is coming soon.
+      </p>
+    </Card>
+  )}
+
+  {/* Placeholder: Templates */}
+  {activePage === "templates" && (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold mb-2">Templates</h2>
+      <p className="text-sm text-gray-500">
+        Reusable prompt templates and blueprints will be added here later.
+      </p>
+    </Card>
+  )}
+
           </main>
         </div>
 
