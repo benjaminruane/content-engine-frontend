@@ -40,7 +40,6 @@ https://github.com/benjaminruane/content-engine-frontend/releases/tag/v3.0.0
 
 ## 🛠 Running Locally (optional)
 
-```bash
 # 1. Clone the repository
 git clone https://github.com/benjaminruane/content-engine-frontend
 cd content-engine-frontend
