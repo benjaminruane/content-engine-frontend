@@ -218,25 +218,6 @@ const getScoreMeta = (score) => {
 // App Component
 // -----------------------------
 
-<style>
-{`
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.fade-in-up {
-  animation: fade-in-up 0.25s ease-out;
-}
-`}
-</style>
-
-
 
 export default function App() {
   // Source handling
@@ -438,8 +419,10 @@ else showToast("API connection failed");
       };
 
       setVersions((prev) => [...prev, newVersion]);
-      setSelectedVersionId(newVersion.id);
-      setOutput(out);
+setSelectedVersionId(newVersion.id);
+setOutput(out);
+showToast("Draft generated");
+
     } finally {
       setIsGenerating(false);
     }
@@ -496,27 +479,28 @@ else showToast("API connection failed");
 
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(newVersion.id);
-      setOutput(out);
-      showToast("Draft generated");
-      setPromptNotes("");
+setOutput(out);
+showToast("Version rewritten");
+setPromptNotes("");
+
     } finally {
       setIsRewriting(false);
     }
   };
 
   const handleNewOutput = () => {
-    setParsed([]);
-    setUrlSources([]);
-    setSelectedVersionId(null);
-    setVersions([]);
-    setOutput(out);
-showToast("Version rewritten");   // ← INSERT THIS
-setPromptNotes("");
-    setSelectedTypes([]);
-    setTitle("");
-    showToast("New project started");
-    setShowNewConfirm(false);
-  };
+  setParsed([]);
+  setUrlSources([]);
+  setSelectedVersionId(null);
+  setVersions([]);
+  setOutput("");
+  setPromptNotes("");
+  setSelectedTypes([]);
+  setTitle("");
+  showToast("New project started");
+  setShowNewConfirm(false);
+};
+
 
   // selection + score meta
   const selectedVersion =
@@ -547,7 +531,7 @@ setPromptNotes("");
 
       {/* Toast notification */}
 {toast && (
-  <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-black text-white text-sm rounded-xl shadow-lg fade-in-up">
+  <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-black text-white text-sm rounded-xl shadow-lg">
     {toast}
   </div>
 )}
