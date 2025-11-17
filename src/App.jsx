@@ -981,13 +981,16 @@ export default function App() {
                             placeholder="https://example.com/article"
                             value={urlInput}
                             onChange={(e) => setUrlInput(e.target.value)}
+                           className="h-10"
                           />
                           <Button
                             variant="secondary"
                             onClick={addUrlSource}
+                            className="h-10 whitespace-nowrap px-4 flex items-center"
                           >
                             Add URL
-                          </Button>
+                         </Button>
+
                         </div>
                       </CardBody>
                     </Card>
