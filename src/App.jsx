@@ -217,6 +217,27 @@ const getScoreMeta = (score) => {
 // -----------------------------
 // App Component
 // -----------------------------
+
+<style>
+{`
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in-up {
+  animation: fade-in-up 0.25s ease-out;
+}
+`}
+</style>
+
+
+
 export default function App() {
   // Source handling
   const [parsed, setParsed] = useState([]);
@@ -232,6 +253,7 @@ export default function App() {
       arr.push({ file: f, text });
     }
     setParsed((prev) => [...prev, ...arr]);
+    showToast("Source files added");
   };
 
   const addUrlSource = async () => {
@@ -242,6 +264,7 @@ export default function App() {
       const res = await fetch(url);
       const text = await res.text();
       setUrlSources((prev) => [...prev, { url, text }]);
+      showToast("URL source added");
       setUrlInput("");
     } catch (e) {
       console.error("URL fetch failed", e);
@@ -272,6 +295,13 @@ export default function App() {
   const [showNewConfirm, setShowNewConfirm] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
 
+  // Toast notifications
+  const [toast, setToast] = useState(null);
+  const showToast = (message, duration = 2500) => {
+  setToast(message);
+  setTimeout(() => setToast(null), duration);
+  };
+
   // Model config
   const [modelId, setModelId] = useState("gpt-4o-mini");
   const [temperature, setTemperature] = useState(0.3);
@@ -294,6 +324,9 @@ export default function App() {
     try {
       const r = await fetch(`${apiBaseUrl}/health`);
       setApiStatus(r.ok ? "OK" : "Error");
+      if (r.ok) showToast("API connected");
+else showToast("API connection failed");
+
     } catch {
       setApiStatus("Error");
     }
@@ -464,6 +497,7 @@ export default function App() {
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(newVersion.id);
       setOutput(out);
+      showToast("Draft generated");
       setPromptNotes("");
     } finally {
       setIsRewriting(false);
@@ -475,10 +509,12 @@ export default function App() {
     setUrlSources([]);
     setSelectedVersionId(null);
     setVersions([]);
-    setOutput("");
-    setPromptNotes("");
+    setOutput(out);
+showToast("Version rewritten");   // ← INSERT THIS
+setPromptNotes("");
     setSelectedTypes([]);
     setTitle("");
+    showToast("New project started");
     setShowNewConfirm(false);
   };
 
@@ -508,6 +544,15 @@ export default function App() {
   // -----------------------------
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
+
+      {/* Toast notification */}
+{toast && (
+  <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-black text-white text-sm rounded-xl shadow-lg fade-in-up">
+    {toast}
+  </div>
+)}
+
+      
       <div className="max-w-6xl mx-auto py-8 px-4">
         {/* Header */}
         <header className="flex items-center justify-between mb-6">
