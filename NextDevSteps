@@ -1,0 +1,13 @@
+Before you do this, I want to share my plans. I think it is important now to have some of the core functionality working in the prototype. For me, there are a few key features:
+
+1. Execution of custom prompts for different output types. I have created a set of prompts that are targeted at different output situations/types, e.g. a new investment or an exit. Beyond selecting and uploading sources, I also want to be able to select which prompt to execute rather than having a generic writing prompt for all. This will likely necessitate a change in the current configuration section, to (perhaps) require selection of both the output situation (which prompt to execute) and the format of the output (investor commentary note, LinkedIn post etc). This is not fully thought out yet obviously.
+
+2. I also have a set of Writing Guidelines - like a Style Guide - that I want all outputs to honor.
+
+3. I want to define a working set of rubrics to replace the current random number for the quality score.
+
+4. A feature of the prompts I have written include a variety of outputs - e.g. a Sources table, a Discrepancy and Inferences table and a Compliance table - so the end result is a text plus the related outputs. It can become like a package that allows a reviewer/editor to confirm the accuracy of statements while also doing copy editing. I am thinking of how to present this, i.e. as one output or maybe separated into the text output and the related additional outputs.
+
+5. I am also thinking of giving the app two "modules" - one more generic (as it is now) and one more customized. The customized section is where client-specific prompts or style guides can be deployed. Whereas the generic module would be like it is now, i.e. usable by anyone without any customization.
+
+I hope this isn't too awkward introducing all of this now!
