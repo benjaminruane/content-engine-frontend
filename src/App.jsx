@@ -177,6 +177,15 @@ const MODEL_OPTIONS = [
   { id: "gpt-4o", label: "GPT-4o" },
 ];
 
+const PAGE_META = {
+  dashboard: { title: "Dashboard" },
+  projects: { title: "Projects" },
+  sources: { title: "Sources" },
+  outputs: { title: "Outputs" },
+  templates: { title: "Templates" },
+};
+
+
 // -----------------------------
 // Helpers
 // -----------------------------
@@ -557,7 +566,7 @@ const downloadOutput = (format = "txt") => {
     ext = "doc";
   }
 
-  const blob = new Blob([output], { type: mime });
+  const blob = new Blob([effectiveText], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -566,6 +575,7 @@ const downloadOutput = (format = "txt") => {
   URL.revokeObjectURL(url);
   showToast(`Downloaded as .${ext.toUpperCase()}`);
 };
+
 
   
   
@@ -701,7 +711,6 @@ const downloadOutput = (format = "txt") => {
           {/* Sidebar */}
           {/* Sidebar */}
 <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
-
   {activePage === "dashboard" && (
     <>
       {/* Workspace summary */}
@@ -718,7 +727,9 @@ const downloadOutput = (format = "txt") => {
         <div className="flex flex-col gap-1 text-xs text-gray-600">
           <div className="flex justify-between">
             <span>Sources</span>
-            <span className="font-medium">{parsed.length + urlSources.length}</span>
+            <span className="font-medium">
+              {parsed.length + urlSources.length}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>Versions</span>
@@ -738,8 +749,78 @@ const downloadOutput = (format = "txt") => {
           subtitle="Select the model and basic generation settings."
         />
         <CardBody className="space-y-3">
-          {/* (leave all model controls here exactly as you already have them) */}
-          { /* no changes inside */ }
+          <div>
+            <Label>Model</Label>
+            <select
+              className="w-full px-3 py-2 border rounded-xl text-sm"
+              value={modelId}
+              onChange={(e) => setModelId(e.target.value)}
+            >
+              {MODEL_OPTIONS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <Label>Temperature</Label>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={temperature}
+              onChange={(e) => setTemperature(parseFloat(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+              <span>More stable</span>
+              <span>{temperature.toFixed(2)}</span>
+              <span>More creative</span>
+            </div>
+          </div>
+
+          <div>
+            <Label>Max tokens</Label>
+            <Input
+              type="number"
+              min={100}
+              max={4000}
+              step={50}
+              value={maxTokens}
+              onChange={(e) =>
+                setMaxTokens(parseInt(e.target.value || "0", 10) || 0)
+              }
+            />
+          </div>
+
+          <div className="mt-2">
+            <Button
+              variant="quiet"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="text-xs"
+            >
+              {showAdvanced ? "Hide advanced settings" : "Show advanced settings"}
+            </Button>
+            {showAdvanced && (
+              <div className="mt-2 space-y-2">
+                <Label>API base URL</Label>
+                <Input
+                  placeholder="https://content-engine-backend-v2.vercel.app/api"
+                  value={apiBaseUrl}
+                  onChange={(e) => setApiBaseUrl(e.target.value)}
+                />
+                <div className="flex items-center gap-2">
+                  <Button onClick={checkHealth}>Check connection</Button>
+                  <span className="text-xs text-gray-500">
+                    Status: {apiStatus}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </CardBody>
       </Card>
 
@@ -750,13 +831,34 @@ const downloadOutput = (format = "txt") => {
           subtitle="Quick sanity checks for this session."
         />
         <CardBody>
-          {/* your existing diagnostics JSX unchanged */}
+          {diagnostics ? (
+            <>
+              <div className="flex gap-2 mb-3">
+                <Button onClick={runDiagnostics}>Re-run diagnostics</Button>
+                <Button onClick={() => setDiagnostics(null)}>Clear</Button>
+              </div>
+              <ul className="space-y-1 text-sm">
+                {diagnostics.map((d, i) => (
+                  <li
+                    key={i}
+                    className="px-2 py-1 rounded-md bg-gray-50 text-gray-700"
+                  >
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <div className="flex flex-col items-start gap-2 text-sm text-gray-500">
+              <p>No diagnostics run yet for this session.</p>
+              <Button onClick={runDiagnostics}>Run diagnostics</Button>
+            </div>
+          )}
         </CardBody>
       </Card>
     </>
   )}
 
-  {/* Compact placeholder sidebars for other pages */}
   {activePage !== "dashboard" && (
     <Card className="p-4">
       <h3 className="text-sm font-semibold mb-1">Sidebar</h3>
@@ -766,8 +868,8 @@ const downloadOutput = (format = "txt") => {
       </p>
     </Card>
   )}
-
 </aside>
+
 
 
           {/* Main content */}
