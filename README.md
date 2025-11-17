@@ -1,104 +1,67 @@
-# Brightline Content Engine – v2.0
+# Brightline Content Engine (Frontend)
 
-**Current frontend version:** `v2.0`
+**Version:** v3.0.0 (Clean UI Release)  
+**Live site:** Deployed via Vercel
 
-This repository contains the frontend application for the AI Content Engine, a prototype tool that enables structured content generation using source documents, URLs, predefined output types, and version tracking.
+The Brightline Content Engine is an AI-powered drafting tool designed for investment, reporting, and communications workflows.
 
-🚀 Features
+It allows users to upload sources, run structured drafting prompts, rewrite content, track versions, and export output in multiple formats.
 
-Upload TXT files or add URLs as source material
+---
 
-Select one or multiple output types (Investor Commentary, Detailed Note, Press Release, LinkedIn Post)
+## 🚀 Features (v3.0 — Clean UI)
 
-Public Domain Search toggle (forwarded to backend prompt)
+### Dashboard
+- Two-column workspace:
+  - **Sources** (file uploads, URL ingestion, public-domain search toggle)
+  - **Configuration** (title, output types, prompt notes, model settings)
+- **Draft Output** panel with:
+  - Live editable text
+  - Colour-coded quality score pill
+  - Copy/export (.TXT, .DOC — .PDF coming soon)
+- **Versions** timeline with comments, scores, model info, and metadata
+- **Future roadmap** section (collapsible)
+- First-time “Getting started” guidance panel
 
-Prompt Notes / Rewrite Instructions for refining drafts
+### Navigation & Layout
+- Dynamic page titles for each tab (Dashboard, Projects, Sources, Outputs, Templates)
+- Header navigation with active state highlight
+- Clean, consistent sidebar for session info
+- Toast notifications for all key actions
 
-Model configuration (model ID, temperature, max tokens)
+---
 
-Full versioning system including:
+## 🏷 Release Notes
 
-Version numbers (V1, V2, ...)
+Full v3.0.0 release notes:  
+https://github.com/benjaminruane/content-engine-frontend/releases/tag/v3.0.0
 
-Rewrite summaries
+---
 
-Timestamps
+## 🛠 Running Locally (optional)
 
-Public search status
+```bash
+# 1. Clone the repository
+git clone https://github.com/benjaminruane/content-engine-frontend
+cd content-engine-frontend
 
-Model used
-
-Scores & metrics display
-
-Rubric modal to view scoring breakdown
-
-New Output workflow that resets the workspace
-
-Backend health check & configurable API Base URL
-
-🧱 Project Structure
-
-content-engine-frontend/
-├── public/
-├── src/
-│   ├── App.jsx        ← main React application (v1.0)
-│   └── index.js
-├── package.json
-├── .gitignore
-├── .prettierrc        ← Prettier formatting rules
-├── .prettierignore
-└── README.md
-
-🛠️ Setup & Development
-
-1. Install dependencies
-
+# 2. Install dependencies
 npm install
 
-2. Run the dev server
+# 3. Start the development server
+npm run dev
 
-npm start
-
-The app will be available at:
-
+Your app will start at:
 http://localhost:3000
 
-🌐 Connecting to Backend
+**##📌 Roadmap (Short Version)**
 
-This frontend expects a backend at:
+v3.1 — UI refactoring & code cleanup
+v3.2 — PDF export + improved file handling
+v3.3 — Version comparison & diff view
+v3.4 — Rubric-based scoring engine rewrite
+v4.0 — Persistent Projects workspace
 
-https://content-engine-backend-v2.vercel.app/api
+**##📝 License**
 
-You can configure this inside the "Advanced" section of the UI.
-
-If no API Base URL is set, the app will generate demo output only.
-
-🧪 Prettier Formatting
-
-This repository uses Prettier for consistent formatting.
-
-Config files:
-
-.prettierrc → formatting rules
-
-.prettierignore → excluded paths
-
-GitHub Action
-
-A GitHub workflow automatically runs Prettier on every push to main.
-You do not need to manually format code.
-
-📦 Deployment
-
-This project is designed for Vercel hosting.
-
-Simply connect the repo to Vercel and deploy — no extra configuration needed.
-
-
-🙌 Author & Usage
-
-This prototype was generated collaboratively using ChatGPT and is intended for exploration, testing, and future development.
-
-Feel free to adapt, extend, or fork the project.
-
-Developer: Benjamin Ruane
+Private project — not open-source.
