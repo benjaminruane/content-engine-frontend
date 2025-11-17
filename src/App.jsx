@@ -295,6 +295,8 @@ export default function App() {
   const [showNewConfirm, setShowNewConfirm] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [activePage, setActivePage] = useState("dashboard");
+  const [workspaceMode, setWorkspaceMode] = useState("generic");
+
 
   // Toast notifications
   const [toast, setToast] = useState(null);
@@ -506,18 +508,20 @@ export default function App() {
   };
 
   const handleNewOutput = () => {
-    setParsed([]);
-    setUrlSources([]);
-    setSelectedVersionId(null);
-    setVersions([]);
-    setOutput("");
-    setPromptNotes("");
-    setSelectedTypes([]);
-    setTitle("");
-    showToast("New project started");
-    setShowNewConfirm(false);
-    setActivePage("dashboard");
-  };
+  setParsed([]);
+  setUrlSources([]);
+  setSelectedVersionId(null);
+  setVersions([]);
+  setOutput("");
+  setPromptNotes("");
+  setSelectedTypes([]);
+  setTitle("");
+  setActivePage("dashboard");
+  setWorkspaceMode("generic");
+  showToast("New project started");
+  setShowNewConfirm(false);
+};
+
 
   // selection + score meta
   const selectedVersion =
@@ -542,7 +546,7 @@ export default function App() {
 
   const currentPageMeta = PAGE_META[activePage] || PAGE_META.dashboard;
 
-  // -----------------------------
+    // -----------------------------
   // Render
   // -----------------------------
 
@@ -691,18 +695,52 @@ export default function App() {
         {/* Page toolbar / intro */}
         <div className="flex items-center justify-between mt-4 mb-6">
           <div>
-            <h2 className="text-lg font-semibold">
-              {currentPageMeta.title}
-            </h2>
+            <h2 className="text-lg font-semibold">{currentPageMeta.title}</h2>
             <p className="text-sm text-gray-500">
-              {currentPageMeta.subtitle}
+              {activePage === "dashboard" && workspaceMode === "client"
+                ? "Client-specific drafting workspace with custom prompts and style guides."
+                : currentPageMeta.subtitle}
             </p>
+
+            {activePage === "dashboard" && (
+              <div className="mt-2 inline-flex rounded-full bg-gray-100 p-1 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceMode("generic")}
+                  className={
+                    "px-3 py-1 rounded-full transition " +
+                    (workspaceMode === "generic"
+                      ? "bg-white shadow-sm text-gray-900"
+                      : "text-gray-600 hover:text-gray-900")
+                  }
+                >
+                  Generic workspace
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceMode("client")}
+                  className={
+                    "px-3 py-1 rounded-full transition " +
+                    (workspaceMode === "client"
+                      ? "bg-white shadow-sm text-gray-900"
+                      : "text-gray-600 hover:text-gray-900")
+                  }
+                >
+                  Client workspace
+                </button>
+              </div>
+            )}
           </div>
+
           <div className="flex gap-2">
             <Button
               type="button"
               variant="primary"
-              onClick={() => setShowNewConfirm(true)}
+              onClick={() => {
+                setActivePage("dashboard");
+                setWorkspaceMode("generic");
+                setShowNewConfirm(true);
+              }}
             >
               New project
             </Button>
@@ -712,6 +750,7 @@ export default function App() {
           </div>
         </div>
 
+        {/* Main layout: sidebar + content */}
         <div className="mt-2 flex gap-6">
           {/* Sidebar */}
           <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
@@ -892,8 +931,10 @@ export default function App() {
 
           {/* Main content */}
           <main className="flex-1">
-            {activePage === "dashboard" && (
+            {/* Dashboard – generic workspace */}
+            {activePage === "dashboard" && workspaceMode === "generic" && (
               <div className="space-y-6">
+                {/* Getting started hint */}
                 {!hasInitialGeneration && (
                   <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-sm text-gray-600">
                     To get started, upload at least one source on the left,
@@ -915,7 +956,9 @@ export default function App() {
                         right={
                           <Pill variant="outline" className="px-3">
                             {parsed.length + urlSources.length} source
-                            {parsed.length + urlSources.length === 1 ? "" : "s"}
+                            {parsed.length + urlSources.length === 1
+                              ? ""
+                              : "s"}
                           </Pill>
                         }
                       />
@@ -943,8 +986,8 @@ export default function App() {
                             <p className="text-xs text-gray-500">
                               No sources added yet. Start by uploading one or
                               more files, or paste a URL to pull in public
-                              content. These sources will be used as the primary
-                              basis for your draft.
+                              content. These sources will be used as the
+                              primary basis for your draft.
                             </p>
                           ) : (
                             <>
@@ -981,16 +1024,13 @@ export default function App() {
                             placeholder="https://example.com/article"
                             value={urlInput}
                             onChange={(e) => setUrlInput(e.target.value)}
-                           className="h-10"
                           />
                           <Button
                             variant="secondary"
                             onClick={addUrlSource}
-                            className="h-10 whitespace-nowrap px-4 flex items-center"
                           >
                             Add URL
-                         </Button>
-
+                          </Button>
                         </div>
                       </CardBody>
                     </Card>
@@ -1039,8 +1079,8 @@ export default function App() {
                       <div>
                         <Label>Output types</Label>
                         <p className="text-xs text-gray-500 mb-2">
-                          Choose one or more content formats to generate in this
-                          run.
+                          Choose one or more content formats to generate in
+                          this run.
                         </p>
 
                         <div className="flex flex-wrap gap-2">
@@ -1077,7 +1117,8 @@ export default function App() {
                         <p className="mt-1 text-xs text-gray-500">
                           Use this to guide the initial draft or to tell the
                           engine how to change the current version (e.g.
-                          &quot;shorter, more formal, add risk section&quot;).
+                          &quot;shorter, more formal, add risk
+                          section&quot;).
                         </p>
                       </div>
 
@@ -1146,7 +1187,7 @@ export default function App() {
                       }
                     />
 
-                    <CardBody className="space-y-4">
+                    <CardBody className="space-y-3">
                       <Textarea
                         rows={18}
                         value={output || selectedVersion?.content || ""}
@@ -1155,14 +1196,14 @@ export default function App() {
                         className="placeholder:text-gray-400"
                       />
 
-                      <p className="text-xs text-gray-500 leading-relaxed">
+                      <p className="text-xs text-gray-500 mt-1">
                         You can edit this draft directly. Use{" "}
-                        <strong>Rewrite</strong> to generate an updated version
-                        while keeping this one saved.
+                        <strong>Rewrite</strong> to generate an updated
+                        version while keeping this one saved.
                       </p>
 
                       {/* Export options block – below the editor */}
-                      <div className="pt-3 mt-1 border-t border-gray-100 space-y-2">
+                      <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
                         <div className="text-sm font-medium text-gray-800">
                           Export &amp; download
                         </div>
@@ -1235,7 +1276,10 @@ export default function App() {
                               const vScoreMeta = getScoreMeta(v.score);
 
                               return (
-                                <div key={v.id} className="relative pl-6">
+                                <div
+                                  key={v.id}
+                                  className="relative pl-6"
+                                >
                                   {/* Dot on the timeline */}
                                   <span
                                     className={
@@ -1373,7 +1417,9 @@ export default function App() {
                         <Button
                           variant="quiet"
                           className="text-xs"
-                          onClick={() => setShowRoadmap((v) => !v)}
+                          onClick={() =>
+                            setShowRoadmap((v) => !v)
+                          }
                         >
                           {showRoadmap ? "Hide" : "Show"}
                         </Button>
@@ -1382,65 +1428,66 @@ export default function App() {
                     {showRoadmap && (
                       <CardBody className="space-y-2">
                         <p className="text-xs text-gray-500">
-                          These items are not yet live. They outline where the
-                          product is heading as the prototype matures.
+                          These items are not yet live. They outline
+                          where the product is heading as the prototype
+                          matures.
                         </p>
                         <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
                           <li>
-                            Richer source ingestion (PDF, DOCX and structured
-                            data feeds).
+                            Richer source ingestion (PDF, DOCX and
+                            structured data feeds).
                           </li>
                           <li>
-                            Deeper model integration for drafting and rewriting
-                            via /generate.
+                            Deeper model integration for drafting and
+                            rewriting via /generate.
                           </li>
                           <li>
-                            Output-specific prompts based on selected content
-                            types.
+                            Output-specific prompts based on selected
+                            content types.
                           </li>
                           <li>
-                            Templated outputs and reusable blueprints per
-                            document family.
+                            Templated outputs and reusable blueprints
+                            per document family.
                           </li>
                           <li>
-                            Scoring engine tied to detailed rubrics and a
-                            feedback loop.
+                            Scoring engine tied to detailed rubrics and
+                            a feedback loop.
                           </li>
                           <li>
-                            Dedicated sources table with traceability and
-                            filtering.
+                            Dedicated sources table with traceability
+                            and filtering.
                           </li>
                           <li>
-                            Statement reliability and inference tracking views.
+                            Statement reliability and inference tracking
+                            views.
                           </li>
                           <li>
                             Role-based access controls, audit logs and
                             enterprise integrations.
                           </li>
                           <li>
-                            Persistent projects stored under the Projects tab
-                            with saved workspaces.
+                            Persistent projects stored under the
+                            Projects tab with saved workspaces.
                           </li>
                           <li>
                             Additional UI polish, theming options and
                             efficiency tweaks.
                           </li>
-                          {/* New “for later” work items */}
                           <li>
-                            Performance instrumentation and optimisation for
-                            differences between Generate and Rewrite (token
-                            counts, latency, profiling).
+                            Performance instrumentation and optimisation
+                            for differences between Generate and
+                            Rewrite (token counts, latency, profiling).
                           </li>
                           <li>
-                            Replace random scores with a rubric-based quality
-                            scoring engine that captures structure, clarity,
-                            tone and spelling (e.g. penalise intentional typos
-                            appropriately).
+                            Replace random scores with a rubric-based
+                            quality scoring engine that captures
+                            structure, clarity, tone and spelling.
                           </li>
                           <li>
-                            Stricter enforcement of output constraints such as
-                            maximum word counts, using both prompt design and
-                            post-processing to trim to target length.
+                            Stricter enforcement of output constraints
+                            such as maximum word counts, using both
+                            prompt design and post-processing to trim to
+                            target length.
                           </li>
                         </ul>
                       </CardBody>
@@ -1450,17 +1497,60 @@ export default function App() {
               </div>
             )}
 
-            {activePage !== "dashboard" && (
+            {/* Dashboard – client workspace placeholder */}
+            {activePage === "dashboard" && workspaceMode === "client" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">
-                  {currentPageMeta.title}
+                  Client workspace
                 </h2>
                 <p className="text-sm text-gray-500">
-                  {currentPageMeta.subtitle}
+                  A client-specific drafting workspace with custom prompts,
+                  style guides, and review tables will appear here in the
+                  next iteration.
                 </p>
-                <p className="mt-3 text-xs text-gray-400">
-                  Detailed tools for this area are planned for a future release
-                  of the Content Engine prototype.
+              </Card>
+            )}
+
+            {/* Placeholder: Projects */}
+            {activePage === "projects" && (
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-2">Projects</h2>
+                <p className="text-sm text-gray-500">
+                  A full Projects workspace will appear here in a future
+                  release.
+                </p>
+              </Card>
+            )}
+
+            {/* Placeholder: Sources */}
+            {activePage === "sources" && (
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-2">Sources</h2>
+                <p className="text-sm text-gray-500">
+                  This page will manage uploaded files and URL sources
+                  once implemented.
+                </p>
+              </Card>
+            )}
+
+            {/* Placeholder: Outputs */}
+            {activePage === "outputs" && (
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-2">Outputs</h2>
+                <p className="text-sm text-gray-500">
+                  A central repository for your generated documents is
+                  coming soon.
+                </p>
+              </Card>
+            )}
+
+            {/* Placeholder: Templates */}
+            {activePage === "templates" && (
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-2">Templates</h2>
+                <p className="text-sm text-gray-500">
+                  Reusable prompt templates and blueprints will be added
+                  here later.
                 </p>
               </Card>
             )}
@@ -1507,8 +1597,8 @@ export default function App() {
                 Start new output?
               </h3>
               <p className="text-sm text-gray-600">
-                This will clear the current workspace (title, notes, selections,
-                versions, and uploaded text).
+                This will clear the current workspace (title, notes,
+                selections, versions, and uploaded text).
               </p>
               <div className="mt-4 flex gap-2 justify-end">
                 <Button onClick={() => setShowNewConfirm(false)}>
