@@ -1041,7 +1041,7 @@ export default function App() {
                   {/* Top row: version label + timestamp */}
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                      <Pill className="px-2 bg-gray-50 text-gray-700 border-gray-200">
+                      <Pill variant="subtle" className="px-2">
                         V{v.versionNumber}
                       </Pill>
                       {isSelected && (
@@ -1078,9 +1078,10 @@ export default function App() {
     </Pill>
 
     {/* single model pill */}
-    <Pill className="px-2 bg-white text-gray-700 border-gray-300">
-      {getModelLabel(v.model?.id)}
-    </Pill>
+    <Pill variant="outline" className="px-2">
+  {getModelLabel(v.model?.id)}
+</Pill>
+
   </div>
 </div>
 
