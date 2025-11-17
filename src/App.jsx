@@ -780,10 +780,11 @@ export default function App() {
                       <div className="mt-4 space-y-2">
                         {parsed.length === 0 && urlSources.length === 0 ? (
                           <p className="text-xs text-gray-500">
-                            No sources added yet. Upload one or more files, or paste
-                            a URL to pull in public content for this drafting
-                            session.
+                            No sources added yet. Start by uploading one or more files,
+                            or paste a URL to pull in public content. These sources will
+                            be used as the primary basis for your draft.
                           </p>
+
                         ) : (
                           <>
                             {parsed.map((p, i) => (
@@ -991,6 +992,15 @@ export default function App() {
                       <strong>Rewrite</strong> to generate an updated
                       version while keeping this one saved.
                     </p>
+
+                    {!hasInitialGeneration && (
+    <p className="text-xs text-gray-400">
+      To get started, upload at least one source, choose one or
+      more output types, then click <strong>Generate</strong>.
+      Your first draft will appear in this editor.
+    </p>
+  )}
+                    
                   </CardBody>
                 </Card>
 
@@ -1002,7 +1012,11 @@ export default function App() {
   />
   <CardBody>
     {sortedVersions.length === 0 ? (
-      <p className="text-sm text-gray-500">No versions yet.</p>
+      <p className="text-sm text-gray-500">
+      No versions yet. Once you click <strong>Generate</strong>,
+      your first draft will appear here as Version 1, and each
+      rewrite will be saved as a new version.
+    </p>
     ) : (
       <div className="relative">
         {/* Vertical timeline line */}
