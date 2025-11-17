@@ -200,16 +200,6 @@ const PAGE_META = {
   },
 };
 
-
-const PAGE_META = {
-  dashboard: { title: "Dashboard" },
-  projects: { title: "Projects" },
-  sources: { title: "Sources" },
-  outputs: { title: "Outputs" },
-  templates: { title: "Templates" },
-};
-
-
 // -----------------------------
 // Helpers
 // -----------------------------
@@ -1169,10 +1159,6 @@ const downloadOutput = (format = "txt") => {
       <strong>Rewrite</strong> to generate an updated
       version while keeping this one saved.
     </p>
-
-    {!hasInitialGeneration && (
- 
-)}
 
 
     {/* Export options block – now BELOW the editor */}
