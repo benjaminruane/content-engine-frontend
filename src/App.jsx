@@ -524,6 +524,7 @@ setPromptNotes("");
   setTitle("");
   showToast("New project started");
   setShowNewConfirm(false);
+  setActivePage("dashboard");
 };
 
 
