@@ -1029,12 +1029,13 @@ const downloadOutput = (format = "txt") => {
     </p>
 
     {!hasInitialGeneration && (
-      <p className="text-xs text-gray-400">
-        To get started, upload at least one source, choose one or
-        more output types, then click <strong>Generate</strong>.
-        Your first draft will appear in this editor.
-      </p>
-    )}
+  <p className="text-xs text-gray-400">
+    To get started, upload at least one source, choose one or
+    more output types, then click <strong>Generate</strong>.
+    Your first draft will appear in this editor.
+  </p>
+)}
+
 
     {/* Export options block – now BELOW the editor */}
     <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
@@ -1045,6 +1046,7 @@ const downloadOutput = (format = "txt") => {
   <p className="text-xs text-gray-500">
     Copy the draft or download a file to use in Word or other tools.
   </p>
+
 
   <div className="flex flex-wrap gap-2">
     <Button
