@@ -1405,45 +1405,21 @@ const downloadOutput = (format = "txt") => {
     </div>
   )}
 
-              {/* Placeholder: Projects */}
-  {activePage === "projects" && (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-2">Projects</h2>
-      <p className="text-sm text-gray-500">
-        A full Projects workspace will appear here in a future release.
-      </p>
-    </Card>
-  )}
+{activePage !== "dashboard" && (
+  <Card className="p-6">
+    <h2 className="text-lg font-semibold mb-2">
+      {currentPageMeta.title}
+    </h2>
+    <p className="text-sm text-gray-500">
+      {currentPageMeta.subtitle}
+    </p>
+    <p className="mt-3 text-xs text-gray-400">
+      Detailed tools for this area are planned for a future release of the
+      Content Engine prototype.
+    </p>
+  </Card>
+)}
 
-  {/* Placeholder: Sources */}
-  {activePage === "sources" && (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-2">Sources</h2>
-      <p className="text-sm text-gray-500">
-        This page will manage uploaded files and URL sources once implemented.
-      </p>
-    </Card>
-  )}
-
-  {/* Placeholder: Outputs */}
-  {activePage === "outputs" && (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-2">Outputs</h2>
-      <p className="text-sm text-gray-500">
-        A central repository for your generated documents is coming soon.
-      </p>
-    </Card>
-  )}
-
-  {/* Placeholder: Templates */}
-  {activePage === "templates" && (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-2">Templates</h2>
-      <p className="text-sm text-gray-500">
-        Reusable prompt templates and blueprints will be added here later.
-      </p>
-    </Card>
-  )}
 
           </main>
         </div>
