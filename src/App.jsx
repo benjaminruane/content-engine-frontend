@@ -1497,19 +1497,144 @@ export default function App() {
               </div>
             )}
 
-            {/* Dashboard – client workspace placeholder */}
+                        {/* Dashboard – client workspace */}
             {activePage === "dashboard" && workspaceMode === "client" && (
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-2">
-                  Client workspace
-                </h2>
-                <p className="text-sm text-gray-500">
-                  A client-specific drafting workspace with custom prompts,
-                  style guides, and review tables will appear here in the
-                  next iteration.
-                </p>
-              </Card>
+              <div className="space-y-6">
+                {/* Client overview */}
+                <Card>
+                  <CardHeader
+                    title="Client workspace overview"
+                    subtitle="A tailored drafting environment for a specific client or mandate."
+                    right={
+                      <div className="flex items-center gap-2">
+                        <Pill level="info" className="px-3">
+                          Prototype mode
+                        </Pill>
+                        <Pill variant="outline" className="px-3">
+                          Not yet configured
+                        </Pill>
+                      </div>
+                    }
+                  />
+                  <CardBody className="space-y-2 text-sm text-gray-600">
+                    <p>
+                      This workspace will eventually hold client-specific
+                      prompts, style guides, and review flows. For now, it is a
+                      structured preview of how those elements will be
+                      organised.
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Keep the generic workspace clean and reusable.</li>
+                      <li>
+                        Use this client area for bespoke prompts, tone and
+                        compliance rules.
+                      </li>
+                      <li>
+                        Add review tables so editors can check statements,
+                        sources and discrepancies efficiently.
+                      </li>
+                    </ul>
+                  </CardBody>
+                </Card>
+
+                {/* Core configuration: style guide + prompts */}
+                <div className="grid lg:grid-cols-2 gap-6 items-start">
+                  {/* Style guide & rules */}
+                  <Card>
+                    <CardHeader
+                      title="Client style guide & rules"
+                      subtitle="Tone, language and structural expectations for all outputs."
+                    />
+                    <CardBody className="space-y-2 text-sm text-gray-600">
+                      <p>
+                        This panel will eventually load and display the
+                        client&apos;s writing guidelines and house rules.
+                      </p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Voice &amp; tone (e.g. formal, neutral, concise).</li>
+                        <li>
+                          Investment-specific preferences (jargon usage,
+                          disclaimers, risk framing).
+                        </li>
+                        <li>
+                          Formatting rules (headings, bullet styles, length
+                          constraints).
+                        </li>
+                        <li>
+                          Regional or regulatory nuances to respect in all
+                          drafts.
+                        </li>
+                      </ul>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Later, this can be wired to a client-specific style
+                        guide object or configuration loaded from the backend.
+                      </p>
+                    </CardBody>
+                  </Card>
+
+                  {/* Prompt packs & scenarios */}
+                  <Card>
+                    <CardHeader
+                      title="Prompt packs & scenarios"
+                      subtitle="Client-specific prompt sets for different situations."
+                    />
+                    <CardBody className="space-y-2 text-sm text-gray-600">
+                      <p>
+                        Here you&apos;ll define and select from prompt packs
+                        tailored to this client&apos;s use cases.
+                      </p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>New investment announcement prompts.</li>
+                        <li>Exit / realisation prompts.</li>
+                        <li>Quarterly reporting commentary prompts.</li>
+                        <li>Social and stakeholder messaging prompts.</li>
+                      </ul>
+                      <p className="text-xs text-gray-500 mt-1">
+                        In a future iteration, this panel could show a dropdown
+                        of &quot;scenarios&quot; and attach the chosen prompt
+                        pack to the generation request.
+                      </p>
+                    </CardBody>
+                  </Card>
+                </div>
+
+                {/* Review tables & QA */}
+                <Card>
+                  <CardHeader
+                    title="Review tables & quality checks"
+                    subtitle="Where sources, discrepancies and compliance checks will live."
+                  />
+                  <CardBody className="space-y-2 text-sm text-gray-600">
+                    <p>
+                      This area is reserved for structured review artefacts
+                      produced alongside each draft.
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>
+                        <strong>Sources table</strong> – trace statements back
+                        to underlying documents or web pages.
+                      </li>
+                      <li>
+                        <strong>Discrepancies &amp; inferences table</strong> –
+                        highlight where the model inferred or reconciled
+                        inconsistent data.
+                      </li>
+                      <li>
+                        <strong>Compliance / guideline table</strong> –
+                        show how well the output adheres to the client&apos;s
+                        style guide and constraints.
+                      </li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Eventually, each generation in the client workspace could
+                      produce both narrative text and these tables as a
+                      combined review package.
+                    </p>
+                  </CardBody>
+                </Card>
+              </div>
             )}
+
 
             {/* Placeholder: Projects */}
             {activePage === "projects" && (
