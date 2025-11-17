@@ -1127,46 +1127,46 @@ const downloadOutput = (format = "txt") => {
 
     {/* Export options block – now BELOW the editor */}
     <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-        <div className="text-sm font-medium text-gray-800">
-          Export &amp; download
-        </div>
-        <p className="text-xs text-gray-500">
-          Copy the draft or download a file to use in Word or other tools.
-        </p>
-      </div>
+  <div className="text-sm font-medium text-gray-800">
+    Export &amp; download
+  </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="quiet"
-          className="text-xs"
-          onClick={copyOutput}
-        >
-          Copy to clipboard
-        </Button>
-        <Button
-          variant="quiet"
-          className="text-xs"
-          onClick={() => downloadOutput("txt")}
-        >
-          Download .TXT
-        </Button>
-        <Button
-          variant="quiet"
-          className="text-xs"
-          onClick={() => downloadOutput("doc")}
-        >
-          Download .DOC
-        </Button>
-        <Button
-          variant="quiet"
-          className="text-xs opacity-60 cursor-not-allowed"
-          disabled
-        >
-          .PDF (coming soon)
-        </Button>
-      </div>
-    </div>
+  <p className="text-xs text-gray-500">
+    Copy the draft or download a file to use in Word or other tools.
+  </p>
+
+  <div className="flex flex-wrap gap-2">
+    <Button
+      variant="quiet"
+      className="text-xs"
+      onClick={copyOutput}
+    >
+      Copy to clipboard
+    </Button>
+    <Button
+      variant="quiet"
+      className="text-xs"
+      onClick={() => downloadOutput("txt")}
+    >
+      Download .TXT
+    </Button>
+    <Button
+      variant="quiet"
+      className="text-xs"
+      onClick={() => downloadOutput("doc")}
+    >
+      Download .DOC
+    </Button>
+    <Button
+      variant="quiet"
+      className="text-xs opacity-60 cursor-not-allowed"
+      disabled
+    >
+      .PDF (coming soon)
+    </Button>
+  </div>
+</div>
+
   </CardBody>
 </Card>
 
