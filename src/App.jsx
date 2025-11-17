@@ -178,6 +178,30 @@ const MODEL_OPTIONS = [
 ];
 
 const PAGE_META = {
+  dashboard: {
+    title: "Dashboard",
+    subtitle: "Manage sources, generate drafts, and track versions.",
+  },
+  projects: {
+    title: "Projects",
+    subtitle: "Track and reopen previous drafting workspaces.",
+  },
+  sources: {
+    title: "Sources",
+    subtitle: "Manage uploaded documents and web links.",
+  },
+  outputs: {
+    title: "Outputs",
+    subtitle: "Browse and organise generated documents.",
+  },
+  templates: {
+    title: "Templates",
+    subtitle: "Manage reusable prompt and document blueprints.",
+  },
+};
+
+
+const PAGE_META = {
   dashboard: { title: "Dashboard" },
   projects: { title: "Projects" },
   sources: { title: "Sources" },
@@ -524,7 +548,7 @@ setPromptNotes("");
 
   const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
 
-  const runDiagnostics = () => {
+    const runDiagnostics = () => {
     const msgs = [];
     if (OUTPUT_TYPES.length === 4) msgs.push("OK: Output types defined.");
     if (MODEL_OPTIONS.length >= 2) msgs.push("OK: Model options present.");
@@ -534,9 +558,12 @@ setPromptNotes("");
     setDiagnostics(msgs);
   };
 
+  const currentPageMeta = PAGE_META[activePage] || PAGE_META.dashboard;
+
   // -----------------------------
   // Render
   // -----------------------------
+
   
   // ---- Output actions ----
 
@@ -686,11 +713,13 @@ const downloadOutput = (format = "txt") => {
         </header>
 
         {/* Page toolbar / intro */}
-        <div className="flex items-center justify-between mt-4 mb-6">
+                <div className="flex items-center justify-between mt-4 mb-6">
           <div>
-            <h2 className="text-lg font-semibold">Dashboard</h2>
+            <h2 className="text-lg font-semibold">
+              {currentPageMeta.title}
+            </h2>
             <p className="text-sm text-gray-500">
-              Manage sources, generate drafts, and track versions.
+              {currentPageMeta.subtitle}
             </p>
           </div>
           <div className="flex gap-2">
@@ -706,6 +735,7 @@ const downloadOutput = (format = "txt") => {
             </Button>
           </div>
         </div>
+
 
         <div className="mt-2 flex gap-6">
           {/* Sidebar */}
@@ -873,12 +903,22 @@ const downloadOutput = (format = "txt") => {
 
 
           {/* Main content */}
-          <main className="flex-1">
-              {/* Dashboard page */}
-                {activePage === "dashboard" && (
-            <div className="space-y-6">
-              {/* Top row: Sources + Configuration side by side */}
-              <div className="grid lg:grid-cols-2 gap-6 items-start">
+                    <main className="flex-1">
+            {activePage === "dashboard" && (
+              <div className="space-y-6">
+
+                {!hasInitialGeneration && (
+                  <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-sm text-gray-600">
+                    To get started, upload at least one source on the left,
+                    choose one or more output types on the right, then click{" "}
+                    <strong>Generate</strong>. Your first draft will appear
+                    below in the Draft output panel.
+                  </div>
+                )}
+
+                {/* Top row: Sources + Configuration side by side */}
+                <div className="grid lg:grid-cols-2 gap-6 items-start">
+
                 {/* Left column: Sources + Public search */}
                 <div className="space-y-4">
                   {/* Source documents */}
@@ -1131,11 +1171,7 @@ const downloadOutput = (format = "txt") => {
     </p>
 
     {!hasInitialGeneration && (
-  <p className="text-xs text-gray-400">
-    To get started, upload at least one source, choose one or
-    more output types, then click <strong>Generate</strong>.
-    Your first draft will appear in this editor.
-  </p>
+ 
 )}
 
 
