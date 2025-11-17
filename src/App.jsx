@@ -192,6 +192,13 @@ const OUTPUT_TYPES = [
   { label: "LinkedIn post", value: "linkedin" },
 ];
 
+// Client-mode scenarios (you can edit this list freely)
+const SCENARIO_OPTIONS = [
+  { id: "new_investment", label: "New investment" },
+  { id: "exit_realisation", label: "Exit / realisation" },
+  { id: "portfolio_update", label: "Portfolio / quarterly update" },
+];
+
 const MODEL_OPTIONS = [
   { id: "gpt-4o-mini", label: "GPT-4o Mini" },
   { id: "gpt-4o", label: "GPT-4o" },
@@ -319,8 +326,10 @@ export default function App() {
   const [showNewConfirm, setShowNewConfirm] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [activePage, setActivePage] = useState("dashboard");
+  // Workspace mode: generic vs client
   const [workspaceMode, setWorkspaceMode] = useState("generic");
-
+  // Client workspace scenario (e.g. new investment, exit, update)
+  const [selectedScenario, setSelectedScenario] = useState(null);
 
   // Toast notifications
   const [toast, setToast] = useState(null);
@@ -435,18 +444,20 @@ export default function App() {
       ].join("\n");
 
             const body = {
-        mode: "generate",
-        title,
-        notes: promptNotes,
-        selectedTypes,
-        publicSearch,
-        scenarioType: scenario,
-        model: { id: modelId, temperature, maxTokens },
-        modelId,
-        temperature,
-        maxTokens,
-        text: allText,
-      };
+  mode: "generate",
+  title,
+  notes: promptNotes,
+  selectedTypes,
+  publicSearch,
+  workspaceMode,
+  scenario: selectedScenario,
+  model: { id: modelId, temperature, maxTokens },
+  modelId,
+  temperature,
+  maxTokens,
+  text: allText,
+};
+
 
 
       const out = await runGenerateRequest(body);
@@ -491,20 +502,22 @@ export default function App() {
         ...urlSources.map((u) => u.text),
       ].join("\n");
 
-            const body = {
-        mode: "rewrite",
-        title,
-        notes: promptNotes,
-        selectedTypes,
-        publicSearch,
-        scenarioType: scenario,
-        model: { id: modelId, temperature, maxTokens },
-        modelId,
-        temperature,
-        maxTokens,
-        text: allText,
-        previousContent: base.content,
-      };
+        const body = {
+  mode: "rewrite",
+  title,
+  notes: promptNotes,
+  selectedTypes,
+  publicSearch,
+  workspaceMode,
+  scenario: selectedScenario,
+  model: { id: modelId, temperature, maxTokens },
+  modelId,
+  temperature,
+  maxTokens,
+  text: allText,
+  previousContent: base.content,
+};
+
 
 
       const out = await runGenerateRequest(body);
@@ -1090,142 +1103,128 @@ export default function App() {
 
                                   {/* Right column: Configuration */}
                 <Card>
-                  <CardHeader
-                    title="Configuration"
-                    subtitle="Control how the engine drafts and rewrites content."
-                  />
-                  <CardBody className="space-y-3">
-                    {workspaceMode === "generic" ? (
-                      <>
-                        <div>
-                          <Label>Title</Label>
-                          <Input
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="e.g., Q3 Portfolio Update"
-                          />
-                        </div>
+  <CardHeader
+    title="Configuration"
+    subtitle="Control how the engine drafts and rewrites content."
+  />
+  <CardBody className="space-y-3">
+    <div>
+      <Label>Title</Label>
+      <Input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="e.g., Q3 Portfolio Update"
+      />
+    </div>
 
-                        <div>
-                          <Label>Scenario</Label>
-                          <p className="text-xs text-gray-500 mb-2">
-                            Choose the situation this draft is for. This helps the
-                            engine apply the right instructions behind the scenes.
-                          </p>
-                          <select
-                            className="w-full px-3 py-2 border rounded-xl text-sm"
-                            value={scenario}
-                            onChange={(e) => setScenario(e.target.value)}
-                          >
-                            {SCENARIO_TYPES.map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.label}
-                              </option>
-                            ))}
-                          </select>
-                          <p className="mt-1 text-xs text-gray-500">
-                            {
-                              SCENARIO_TYPES.find((s) => s.id === scenario)
-                                ?.description
-                            }
-                          </p>
-                        </div>
+    {/* Scenario selector – client workspace only */}
+    {workspaceMode === "client" && (
+      <div>
+        <Label>Scenario (client workspace)</Label>
+        <p className="text-xs text-gray-500 mb-2">
+          Pick the situation you are drafting for. This will later control which
+          client-specific prompt and review tables are used.
+        </p>
 
-                        <div>
-                          <Label>Output types</Label>
-                          <p className="text-xs text-gray-500 mb-2">
-                            Choose one or more content formats to generate in this
-                            run.
-                          </p>
+        <div className="flex flex-wrap gap-2">
+          {SCENARIO_OPTIONS.map((s) => {
+            const active = selectedScenario === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setSelectedScenario(s.id)}
+                className={
+                  "px-3 py-1.5 rounded-full text-xs border transition " +
+                  (active
+                    ? "bg-black text-white border-black shadow-sm"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
+                }
+              >
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    )}
 
-                          <div className="flex flex-wrap gap-2">
-                            {OUTPUT_TYPES.map((o) => {
-                              const active = selectedTypes.includes(o.value);
-                              return (
-                                <button
-                                  key={o.value}
-                                  type="button"
-                                  onClick={() => toggleType(o.value)}
-                                  className={
-                                    "px-3 py-1.5 rounded-full text-xs border transition " +
-                                    (active
-                                      ? "bg-black text-white border-black shadow-sm"
-                                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-                                  }
-                                >
-                                  {o.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
+    <div>
+      <Label>Output types</Label>
+      <p className="text-xs text-gray-500 mb-2">
+        Choose one or more content formats to generate in this run.
+      </p>
 
-                        <div>
-                          <Label>Prompt notes / rewrite instructions</Label>
-                          <Textarea
-                            rows={4}
-                            value={promptNotes}
-                            onChange={(e) => setPromptNotes(e.target.value)}
-                            placeholder="Key points, tone, constraints, or rewrite instructions..."
-                            className="placeholder:text-gray-400"
-                          />
-                          <p className="mt-1 text-xs text-gray-500">
-                            Use this to guide the initial draft or to tell the engine
-                            how to change the current version (e.g. &quot;shorter, more
-                            formal, add risk section&quot;).
-                          </p>
-                        </div>
+      <div className="flex flex-wrap gap-2">
+        {OUTPUT_TYPES.map((o) => {
+          const active = selectedTypes.includes(o.value);
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => toggleType(o.value)}
+              className={
+                "px-3 py-1.5 rounded-full text-xs border transition " +
+                (active
+                  ? "bg-black text-white border-black shadow-sm"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
+              }
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
 
-                        <div className="flex gap-2 flex-wrap">
-                          <Button
-                            variant="primary"
-                            onClick={handleGenerate}
-                            disabled={
-                              hasInitialGeneration ||
-                              isGenerating ||
-                              isRewriting ||
-                              !hasSources ||
-                              !hasOutputTypes
-                            }
-                          >
-                            {isGenerating && <Spinner />}
-                            {isGenerating ? "Generating..." : "Generate"}
-                          </Button>
+    <div>
+      <Label>Prompt notes / rewrite instructions</Label>
+      <Textarea
+        rows={4}
+        value={promptNotes}
+        onChange={(e) => setPromptNotes(e.target.value)}
+        placeholder="Key points, tone, constraints, or rewrite instructions..."
+        className="placeholder:text-gray-400"
+      />
+      <p className="mt-1 text-xs text-gray-500">
+        Use this to guide the initial draft or to tell the engine how to change
+        the current version (e.g. &quot;shorter, more formal, add risk
+        section&quot;).
+      </p>
+    </div>
 
-                          <Button
-                            onClick={handleRewrite}
-                            disabled={
-                              !hasInitialGeneration ||
-                              isRewriting ||
-                              isGenerating
-                            }
-                          >
-                            {isRewriting && <Spinner />}
-                            {isRewriting ? "Rewriting..." : "Rewrite"}
-                          </Button>
+    {/* Buttons row with state-based disabling */}
+    <div className="flex gap-2 flex-wrap">
+      <Button
+        variant="primary"
+        onClick={handleGenerate}
+        disabled={
+          hasInitialGeneration ||
+          isGenerating ||
+          isRewriting ||
+          !hasSources ||
+          !hasOutputTypes
+        }
+      >
+        {isGenerating && <Spinner />}
+        {isGenerating ? "Generating..." : "Generate"}
+      </Button>
 
-                          <Button
-                            variant="quiet"
-                            onClick={() => setShowRubric(true)}
-                          >
-                            View rubrics
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm text-gray-700 font-medium">
-                          Client configuration (coming soon)
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          This panel will be customised for your client workspace in
-                          the next iteration, including client-specific prompts,
-                          style guides, and review tables.
-                        </p>
-                      </>
-                    )}
-                  </CardBody>
-                </Card>
+      <Button
+        onClick={handleRewrite}
+        disabled={!hasInitialGeneration || isRewriting || isGenerating}
+      >
+        {isRewriting && <Spinner />}
+        {isRewriting ? "Rewriting..." : "Rewrite"}
+      </Button>
+
+      <Button variant="quiet" onClick={() => setShowRubric(true)}>
+        View rubrics
+      </Button>
+    </div>
+  </CardBody>
+</Card>
+
 
                 </div>
 
