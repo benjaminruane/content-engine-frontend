@@ -526,6 +526,44 @@ setPromptNotes("");
   // -----------------------------
   // Render
   // -----------------------------
+  
+  // ---- Output actions ----
+const copyOutput = () => {
+  if (!output) {
+    showToast("Nothing to copy");
+    return;
+  }
+  navigator.clipboard.writeText(output);
+  showToast("Copied to clipboard");
+};
+
+const downloadOutput = (format = "txt") => {
+  if (!output) {
+    showToast("Nothing to download");
+    return;
+  }
+
+  const baseName = title || "draft";
+  let mime = "text/plain";
+  let ext = "txt";
+
+  if (format === "doc") {
+    mime = "application/msword";
+    ext = "doc";
+  }
+
+  const blob = new Blob([output], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${baseName}.${ext}`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Downloaded as .${ext.toUpperCase()}`);
+};
+
+  
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
 
@@ -991,6 +1029,9 @@ setPromptNotes("");
   title="Draft output"
   subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
   right={
+  <div className="flex items-center gap-2">
+
+    {/* Score pill */}
     <Pill
       level={
         typeof selectedVersion?.score === "number"
@@ -999,13 +1040,35 @@ setPromptNotes("");
             : selectedVersion.score >= 70
             ? "average"
             : "poor"
-          : undefined // no colour when there is no score yet
+          : undefined
       }
       className="px-3"
     >
       {selectedScoreMeta.label}
     </Pill>
-  }
+
+    {/* Copy button */}
+    <Button variant="quiet" className="text-xs" onClick={copyOutput}>
+      Copy
+    </Button>
+
+    {/* Download TXT */}
+    <Button variant="quiet" className="text-xs" onClick={() => downloadOutput("txt")}>
+      .TXT
+    </Button>
+
+    {/* Download DOC */}
+    <Button variant="quiet" className="text-xs" onClick={() => downloadOutput("doc")}>
+      .DOC
+    </Button>
+
+    {/* PDF placeholder */}
+    <Button variant="quiet" className="text-xs opacity-60 cursor-not-allowed" disabled>
+      .PDF (soon)
+    </Button>
+    
+  </div>
+}
 />
 
                   <CardBody className="space-y-3">
