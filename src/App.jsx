@@ -530,17 +530,20 @@ setPromptNotes("");
   // -----------------------------
   
   // ---- Output actions ----
-const copyOutput = () => {
-  if (!output) {
+
+  const effectiveText = output || selectedVersion?.content || "";
+
+  const copyOutput = () => {
+  if (!effectiveText) {
     showToast("Nothing to copy");
     return;
   }
-  navigator.clipboard.writeText(output);
+  navigator.clipboard.writeText(effectiveText);
   showToast("Copied to clipboard");
 };
 
 const downloadOutput = (format = "txt") => {
-  if (!output) {
+  if (!effectiveText) {
     showToast("Nothing to download");
     return;
   }
