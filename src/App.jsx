@@ -1137,7 +1137,7 @@ const downloadOutput = (format = "txt") => {
               : selectedVersion.score >= 70
               ? "average"
               : "poor"
-            : undefined // no colour when there is no score yet
+            : undefined
         }
         className="px-3"
       >
@@ -1146,7 +1146,7 @@ const downloadOutput = (format = "txt") => {
     }
   />
 
-  <CardBody className="space-y-3">
+  <CardBody className="space-y-4">
     <Textarea
       rows={18}
       value={output || selectedVersion?.content || ""}
@@ -1155,58 +1155,55 @@ const downloadOutput = (format = "txt") => {
       className="placeholder:text-gray-400"
     />
 
-    <p className="text-xs text-gray-500 mt-1">
-      You can edit this draft directly. Use{" "}
-      <strong>Rewrite</strong> to generate an updated
-      version while keeping this one saved.
+    <p className="text-xs text-gray-500 leading-relaxed">
+      You can edit this draft directly. Use <strong>Rewrite</strong> to
+      generate an updated version while keeping this one saved.
     </p>
 
+    {/* Export options block – below the editor */}
+    <div className="pt-3 mt-1 border-t border-gray-100 space-y-2">
+      <div className="text-sm font-medium text-gray-800">
+        Export &amp; download
+      </div>
 
-    {/* Export options block – now BELOW the editor */}
-    <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
-  <div className="text-sm font-medium text-gray-800">
-    Export &amp; download
-  </div>
+      <p className="text-xs text-gray-500">
+        Copy the draft or download a file to use in Word or other tools.
+      </p>
 
-  <p className="text-xs text-gray-500">
-    Copy the draft or download a file to use in Word or other tools.
-  </p>
-
-
-  <div className="flex flex-wrap gap-2">
-    <Button
-      variant="quiet"
-      className="text-xs"
-      onClick={copyOutput}
-    >
-      Copy to clipboard
-    </Button>
-    <Button
-      variant="quiet"
-      className="text-xs"
-      onClick={() => downloadOutput("txt")}
-    >
-      Download .TXT
-    </Button>
-    <Button
-      variant="quiet"
-      className="text-xs"
-      onClick={() => downloadOutput("doc")}
-    >
-      Download .DOC
-    </Button>
-    <Button
-      variant="quiet"
-      className="text-xs opacity-60 cursor-not-allowed"
-      disabled
-    >
-      .PDF (coming soon)
-    </Button>
-  </div>
-</div>
-
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="quiet"
+          className="text-xs"
+          onClick={copyOutput}
+        >
+          Copy to clipboard
+        </Button>
+        <Button
+          variant="quiet"
+          className="text-xs"
+          onClick={() => downloadOutput("txt")}
+        >
+          Download .TXT
+        </Button>
+        <Button
+          variant="quiet"
+          className="text-xs"
+          onClick={() => downloadOutput("doc")}
+        >
+          Download .DOC
+        </Button>
+        <Button
+          variant="quiet"
+          className="text-xs opacity-60 cursor-not-allowed"
+          disabled
+        >
+          .PDF (coming soon)
+        </Button>
+      </div>
+    </div>
   </CardBody>
 </Card>
+
 
 
                {/* Versions – timeline style, newest first */}
