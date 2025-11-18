@@ -244,6 +244,13 @@ const getScoreMeta = (score) => {
   };
 };
 
+const getScenarioLabel = (id) =>
+  SCENARIO_OPTIONS.find((s) => s.id === id)?.label || id;
+
+const getOutputLabel = (value) =>
+  OUTPUT_TYPES.find((o) => o.value === value)?.label || value;
+
+
 // -----------------------------
 // App Component
 // -----------------------------
@@ -442,17 +449,23 @@ export default function App() {
 
       const versionNumber = versions.length + 1;
       const newVersion = {
-        id: crypto.randomUUID(),
-        versionNumber,
-        timestamp: new Date().toISOString(),
-        content: out,
-        comment: "Initial generation",
-        score: Math.round(Math.random() * 40) + 60,
-        metrics: buildMetrics(),
-        publicSearch,
-        urls: urlSources,
-        model: { id: modelId, temperature, maxTokens },
-      };
+  id: crypto.randomUUID(),
+  versionNumber,
+  timestamp: new Date().toISOString(),
+  content: out,
+  comment: "Initial generation",
+  score: Math.round(Math.random() * 40) + 60,
+  metrics: buildMetrics(),
+  publicSearch,
+  urls: urlSources,
+  model: { id: modelId, temperature, maxTokens },
+
+  // NEW: capture context
+  workspaceMode,
+  scenario: workspaceMode === "client" ? selectedScenario : null,
+  outputTypes: [...selectedTypes],
+};
+
 
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(newVersion.id);
@@ -502,19 +515,25 @@ export default function App() {
 
       const versionNumber = versions.length + 1;
       const newVersion = {
-        id: crypto.randomUUID(),
-        versionNumber,
-        timestamp: new Date().toISOString(),
-        content: out,
-        comment: `${summarizeRewrite(promptNotes)} (${
-          promptNotes || "no explicit notes"
-        })`,
-        score: Math.round(Math.random() * 40) + 60,
-        metrics: buildMetrics(),
-        publicSearch,
-        urls: urlSources,
-        model: { id: modelId, temperature, maxTokens },
-      };
+  id: crypto.randomUUID(),
+  versionNumber,
+  timestamp: new Date().toISOString(),
+  content: out,
+  comment: `${summarizeRewrite(promptNotes)} (${
+    promptNotes || "no explicit notes"
+  })`,
+  score: Math.round(Math.random() * 40) + 60,
+  metrics: buildMetrics(),
+  publicSearch,
+  urls: urlSources,
+  model: { id: modelId, temperature, maxTokens },
+
+  // NEW: capture context
+  workspaceMode,
+  scenario: workspaceMode === "client" ? selectedScenario : base.scenario || null,
+  outputTypes: [...selectedTypes],
+};
+
 
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(newVersion.id);
@@ -1389,16 +1408,38 @@ export default function App() {
 
                                   {/* Metadata row */}
                                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                                    <span>
-                                      Public search:{" "}
-                                      {v.publicSearch ? "Enabled" : "Disabled"}
-                                    </span>
-                                    {Array.isArray(v.urls) && v.urls.length > 0 && (
-                                      <span className="truncate">
-                                        URLs: {v.urls.map((u) => u.url).join(", ")}
-                                      </span>
-                                    )}
-                                  </div>
+  <span>
+    Public search: {v.publicSearch ? "Enabled" : "Disabled"}
+  </span>
+
+  {v.workspaceMode && (
+    <span>
+      Workspace: {v.workspaceMode === "client" ? "Client" : "Generic"}
+    </span>
+  )}
+
+  {v.scenario && (
+    <span>
+      Scenario: {getScenarioLabel(v.scenario)}
+    </span>
+  )}
+
+  {Array.isArray(v.outputTypes) && v.outputTypes.length > 0 && (
+    <span className="truncate">
+      Outputs:{" "}
+      {v.outputTypes
+        .map((ot) => getOutputLabel(ot))
+        .join(", ")}
+    </span>
+  )}
+
+  {Array.isArray(v.urls) && v.urls.length > 0 && (
+    <span className="truncate">
+      URLs: {v.urls.map((u) => u.url).join(", ")}
+    </span>
+  )}
+</div>
+
 
                                   {/* Actions row */}
                                   <div className="flex items-center justify-end gap-2 pt-1">
