@@ -1216,59 +1216,93 @@ export default function App() {
                       }
                     />
                     <CardBody className="space-y-3">
-                      <Textarea
-                        rows={18}
-                        value={output || selectedVersion?.content || ""}
-                        onChange={(e) => setOutput(e.target.value)}
-                        placeholder="Generated content..."
-                        className="placeholder:text-gray-400"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        You can edit this draft directly. Use{" "}
-                        <strong>Rewrite</strong> to generate an updated version
-                        while keeping this one saved.
-                      </p>
+  {/* Context summary */}
+  <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-1">
+    <span className="px-2 py-0.5 rounded-full bg-gray-100">
+      Title:{" "}
+      <span className="font-medium">
+        {title || "Untitled draft"}
+      </span>
+    </span>
 
-                      <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
-                        <div className="text-sm font-medium text-gray-800">
-                          Export &amp; download
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          Copy the draft or download a file to use in Word or
-                          other tools.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            variant="quiet"
-                            className="text-xs"
-                            onClick={copyOutput}
-                          >
-                            Copy to clipboard
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            className="text-xs"
-                            onClick={() => downloadOutput("txt")}
-                          >
-                            Download .TXT
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            className="text-xs"
-                            onClick={() => downloadOutput("doc")}
-                          >
-                            Download .DOC
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            className="text-xs opacity-60 cursor-not-allowed"
-                            disabled
-                          >
-                            .PDF (coming soon)
-                          </Button>
-                        </div>
-                      </div>
-                    </CardBody>
+    {hasOutputTypes && (
+      <span className="flex flex-wrap items-center gap-1">
+        Output types:
+        {selectedTypes.map((ot) => (
+          <span
+            key={ot}
+            className="px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200"
+          >
+            {getOutputLabel(ot)}
+          </span>
+        ))}
+      </span>
+    )}
+
+    <span className="px-2 py-0.5 rounded-full bg-gray-100">
+      Public search:{" "}
+      <span className="font-medium">
+        {publicSearch ? "On" : "Off"}
+      </span>
+    </span>
+  </div>
+
+  <Textarea
+    rows={18}
+    value={output || selectedVersion?.content || ""}
+    onChange={(e) => setOutput(e.target.value)}
+    placeholder="Generated content..."
+    className="placeholder:text-gray-400"
+  />
+
+  <p className="text-xs text-gray-500 mt-1">
+    You can edit this draft directly. Use{" "}
+    <strong>Rewrite</strong> to generate an updated version
+    while keeping this one saved.
+  </p>
+
+  {/* Export options block – below the editor */}
+  <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
+    <div className="text-sm font-medium text-gray-800">
+      Export &amp; download
+    </div>
+    <p className="text-xs text-gray-500">
+      Copy the draft or download a file to use in Word or
+      other tools.
+    </p>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        variant="quiet"
+        className="text-xs"
+        onClick={copyOutput}
+      >
+        Copy to clipboard
+      </Button>
+      <Button
+        variant="quiet"
+        className="text-xs"
+        onClick={() => downloadOutput("txt")}
+      >
+        Download .TXT
+      </Button>
+      <Button
+        variant="quiet"
+        className="text-xs"
+        onClick={() => downloadOutput("doc")}
+      >
+        Download .DOC
+      </Button>
+      <Button
+        variant="quiet"
+        className="text-xs opacity-60 cursor-not-allowed"
+        disabled
+      >
+        .PDF (coming soon)
+      </Button>
+    </div>
+  </div>
+</CardBody>
+
                   </Card>
 
                   <Card>
