@@ -551,15 +551,16 @@ export default function App() {
   setSelectedVersionId(null);
   setVersions([]);
   setOutput("");
-  setPromptNotes("");
+  setPromptNotes([]);
   setSelectedTypes([]);
   setTitle("");
-  setSelectedScenario(null);   // reset client scenario
   setActivePage("dashboard");
   setWorkspaceMode("generic");
+  setSelectedScenario(null);   // NEW: clear client scenario
   showToast("New project started");
   setShowNewConfirm(false);
 };
+
 
 
 
@@ -1444,12 +1445,26 @@ export default function App() {
                                   {/* Actions row */}
                                   <div className="flex items-center justify-end gap-2 pt-1">
                                     <Button
-                                      variant="quiet"
-                                      onClick={() => setSelectedVersionId(v.id)}
-                                      className="text-xs"
-                                    >
-                                      View
-                                    </Button>
+  variant="quiet"
+  onClick={() => {
+    setSelectedVersionId(v.id);
+    setOutput(v.content || "");
+
+    // Restore output types if present
+    if (Array.isArray(v.outputTypes)) {
+      setSelectedTypes(v.outputTypes);
+    }
+
+    // Restore public search flag if present
+    if (typeof v.publicSearch === "boolean") {
+      setPublicSearch(v.publicSearch);
+    }
+  }}
+  className="text-xs"
+>
+  View
+</Button>
+
                                     <Button
                                       variant="danger"
                                       onClick={() =>
