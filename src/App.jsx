@@ -212,6 +212,9 @@ const PAGE_META = {
 const getModelLabel = (id) =>
   MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
 
+const getScenarioLabel = (id) =>
+  SCENARIO_OPTIONS.find((s) => s.id === id)?.label || id;
+
 const getOutputLabel = (value) =>
   OUTPUT_TYPES.find((o) => o.value === value)?.label || value;
 
@@ -517,8 +520,11 @@ export default function App() {
         urls: urlSources,
         model: { id: modelId, temperature, maxTokens },
         workspaceMode,
-        scenario: workspaceMode === "client" ? selectedScenario : base.scenario || null,
-        outputTypes: [...selectedTypes],
+        scenario: selectedScenario || base.scenario || null,
+        outputTypes: selectedTypes.length > 0
+        ? [...selectedTypes]
+        : base.outputTypes || [],
+        titleSnapshot: title || base.titleSnapshot || "",
       };
 
       setVersions((prev) => [...prev, newVersion]);
