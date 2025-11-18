@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
- 
+
 // -----------------------------
 // UI Primitive Components
 // -----------------------------
@@ -164,14 +164,12 @@ const Toggle = ({ checked, onChange }) => (
 // -----------------------------
 // Constants
 // -----------------------------
-
 const OUTPUT_TYPES = [
   { label: "Transaction text", value: "transaction" },
   { label: "Investor letter", value: "investor_letter" },
   { label: "Press release", value: "press" },
   { label: "LinkedIn post", value: "linkedin" },
 ];
-
 
 // Client-mode scenarios (you can edit this list freely)
 const SCENARIO_OPTIONS = [
@@ -208,7 +206,6 @@ const PAGE_META = {
   },
 };
 
-
 // -----------------------------
 // Helpers
 // -----------------------------
@@ -220,7 +217,6 @@ const getOutputLabel = (value) =>
 
 // Quality score → label + Tailwind classes
 const getScoreMeta = (score) => {
-  // No score yet (new project / no versions selected)
   if (typeof score !== "number" || Number.isNaN(score)) {
     return {
       label: "No score yet",
@@ -248,13 +244,8 @@ const getScoreMeta = (score) => {
   };
 };
 
-
 const getScenarioLabel = (id) =>
   SCENARIO_OPTIONS.find((s) => s.id === id)?.label || id;
-
-const getOutputLabel = (value) =>
-  OUTPUT_TYPES.find((o) => o.value === value)?.label || value;
-
 
 // -----------------------------
 // App Component
@@ -301,7 +292,7 @@ export default function App() {
   const [publicSearch, setPublicSearch] = useState(false);
   const [promptNotes, setPromptNotes] = useState("");
   const [title, setTitle] = useState("");
- 
+
   const toggleType = (t) => {
     setSelectedTypes((prev) =>
       prev.includes(t) ? prev.filter((v) => v !== t) : [...prev, t]
@@ -433,26 +424,24 @@ export default function App() {
         ...urlSources.map((u) => u.text),
       ].join("\n");
 
-            const body = {
-  mode: "generate",
-  title,
-  notes: promptNotes,
-  selectedTypes,
-  publicSearch,
-  workspaceMode,
-  scenario: selectedScenario,
-  model: { id: modelId, temperature, maxTokens },
-  modelId,
-  temperature,
-  maxTokens,
-  text: allText,
-};
-
-
+      const body = {
+        mode: "generate",
+        title,
+        notes: promptNotes,
+        selectedTypes,
+        publicSearch,
+        workspaceMode,
+        scenario: workspaceMode === "client" ? selectedScenario : null,
+        model: { id: modelId, temperature, maxTokens },
+        modelId,
+        temperature,
+        maxTokens,
+        text: allText,
+      };
 
       const out = await runGenerateRequest(body);
 
-            const versionNumber = versions.length + 1;
+      const versionNumber = versions.length + 1;
       const newVersion = {
         id: crypto.randomUUID(),
         versionNumber,
@@ -464,20 +453,10 @@ export default function App() {
         publicSearch,
         urls: urlSources,
         model: { id: modelId, temperature, maxTokens },
-
-        // NEW: metadata for history
         workspaceMode,
-        scenario: selectedScenario,
+        scenario: workspaceMode === "client" ? selectedScenario : null,
         outputTypes: [...selectedTypes],
       };
-
-
-  // NEW: capture context
-  workspaceMode,
-  scenario: workspaceMode === "client" ? selectedScenario : null,
-  outputTypes: [...selectedTypes],
-};
-
 
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(newVersion.id);
@@ -505,27 +484,25 @@ export default function App() {
         ...urlSources.map((u) => u.text),
       ].join("\n");
 
-        const body = {
-  mode: "rewrite",
-  title,
-  notes: promptNotes,
-  selectedTypes,
-  publicSearch,
-  workspaceMode,
-  scenario: selectedScenario,
-  model: { id: modelId, temperature, maxTokens },
-  modelId,
-  temperature,
-  maxTokens,
-  text: allText,
-  previousContent: base.content,
-};
-
-
+      const body = {
+        mode: "rewrite",
+        title,
+        notes: promptNotes,
+        selectedTypes,
+        publicSearch,
+        workspaceMode,
+        scenario: workspaceMode === "client" ? selectedScenario : base.scenario || null,
+        model: { id: modelId, temperature, maxTokens },
+        modelId,
+        temperature,
+        maxTokens,
+        text: allText,
+        previousContent: base.content,
+      };
 
       const out = await runGenerateRequest(body);
 
-            const versionNumber = versions.length + 1;
+      const versionNumber = versions.length + 1;
       const newVersion = {
         id: crypto.randomUUID(),
         versionNumber,
@@ -539,20 +516,10 @@ export default function App() {
         publicSearch,
         urls: urlSources,
         model: { id: modelId, temperature, maxTokens },
-
-        // NEW: metadata for history
         workspaceMode,
-        scenario: selectedScenario,
+        scenario: workspaceMode === "client" ? selectedScenario : base.scenario || null,
         outputTypes: [...selectedTypes],
       };
-
-
-  // NEW: capture context
-  workspaceMode,
-  scenario: workspaceMode === "client" ? selectedScenario : base.scenario || null,
-  outputTypes: [...selectedTypes],
-};
-
 
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(newVersion.id);
@@ -565,23 +532,20 @@ export default function App() {
   };
 
   const handleNewOutput = () => {
-  setParsed([]);
-  setUrlSources([]);
-  setSelectedVersionId(null);
-  setVersions([]);
-  setOutput("");
-  setPromptNotes([]);
-  setSelectedTypes([]);
-  setTitle("");
-  setActivePage("dashboard");
-  setWorkspaceMode("generic");
-  setSelectedScenario(null);   // NEW: clear client scenario
-  showToast("New project started");
-  setShowNewConfirm(false);
-};
-
-
-
+    setParsed([]);
+    setUrlSources([]);
+    setSelectedVersionId(null);
+    setVersions([]);
+    setOutput("");
+    setPromptNotes("");
+    setSelectedTypes([]);
+    setTitle("");
+    setActivePage("dashboard");
+    setWorkspaceMode("generic");
+    setSelectedScenario(null);
+    showToast("New project started");
+    setShowNewConfirm(false);
+  };
 
   // selection + score meta
   const selectedVersion =
@@ -598,7 +562,8 @@ export default function App() {
     const msgs = [];
     if (OUTPUT_TYPES.length === 4) msgs.push("OK: Output types defined.");
     if (MODEL_OPTIONS.length >= 2) msgs.push("OK: Model options present.");
-    if (versions.length === 0) msgs.push("OK: No versions yet (fresh session).");
+    if (versions.length === 0)
+      msgs.push("OK: No versions yet (fresh session).");
     if (typeof publicSearch === "boolean")
       msgs.push("OK: Public search is boolean.");
     setDiagnostics(msgs);
@@ -606,11 +571,9 @@ export default function App() {
 
   const currentPageMeta = PAGE_META[activePage] || PAGE_META.dashboard;
 
-    // -----------------------------
+  // -----------------------------
   // Render
   // -----------------------------
-
-  // ---- Output actions ----
   const effectiveText = output || selectedVersion?.content || "";
 
   const copyOutput = () => {
@@ -680,7 +643,6 @@ export default function App() {
 
           {/* Middle: navigation */}
           <nav className="hidden md:flex items-center gap-3 text-sm">
-            {/* Dashboard */}
             <button
               onClick={() => setActivePage("dashboard")}
               className={
@@ -691,8 +653,6 @@ export default function App() {
             >
               Dashboard
             </button>
-
-            {/* Projects */}
             <button
               onClick={() => setActivePage("projects")}
               className={
@@ -703,8 +663,6 @@ export default function App() {
             >
               Projects
             </button>
-
-            {/* Sources */}
             <button
               onClick={() => setActivePage("sources")}
               className={
@@ -715,8 +673,6 @@ export default function App() {
             >
               Sources
             </button>
-
-            {/* Outputs */}
             <button
               onClick={() => setActivePage("outputs")}
               className={
@@ -727,8 +683,6 @@ export default function App() {
             >
               Outputs
             </button>
-
-            {/* Templates */}
             <button
               onClick={() => setActivePage("templates")}
               className={
@@ -816,7 +770,6 @@ export default function App() {
           <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
             {activePage === "dashboard" && (
               <>
-                {/* Workspace summary */}
                 <Card className="p-4">
                   <h2 className="text-sm font-semibold mb-1">Workspace</h2>
                   <p className="text-xs text-gray-500">
@@ -824,7 +777,6 @@ export default function App() {
                   </p>
                 </Card>
 
-                {/* Status summary */}
                 <Card className="p-4">
                   <h3 className="text-sm font-semibold mb-1">Status</h3>
                   <div className="flex flex-col gap-1 text-xs text-gray-600">
@@ -847,7 +799,6 @@ export default function App() {
                   </div>
                 </Card>
 
-                {/* Model & controls */}
                 <Card>
                   <CardHeader
                     title="Model & controls"
@@ -937,7 +888,6 @@ export default function App() {
                   </CardBody>
                 </Card>
 
-                {/* Diagnostics */}
                 <Card>
                   <CardHeader
                     title="Diagnostics"
@@ -994,7 +944,6 @@ export default function App() {
             {/* Dashboard – generic workspace */}
             {activePage === "dashboard" && workspaceMode === "generic" && (
               <div className="space-y-6">
-                {/* Getting started hint */}
                 {!hasInitialGeneration && (
                   <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-sm text-gray-600">
                     To get started, upload at least one source on the left,
@@ -1004,11 +953,9 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Top row: Sources + Configuration side by side */}
                 <div className="grid lg:grid-cols-2 gap-6 items-start">
                   {/* Left column: Sources + Public search */}
                   <div className="space-y-4">
-                    {/* Source documents */}
                     <Card>
                       <CardHeader
                         title="Source documents"
@@ -1039,10 +986,8 @@ export default function App() {
                           onChange={(e) => addFiles(e.target.files)}
                         />
 
-                        {/* Existing sources */}
                         <div className="mt-4 space-y-2">
-                          {parsed.length === 0 &&
-                          urlSources.length === 0 ? (
+                          {parsed.length === 0 && urlSources.length === 0 ? (
                             <p className="text-xs text-gray-500">
                               No sources added yet. Start by uploading one or
                               more files, or paste a URL to pull in public
@@ -1078,24 +1023,19 @@ export default function App() {
                           )}
                         </div>
 
-                        {/* URL input row */}
                         <div className="mt-4 flex gap-2">
                           <Input
                             placeholder="https://example.com/article"
                             value={urlInput}
                             onChange={(e) => setUrlInput(e.target.value)}
                           />
-                          <Button
-                            variant="secondary"
-                            onClick={addUrlSource}
-                          >
+                          <Button variant="secondary" onClick={addUrlSource}>
                             Add URL
                           </Button>
                         </div>
                       </CardBody>
                     </Card>
 
-                    {/* Public domain search card */}
                     <Card>
                       <CardHeader
                         title="Public domain search"
@@ -1120,468 +1060,493 @@ export default function App() {
                     </Card>
                   </div>
 
-                                  {/* Right column: Configuration */}
-                <Card>
-  <CardHeader
-    title="Configuration"
-    subtitle="Control how the engine drafts and rewrites content."
-  />
-  <CardBody className="space-y-3">
-    <div>
-      <Label>Title</Label>
-      <Input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="e.g., Q3 Portfolio Update"
-      />
-    </div>
-
-    {/* Scenario selector – client workspace only */}
-    {workspaceMode === "client" && (
-      <div>
-        <Label>Scenario (client workspace)</Label>
-        <p className="text-xs text-gray-500 mb-2">
-          Pick the situation you are drafting for. This will later control which
-          client-specific prompt and review tables are used.
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          {SCENARIO_OPTIONS.map((s) => {
-            const active = selectedScenario === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setSelectedScenario(s.id)}
-                className={
-                  "px-3 py-1.5 rounded-full text-xs border transition " +
-                  (active
-                    ? "bg-black text-white border-black shadow-sm"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-                }
-              >
-                {s.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    <div>
-      <Label>Output types</Label>
-      <p className="text-xs text-gray-500 mb-2">
-        Choose one or more content formats to generate in this run.
-      </p>
-
-      <div className="flex flex-wrap gap-2">
-        {OUTPUT_TYPES.map((o) => {
-          const active = selectedTypes.includes(o.value);
-          return (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => toggleType(o.value)}
-              className={
-                "px-3 py-1.5 rounded-full text-xs border transition " +
-                (active
-                  ? "bg-black text-white border-black shadow-sm"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-              }
-            >
-              {o.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-
-    <div>
-      <Label>Prompt notes / rewrite instructions</Label>
-      <Textarea
-        rows={4}
-        value={promptNotes}
-        onChange={(e) => setPromptNotes(e.target.value)}
-        placeholder="Key points, tone, constraints, or rewrite instructions..."
-        className="placeholder:text-gray-400"
-      />
-      <p className="mt-1 text-xs text-gray-500">
-        Use this to guide the initial draft or to tell the engine how to change
-        the current version (e.g. &quot;shorter, more formal, add risk
-        section&quot;).
-      </p>
-    </div>
-
-    {/* Buttons row with state-based disabling */}
-    <div className="flex gap-2 flex-wrap">
-      <Button
-        variant="primary"
-        onClick={handleGenerate}
-        disabled={
-          hasInitialGeneration ||
-          isGenerating ||
-          isRewriting ||
-          !hasSources ||
-          !hasOutputTypes
-        }
-      >
-        {isGenerating && <Spinner />}
-        {isGenerating ? "Generating..." : "Generate"}
-      </Button>
-
-      <Button
-        onClick={handleRewrite}
-        disabled={!hasInitialGeneration || isRewriting || isGenerating}
-      >
-        {isRewriting && <Spinner />}
-        {isRewriting ? "Rewriting..." : "Rewrite"}
-      </Button>
-
-      <Button variant="quiet" onClick={() => setShowRubric(true)}>
-        View rubrics
-      </Button>
-    </div>
-  </CardBody>
-</Card>
-
-
-                </div>
-
-                              {/* Second block: Output, Versions, Roadmap stacked */}
-              <div className="space-y-6">
-                {/* Draft output */}
-                <Card>
-                  <CardHeader
-                    title="Draft output"
-                    subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-                    right={
-                      <Pill
-                        level={
-                          typeof selectedVersion?.score === "number"
-                            ? selectedVersion.score >= 85
-                              ? "good"
-                              : selectedVersion.score >= 70
-                              ? "average"
-                              : "poor"
-                            : undefined // no colour when there is no score yet
-                        }
-                        className="px-3"
-                      >
-                        {selectedScoreMeta.label}
-                      </Pill>
-                    }
-                  />
-
-                  <CardBody className="space-y-3">
-                    <Textarea
-                      rows={18}
-                      value={output || selectedVersion?.content || ""}
-                      onChange={(e) => setOutput(e.target.value)}
-                      placeholder="Generated content..."
-                      className="placeholder:text-gray-400"
+                  {/* Right column: Configuration */}
+                  <Card>
+                    <CardHeader
+                      title="Configuration"
+                      subtitle="Control how the engine drafts and rewrites content."
                     />
-
-                    <p className="text-xs text-gray-500 mt-1">
-                      You can edit this draft directly. Use{" "}
-                      <strong>Rewrite</strong> to generate an updated
-                      version while keeping this one saved.
-                    </p>
-
-                    {/* Export options block – below the editor */}
-                    <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
-                      <div className="text-sm font-medium text-gray-800">
-                        Export &amp; download
-                      </div>
-
-                      <p className="text-xs text-gray-500">
-                        Copy the draft or download a file to use in Word or other tools.
-                      </p>
-
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant="quiet"
-                          className="text-xs"
-                          onClick={copyOutput}
-                        >
-                          Copy to clipboard
-                        </Button>
-                        <Button
-                          variant="quiet"
-                          className="text-xs"
-                          onClick={() => downloadOutput("txt")}
-                        >
-                          Download .TXT
-                        </Button>
-                        <Button
-                          variant="quiet"
-                          className="text-xs"
-                          onClick={() => downloadOutput("doc")}
-                        >
-                          Download .DOC
-                        </Button>
-                        <Button
-                          variant="quiet"
-                          className="text-xs opacity-60 cursor-not-allowed"
-                          disabled
-                        >
-                          .PDF (coming soon)
-                        </Button>
-                      </div>
-                    </div>
-                  </CardBody>
-                </Card>
-
-                
-                {/* Versions – timeline style, newest first */}
-                <Card>
-                  <CardHeader
-                    title="Versions"
-                    subtitle="Saved versions with comments and scores."
-                  />
-                  <CardBody>
-                    {sortedVersions.length === 0 ? (
-                      <p className="text-sm text-gray-500">
-                        No versions yet. Once you click <strong>Generate</strong>,
-                        your first draft will appear here as Version 1, and each
-                        rewrite will be saved as a new version.
-                      </p>
-                    ) : (
-                      <div className="relative">
-                        {/* Vertical timeline line */}
-                        <div
-                          className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
-                          aria-hidden="true"
+                    <CardBody className="space-y-3">
+                      <div>
+                        <Label>Title</Label>
+                        <Input
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="e.g., Q3 Portfolio Update"
                         />
+                      </div>
 
-                        <div className="space-y-4">
-                          {sortedVersions.map((v) => {
-                            const isSelected = selectedVersionId === v.id;
-                            const vScoreMeta = getScoreMeta(v.score);
-
-                            return (
-                              <div key={v.id} className="relative pl-6">
-                                {/* Dot on the timeline */}
-                                <span
+                      {/* Scenario selector – only visible if user switches to client mode, but kept here for symmetry */}
+                      {workspaceMode === "client" && (
+                        <div>
+                          <Label>Scenario (client workspace)</Label>
+                          <p className="text-xs text-gray-500 mb-2">
+                            Pick the situation you are drafting for. This will
+                            later control which client-specific prompt and
+                            review tables are used.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {SCENARIO_OPTIONS.map((s) => {
+                              const active = selectedScenario === s.id;
+                              return (
+                                <button
+                                  key={s.id}
+                                  type="button"
+                                  onClick={() => setSelectedScenario(s.id)}
                                   className={
-                                    "absolute left-1 top-3 w-2 h-2 rounded-full border " +
-                                    (isSelected
-                                      ? "bg-black border-black"
-                                      : "bg-white border-gray-400")
-                                  }
-                                  aria-hidden="true"
-                                />
-
-                                {/* Version card */}
-                                <div
-                                  className={
-                                    "rounded-2xl border p-3 space-y-2 transition " +
-                                    (isSelected
-                                      ? "bg-gray-50 border-gray-500"
-                                      : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
+                                    "px-3 py-1.5 rounded-full text-xs border transition " +
+                                    (active
+                                      ? "bg-black text-white border-black shadow-sm"
+                                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
                                   }
                                 >
-                                  {/* Top row: version label + timestamp */}
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-2">
-                                      <Pill variant="subtle" className="px-2">
-                                        V{v.versionNumber}
-                                      </Pill>
-                                      {isSelected && (
-                                        <span className="text-[11px] text-gray-500">
-                                          Currently viewing
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      {new Date(v.timestamp).toLocaleString()}
-                                    </div>
-                                  </div>
+                                  {s.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
 
-                                  {/* Comment + score/model pills on same row */}
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                    <div className="text-sm text-gray-800">
-                                      {v.comment}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                                      {/* coloured score pill */}
-                                      <Pill
-                                        level={
-                                          typeof v.score === "number"
-                                            ? v.score >= 85
-                                              ? "good"
-                                              : v.score >= 70
-                                              ? "average"
-                                              : "poor"
-                                            : "default"
-                                        }
-                                        className="px-2"
-                                      >
-                                        {vScoreMeta.label}
-                                      </Pill>
+                      <div>
+                        <Label>Output types</Label>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Choose one or more content formats to generate in this
+                          run.
+                        </p>
 
-                                      {/* single model pill */}
-                                      <Pill variant="outline" className="px-2">
-                                        {getModelLabel(v.model?.id)}
-                                      </Pill>
-                                    </div>
-                                  </div>
-
-                                                                    {/* Metadata row */}
-                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                                    <span>
-                                      Workspace:{" "}
-                                      {v.workspaceMode === "client"
-                                        ? "Client"
-                                        : "Generic"}
-                                    </span>
-
-                                    {v.scenario && (
-                                      <span>
-                                        Scenario:{" "}
-                                        <span className="font-medium">
-                                          {v.scenario}
-                                        </span>
-                                      </span>
-                                    )}
-
-                                    {Array.isArray(v.outputTypes) &&
-                                      v.outputTypes.length > 0 && (
-                                        <span className="flex flex-wrap items-center gap-1">
-                                          Output types:
-                                          {v.outputTypes.map((ot) => (
-                                            <span
-                                              key={ot}
-                                              className="px-1.5 py-0.5 rounded-full border border-gray-300 bg-gray-50 text-[10px] text-gray-700"
-                                            >
-                                              {getOutputLabel(ot)}
-                                            </span>
-                                          ))}
-                                        </span>
-                                      )}
-
-                                    <span>
-                                      Public search:{" "}
-                                      {v.publicSearch ? "Enabled" : "Disabled"}
-                                    </span>
-
-                                    {Array.isArray(v.urls) &&
-                                      v.urls.length > 0 && (
-                                        <span className="truncate">
-                                          URLs:{" "}
-                                          {v.urls.map((u) => u.url).join(", ")}
-                                        </span>
-                                      )}
-                                  </div>
-
-
-
-                                  {/* Actions row */}
-                                  <div className="flex items-center justify-end gap-2 pt-1">
-                                    <Button
-  variant="quiet"
-  onClick={() => {
-    setSelectedVersionId(v.id);
-    setOutput(v.content || "");
-
-    // Restore output types if present
-    if (Array.isArray(v.outputTypes)) {
-      setSelectedTypes(v.outputTypes);
-    }
-
-    // Restore public search flag if present
-    if (typeof v.publicSearch === "boolean") {
-      setPublicSearch(v.publicSearch);
-    }
-  }}
-  className="text-xs"
->
-  View
-</Button>
-
-                                    <Button
-                                      variant="danger"
-                                      onClick={() =>
-                                        setVersions((prev) =>
-                                          prev.filter((x) => x.id !== v.id)
-                                        )
-                                      }
-                                      className="text-xs"
-                                    >
-                                      Delete
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
+                        <div className="flex flex-wrap gap-2">
+                          {OUTPUT_TYPES.map((o) => {
+                            const active = selectedTypes.includes(o.value);
+                            return (
+                              <button
+                                key={o.value}
+                                type="button"
+                                onClick={() => toggleType(o.value)}
+                                className={
+                                  "px-3 py-1.5 rounded-full text-xs border transition " +
+                                  (active
+                                    ? "bg-black text-white border-black shadow-sm"
+                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
+                                }
+                              >
+                                {o.label}
+                              </button>
                             );
                           })}
                         </div>
                       </div>
-                    )}
-                  </CardBody>
-                </Card>
 
-                {/* Roadmap */}
-                <Card>
-                  <CardHeader
-                    title="Future roadmap"
-                    subtitle="Planned capabilities for this content engine."
-                    right={
-                      <Button
-                        variant="quiet"
-                        className="text-xs"
-                        onClick={() => setShowRoadmap((v) => !v)}
-                      >
-                        {showRoadmap ? "Hide" : "Show"}
-                      </Button>
-                    }
-                  />
-                  {showRoadmap && (
-                    <CardBody className="space-y-2">
-                      <p className="text-xs text-gray-500">
-                        These items are not yet live. They outline where the
-                        product is heading as the prototype matures.
-                      </p>
-                      <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
-  <li>Richer source ingestion (PDF, DOCX and structured data feeds).</li>
-  <li>Deeper model integration for drafting and rewriting via /generate.</li>
-  <li>Output-specific prompts based on selected content types.</li>
-  <li>
-    Scenario-aware, multi-output generation that produces separate deliverables
-    for each selected output type (e.g. investor note, press release, LinkedIn post).
-  </li>
-  <li>Templated outputs and reusable blueprints per document family.</li>
-  <li>Scoring engine tied to detailed rubrics and a feedback loop.</li>
-  <li>Dedicated sources table with traceability and filtering.</li>
-  <li>Statement reliability and inference tracking views.</li>
-  <li>Role-based access controls, audit logs and enterprise integrations.</li>
-  <li>Persistent projects stored under the Projects tab with saved workspaces.</li>
-  <li>Additional UI polish, theming options and efficiency tweaks.</li>
-  <li>
-    Performance instrumentation and optimisation for differences between
-    Generate and Rewrite (token counts, latency, profiling).
-  </li>
-  <li>
-    Replace random scores with a rubric-based quality scoring engine that
-    captures structure, clarity, tone and spelling.
-  </li>
-  <li>
-    Stricter enforcement of output constraints such as maximum word counts,
-    using both prompt design and post-processing to trim to target length.
-  </li>
-</ul>
+                      <div>
+                        <Label>Prompt notes / rewrite instructions</Label>
+                        <Textarea
+                          rows={4}
+                          value={promptNotes}
+                          onChange={(e) => setPromptNotes(e.target.value)}
+                          placeholder="Key points, tone, constraints, or rewrite instructions..."
+                          className="placeholder:text-gray-400"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Use this to guide the initial draft or to tell the
+                          engine how to change the current version (e.g.
+                          &quot;shorter, more formal, add risk section&quot;).
+                        </p>
+                      </div>
 
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          variant="primary"
+                          onClick={handleGenerate}
+                          disabled={
+                            hasInitialGeneration ||
+                            isGenerating ||
+                            isRewriting ||
+                            !hasSources ||
+                            !hasOutputTypes
+                          }
+                        >
+                          {isGenerating && <Spinner />}
+                          {isGenerating ? "Generating..." : "Generate"}
+                        </Button>
+
+                        <Button
+                          onClick={handleRewrite}
+                          disabled={
+                            !hasInitialGeneration ||
+                            isRewriting ||
+                            isGenerating
+                          }
+                        >
+                          {isRewriting && <Spinner />}
+                          {isRewriting ? "Rewriting..." : "Rewrite"}
+                        </Button>
+
+                        <Button
+                          variant="quiet"
+                          onClick={() => setShowRubric(true)}
+                        >
+                          View rubrics
+                        </Button>
+                      </div>
                     </CardBody>
-                  )}
-                </Card>
-              </div>
+                  </Card>
+                </div>
 
+                {/* Output + Versions + Roadmap */}
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader
+                      title="Draft output"
+                      subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
+                      right={
+                        <Pill
+                          level={
+                            typeof selectedVersion?.score === "number"
+                              ? selectedVersion.score >= 85
+                                ? "good"
+                                : selectedVersion.score >= 70
+                                ? "average"
+                                : "poor"
+                              : undefined
+                          }
+                          className="px-3"
+                        >
+                          {selectedScoreMeta.label}
+                        </Pill>
+                      }
+                    />
+                    <CardBody className="space-y-3">
+                      <Textarea
+                        rows={18}
+                        value={output || selectedVersion?.content || ""}
+                        onChange={(e) => setOutput(e.target.value)}
+                        placeholder="Generated content..."
+                        className="placeholder:text-gray-400"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        You can edit this draft directly. Use{" "}
+                        <strong>Rewrite</strong> to generate an updated version
+                        while keeping this one saved.
+                      </p>
+
+                      <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
+                        <div className="text-sm font-medium text-gray-800">
+                          Export &amp; download
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Copy the draft or download a file to use in Word or
+                          other tools.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="quiet"
+                            className="text-xs"
+                            onClick={copyOutput}
+                          >
+                            Copy to clipboard
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            className="text-xs"
+                            onClick={() => downloadOutput("txt")}
+                          >
+                            Download .TXT
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            className="text-xs"
+                            onClick={() => downloadOutput("doc")}
+                          >
+                            Download .DOC
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            className="text-xs opacity-60 cursor-not-allowed"
+                            disabled
+                          >
+                            .PDF (coming soon)
+                          </Button>
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  <Card>
+                    <CardHeader
+                      title="Versions"
+                      subtitle="Saved versions with comments and scores."
+                    />
+                    <CardBody>
+                      {sortedVersions.length === 0 ? (
+                        <p className="text-sm text-gray-500">
+                          No versions yet. Once you click{" "}
+                          <strong>Generate</strong>, your first draft will
+                          appear here as Version 1, and each rewrite will be
+                          saved as a new version.
+                        </p>
+                      ) : (
+                        <div className="relative">
+                          <div
+                            className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
+                            aria-hidden="true"
+                          />
+                          <div className="space-y-4">
+                            {sortedVersions.map((v) => {
+                              const isSelected = selectedVersionId === v.id;
+                              const vScoreMeta = getScoreMeta(v.score);
+                              return (
+                                <div key={v.id} className="relative pl-6">
+                                  <span
+                                    className={
+                                      "absolute left-1 top-3 w-2 h-2 rounded-full border " +
+                                      (isSelected
+                                        ? "bg-black border-black"
+                                        : "bg-white border-gray-400")
+                                    }
+                                    aria-hidden="true"
+                                  />
+                                  <div
+                                    className={
+                                      "rounded-2xl border p-3 space-y-2 transition " +
+                                      (isSelected
+                                        ? "bg-gray-50 border-gray-500"
+                                        : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
+                                    }
+                                  >
+                                    <div className="flex items-center justify-between gap-3">
+                                      <div className="flex items-center gap-2">
+                                        <Pill
+                                          variant="subtle"
+                                          className="px-2"
+                                        >
+                                          V{v.versionNumber}
+                                        </Pill>
+                                        {isSelected && (
+                                          <span className="text-[11px] text-gray-500">
+                                            Currently viewing
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {new Date(
+                                          v.timestamp
+                                        ).toLocaleString()}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                      <div className="text-sm text-gray-800">
+                                        {v.comment}
+                                      </div>
+                                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                                        <Pill
+                                          level={
+                                            typeof v.score === "number"
+                                              ? v.score >= 85
+                                                ? "good"
+                                                : v.score >= 70
+                                                ? "average"
+                                                : "poor"
+                                              : "default"
+                                          }
+                                          className="px-2"
+                                        >
+                                          {vScoreMeta.label}
+                                        </Pill>
+                                        <Pill
+                                          variant="outline"
+                                          className="px-2"
+                                        >
+                                          {getModelLabel(v.model?.id)}
+                                        </Pill>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                                      <span>
+                                        Workspace:{" "}
+                                        {v.workspaceMode === "client"
+                                          ? "Client"
+                                          : "Generic"}
+                                      </span>
+
+                                      {v.scenario && (
+                                        <span>
+                                          Scenario:{" "}
+                                          <span className="font-medium">
+                                            {getScenarioLabel(v.scenario)}
+                                          </span>
+                                        </span>
+                                      )}
+
+                                      {Array.isArray(v.outputTypes) &&
+                                        v.outputTypes.length > 0 && (
+                                          <span className="flex flex-wrap items-center gap-1">
+                                            Output types:
+                                            {v.outputTypes.map((ot) => (
+                                              <span
+                                                key={ot}
+                                                className="px-1.5 py-0.5 rounded-full border border-gray-300 bg-gray-50 text-[10px] text-gray-700"
+                                              >
+                                                {getOutputLabel(ot)}
+                                              </span>
+                                            ))}
+                                          </span>
+                                        )}
+
+                                      <span>
+                                        Public search:{" "}
+                                        {v.publicSearch
+                                          ? "Enabled"
+                                          : "Disabled"}
+                                      </span>
+
+                                      {Array.isArray(v.urls) &&
+                                        v.urls.length > 0 && (
+                                          <span className="truncate">
+                                            URLs:{" "}
+                                            {v.urls
+                                              .map((u) => u.url)
+                                              .join(", ")}
+                                          </span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-2 pt-1">
+                                      <Button
+                                        variant="quiet"
+                                        onClick={() => {
+                                          setSelectedVersionId(v.id);
+                                          setOutput(v.content || "");
+                                          if (Array.isArray(v.outputTypes)) {
+                                            setSelectedTypes(v.outputTypes);
+                                          }
+                                          if (
+                                            typeof v.publicSearch === "boolean"
+                                          ) {
+                                            setPublicSearch(v.publicSearch);
+                                          }
+                                        }}
+                                        className="text-xs"
+                                      >
+                                        View
+                                      </Button>
+                                      <Button
+                                        variant="danger"
+                                        onClick={() =>
+                                          setVersions((prev) =>
+                                            prev.filter(
+                                              (x) => x.id !== v.id
+                                            )
+                                          )
+                                        }
+                                        className="text-xs"
+                                      >
+                                        Delete
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </CardBody>
+                  </Card>
+
+                  <Card>
+                    <CardHeader
+                      title="Future roadmap"
+                      subtitle="Planned capabilities for this content engine."
+                      right={
+                        <Button
+                          variant="quiet"
+                          className="text-xs"
+                          onClick={() => setShowRoadmap((v) => !v)}
+                        >
+                          {showRoadmap ? "Hide" : "Show"}
+                        </Button>
+                      }
+                    />
+                    {showRoadmap && (
+                      <CardBody className="space-y-2">
+                        <p className="text-xs text-gray-500">
+                          These items are not yet live. They outline where the
+                          product is heading as the prototype matures.
+                        </p>
+                        <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
+                          <li>
+                            Richer source ingestion (PDF, DOCX and structured
+                            data feeds).
+                          </li>
+                          <li>
+                            Deeper model integration for drafting and rewriting
+                            via /generate.
+                          </li>
+                          <li>
+                            Output-specific prompts based on selected content
+                            types.
+                          </li>
+                          <li>
+                            Scenario-aware, multi-output generation that
+                            produces separate deliverables for each selected
+                            output type (e.g. investor letter, press release,
+                            LinkedIn post).
+                          </li>
+                          <li>
+                            Templated outputs and reusable blueprints per
+                            document family.
+                          </li>
+                          <li>
+                            Scoring engine tied to detailed rubrics and a
+                            feedback loop.
+                          </li>
+                          <li>
+                            Dedicated sources table with traceability and
+                            filtering.
+                          </li>
+                          <li>
+                            Statement reliability and inference tracking views.
+                          </li>
+                          <li>
+                            Role-based access controls, audit logs and
+                            enterprise integrations.
+                          </li>
+                          <li>
+                            Persistent projects stored under the Projects tab
+                            with saved workspaces.
+                          </li>
+                          <li>
+                            Additional UI polish, theming options and efficiency
+                            tweaks.
+                          </li>
+                          <li>
+                            Performance instrumentation and optimisation for
+                            differences between Generate and Rewrite (token
+                            counts, latency, profiling).
+                          </li>
+                          <li>
+                            Replace random scores with a rubric-based quality
+                            scoring engine that captures structure, clarity,
+                            tone and spelling.
+                          </li>
+                          <li>
+                            Stricter enforcement of output constraints such as
+                            maximum word counts, using both prompt design and
+                            post-processing to trim to target length.
+                          </li>
+                        </ul>
+                      </CardBody>
+                    )}
+                  </Card>
+                </div>
               </div>
             )}
 
-                        {/* Dashboard – client workspace */}
+            {/* Dashboard – client workspace */}
             {activePage === "dashboard" && workspaceMode === "client" && (
               <div className="space-y-6">
-                {/* Client overview */}
                 <Card>
                   <CardHeader
                     title="Client workspace overview"
@@ -1618,9 +1583,7 @@ export default function App() {
                   </CardBody>
                 </Card>
 
-                {/* Core configuration: style guide + prompts */}
                 <div className="grid lg:grid-cols-2 gap-6 items-start">
-                  {/* Style guide & rules */}
                   <Card>
                     <CardHeader
                       title="Client style guide & rules"
@@ -1632,7 +1595,9 @@ export default function App() {
                         client&apos;s writing guidelines and house rules.
                       </p>
                       <ul className="list-disc pl-5 space-y-1">
-                        <li>Voice &amp; tone (e.g. formal, neutral, concise).</li>
+                        <li>
+                          Voice &amp; tone (e.g. formal, neutral, concise).
+                        </li>
                         <li>
                           Investment-specific preferences (jargon usage,
                           disclaimers, risk framing).
@@ -1653,7 +1618,6 @@ export default function App() {
                     </CardBody>
                   </Card>
 
-                  {/* Prompt packs & scenarios */}
                   <Card>
                     <CardHeader
                       title="Prompt packs & scenarios"
@@ -1679,11 +1643,10 @@ export default function App() {
                   </Card>
                 </div>
 
-                {/* Review tables & QA */}
                 <Card>
                   <CardHeader
                     title="Review tables & quality checks"
-                    subtitle="Where sources, discrepancies and compliance checks will live."
+                    subtitle="Where sources, reliability and compliance checks will live."
                   />
                   <CardBody className="space-y-2 text-sm text-gray-600">
                     <p>
@@ -1696,28 +1659,34 @@ export default function App() {
                         to underlying documents or web pages.
                       </li>
                       <li>
-                        <strong>Discrepancies &amp; inferences table</strong> –
-                        highlight where the model inferred or reconciled
-                        inconsistent data.
+                        <strong>
+                          Statement reliability &amp; interpretation table
+                        </strong>{" "}
+                        – highlight where the model inferred or reconciled
+                        inconsistent data, and how confidently each statement is
+                        supported.
                       </li>
                       <li>
-                        <strong>Compliance / guideline table</strong> –
-                        show how well the output adheres to the client&apos;s
-                        style guide and constraints.
+                        <strong>Compliance &amp; transparency</strong> – show
+                        how well the output adheres to the client&apos;s style
+                        guide, disclosure expectations and restricted phrases.
+                      </li>
+                      <li>
+                        <strong>Quality score</strong> – summarise rubric-based
+                        scoring for clarity, structure, tone and correctness.
                       </li>
                     </ul>
                     <p className="text-xs text-gray-500 mt-1">
                       Eventually, each generation in the client workspace could
-                      produce both narrative text and these tables as a
-                      combined review package.
+                      produce both narrative text and these tables as a combined
+                      review package.
                     </p>
                   </CardBody>
                 </Card>
               </div>
             )}
 
-
-            {/* Placeholder: Projects */}
+            {/* Placeholder pages */}
             {activePage === "projects" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Projects</h2>
@@ -1728,35 +1697,32 @@ export default function App() {
               </Card>
             )}
 
-            {/* Placeholder: Sources */}
             {activePage === "sources" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Sources</h2>
                 <p className="text-sm text-gray-500">
-                  This page will manage uploaded files and URL sources
-                  once implemented.
+                  This page will manage uploaded files and URL sources once
+                  implemented.
                 </p>
               </Card>
             )}
 
-            {/* Placeholder: Outputs */}
             {activePage === "outputs" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Outputs</h2>
                 <p className="text-sm text-gray-500">
-                  A central repository for your generated documents is
-                  coming soon.
+                  A central repository for your generated documents is coming
+                  soon.
                 </p>
               </Card>
             )}
 
-            {/* Placeholder: Templates */}
             {activePage === "templates" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Templates</h2>
                 <p className="text-sm text-gray-500">
-                  Reusable prompt templates and blueprints will be added
-                  here later.
+                  Reusable prompt templates and blueprints will be added here
+                  later.
                 </p>
               </Card>
             )}
@@ -1767,19 +1733,15 @@ export default function App() {
         {showRubric && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-2">
-                Quality rubrics
-              </h3>
+              <h3 className="text-lg font-semibold mb-2">Quality rubrics</h3>
               <ul className="space-y-2 text-sm">
                 {selectedVersion?.metrics ? (
-                  Object.entries(selectedVersion.metrics).map(
-                    ([k, v]) => (
-                      <li key={k} className="flex justify-between">
-                        <span>{k}</span>
-                        <span>{Math.round(v * 100)}/100</span>
-                      </li>
-                    )
-                  )
+                  Object.entries(selectedVersion.metrics).map(([k, v]) => (
+                    <li key={k} className="flex justify-between">
+                      <span>{k}</span>
+                      <span>{Math.round(v * 100)}/100</span>
+                    </li>
+                  ))
                 ) : (
                   <li className="text-sm text-gray-500">
                     No version selected or no metrics available yet.
@@ -1787,9 +1749,7 @@ export default function App() {
                 )}
               </ul>
               <div className="text-right mt-4">
-                <Button onClick={() => setShowRubric(false)}>
-                  Close
-                </Button>
+                <Button onClick={() => setShowRubric(false)}>Close</Button>
               </div>
             </div>
           </div>
@@ -1803,8 +1763,8 @@ export default function App() {
                 Start new output?
               </h3>
               <p className="text-sm text-gray-600">
-                This will clear the current workspace (title, notes,
-                selections, versions, and uploaded text).
+                This will clear the current workspace (title, notes, selections,
+                versions, and uploaded text).
               </p>
               <div className="mt-4 flex gap-2 justify-end">
                 <Button onClick={() => setShowNewConfirm(false)}>
