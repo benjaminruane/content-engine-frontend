@@ -164,23 +164,6 @@ const Toggle = ({ checked, onChange }) => (
 // -----------------------------
 // Constants
 // -----------------------------
-const SCENARIO_TYPES = [
-  {
-    id: "new-investment",
-    label: "New investment",
-    description: "Draft content about a new investment announcement.",
-  },
-  {
-    id: "exit",
-    label: "Exit / realisation",
-    description: "Draft content about an exit or realisation event.",
-  },
-  {
-    id: "portfolio-update",
-    label: "Portfolio / fund update",
-    description: "Ongoing reporting updates for existing investors.",
-  },
-];
 
 const OUTPUT_TYPES = [
   { label: "Transaction text", value: "investor" },
@@ -312,7 +295,6 @@ export default function App() {
   const [publicSearch, setPublicSearch] = useState(false);
   const [promptNotes, setPromptNotes] = useState("");
   const [title, setTitle] = useState("");
-  const [scenario, setScenario] = useState("new-investment");
 
   const toggleType = (t) => {
     setSelectedTypes((prev) =>
