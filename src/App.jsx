@@ -166,11 +166,12 @@ const Toggle = ({ checked, onChange }) => (
 // -----------------------------
 
 const OUTPUT_TYPES = [
-  { label: "Investor reporting commentary", value: "investor" },
-  { label: "Detailed note for existing investors", value: "detailed" },
+  { label: "Transaction text", value: "transaction" },
+  { label: "Investor letter", value: "investor_letter" },
   { label: "Press release", value: "press" },
   { label: "LinkedIn post", value: "linkedin" },
 ];
+
 
 // Client-mode scenarios (you can edit this list freely)
 const SCENARIO_OPTIONS = [
@@ -214,6 +215,9 @@ const PAGE_META = {
 const getModelLabel = (id) =>
   MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
 
+const getOutputLabel = (value) =>
+  OUTPUT_TYPES.find((o) => o.value === value)?.label || value;
+
 // Quality score → label + Tailwind classes
 const getScoreMeta = (score) => {
   // No score yet (new project / no versions selected)
@@ -243,6 +247,7 @@ const getScoreMeta = (score) => {
     className: "bg-red-50 text-red-800 border-red-400",
   };
 };
+
 
 const getScenarioLabel = (id) =>
   SCENARIO_OPTIONS.find((s) => s.id === id)?.label || id;
@@ -447,18 +452,25 @@ export default function App() {
 
       const out = await runGenerateRequest(body);
 
-      const versionNumber = versions.length + 1;
+            const versionNumber = versions.length + 1;
       const newVersion = {
-  id: crypto.randomUUID(),
-  versionNumber,
-  timestamp: new Date().toISOString(),
-  content: out,
-  comment: "Initial generation",
-  score: Math.round(Math.random() * 40) + 60,
-  metrics: buildMetrics(),
-  publicSearch,
-  urls: urlSources,
-  model: { id: modelId, temperature, maxTokens },
+        id: crypto.randomUUID(),
+        versionNumber,
+        timestamp: new Date().toISOString(),
+        content: out,
+        comment: "Initial generation",
+        score: Math.round(Math.random() * 40) + 60,
+        metrics: buildMetrics(),
+        publicSearch,
+        urls: urlSources,
+        model: { id: modelId, temperature, maxTokens },
+
+        // NEW: metadata for history
+        workspaceMode,
+        scenario: selectedScenario,
+        outputTypes: [...selectedTypes],
+      };
+
 
   // NEW: capture context
   workspaceMode,
@@ -513,20 +525,27 @@ export default function App() {
 
       const out = await runGenerateRequest(body);
 
-      const versionNumber = versions.length + 1;
+            const versionNumber = versions.length + 1;
       const newVersion = {
-  id: crypto.randomUUID(),
-  versionNumber,
-  timestamp: new Date().toISOString(),
-  content: out,
-  comment: `${summarizeRewrite(promptNotes)} (${
-    promptNotes || "no explicit notes"
-  })`,
-  score: Math.round(Math.random() * 40) + 60,
-  metrics: buildMetrics(),
-  publicSearch,
-  urls: urlSources,
-  model: { id: modelId, temperature, maxTokens },
+        id: crypto.randomUUID(),
+        versionNumber,
+        timestamp: new Date().toISOString(),
+        content: out,
+        comment: `${summarizeRewrite(promptNotes)} (${
+          promptNotes || "no explicit notes"
+        })`,
+        score: Math.round(Math.random() * 40) + 60,
+        metrics: buildMetrics(),
+        publicSearch,
+        urls: urlSources,
+        model: { id: modelId, temperature, maxTokens },
+
+        // NEW: metadata for history
+        workspaceMode,
+        scenario: selectedScenario,
+        outputTypes: [...selectedTypes],
+      };
+
 
   // NEW: capture context
   workspaceMode,
@@ -1407,39 +1426,53 @@ export default function App() {
                                     </div>
                                   </div>
 
-                                  {/* Metadata row */}
+                                                                    {/* Metadata row */}
                                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-  <span>
-    Public search: {v.publicSearch ? "Enabled" : "Disabled"}
-  </span>
+                                    <span>
+                                      Workspace:{" "}
+                                      {v.workspaceMode === "client"
+                                        ? "Client"
+                                        : "Generic"}
+                                    </span>
 
-  {v.workspaceMode && (
-    <span>
-      Workspace: {v.workspaceMode === "client" ? "Client" : "Generic"}
-    </span>
-  )}
+                                    {v.scenario && (
+                                      <span>
+                                        Scenario:{" "}
+                                        <span className="font-medium">
+                                          {v.scenario}
+                                        </span>
+                                      </span>
+                                    )}
 
-  {v.scenario && (
-    <span>
-      Scenario: {getScenarioLabel(v.scenario)}
-    </span>
-  )}
+                                    {Array.isArray(v.outputTypes) &&
+                                      v.outputTypes.length > 0 && (
+                                        <span className="flex flex-wrap items-center gap-1">
+                                          Output types:
+                                          {v.outputTypes.map((ot) => (
+                                            <span
+                                              key={ot}
+                                              className="px-1.5 py-0.5 rounded-full border border-gray-300 bg-gray-50 text-[10px] text-gray-700"
+                                            >
+                                              {getOutputLabel(ot)}
+                                            </span>
+                                          ))}
+                                        </span>
+                                      )}
 
-  {Array.isArray(v.outputTypes) && v.outputTypes.length > 0 && (
-    <span className="truncate">
-      Outputs:{" "}
-      {v.outputTypes
-        .map((ot) => getOutputLabel(ot))
-        .join(", ")}
-    </span>
-  )}
+                                    <span>
+                                      Public search:{" "}
+                                      {v.publicSearch ? "Enabled" : "Disabled"}
+                                    </span>
 
-  {Array.isArray(v.urls) && v.urls.length > 0 && (
-    <span className="truncate">
-      URLs: {v.urls.map((u) => u.url).join(", ")}
-    </span>
-  )}
-</div>
+                                    {Array.isArray(v.urls) &&
+                                      v.urls.length > 0 && (
+                                        <span className="truncate">
+                                          URLs:{" "}
+                                          {v.urls.map((u) => u.url).join(", ")}
+                                        </span>
+                                      )}
+                                  </div>
+
 
 
                                   {/* Actions row */}
