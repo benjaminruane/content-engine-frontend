@@ -820,101 +820,103 @@ export default function App() {
                 </Card>
 
                 {/* Model & controls */}
-                <Card>
-                  <CardHeader
-                    title="Model & controls"
-                    subtitle="Select the model and basic generation settings."
-                  />
-                  <CardBody className="space-y-3">
-  <div>
-    <Label>Model</Label>
-    <select
-      className="w-full px-3 py-2 border rounded-xl text-sm"
-      value={modelId}
-      onChange={(e) => setModelId(e.target.value)}
-    >
-      {MODEL_OPTIONS.map((m) => (
-        <option key={m.id} value={m.id}>
-          {m.label}
-        </option>
-      ))}
-    </select>
-  </div>
+<Card>
+  <CardHeader
+    title="Model & controls"
+    subtitle="Select the model and advanced generation settings."
+  />
+  <CardBody className="space-y-3">
+    {/* Basic model selector (always visible) */}
+    <div>
+      <Label>Model</Label>
+      <select
+        className="w-full px-3 py-2 border rounded-xl text-sm"
+        value={modelId}
+        onChange={(e) => setModelId(e.target.value)}
+      >
+        {MODEL_OPTIONS.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.label}
+          </option>
+        ))}
+      </select>
+    </div>
 
-  <div className="mt-2">
-    <Button
-      variant="quiet"
-      onClick={() => setShowAdvanced((v) => !v)}
-      className="text-xs"
-    >
-      {showAdvanced
-        ? "Hide advanced settings"
-        : "Show advanced settings"}
-    </Button>
+    {/* Advanced settings (collapsed by default) */}
+    <div className="mt-2">
+      <Button
+        variant="quiet"
+        onClick={() => setShowAdvanced((v) => !v)}
+        className="text-xs"
+      >
+        {showAdvanced
+          ? "Hide advanced settings"
+          : "Show advanced settings"}
+      </Button>
 
-    {showAdvanced && (
-      <div className="mt-2 space-y-3">
-        {/* Temperature */}
-        <div>
-          <Label>Temperature</Label>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={temperature}
-            onChange={(e) =>
-              setTemperature(parseFloat(e.target.value))
-            }
-            className="w-full"
-          />
-          <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
-            <span>More stable</span>
-            <span>{temperature.toFixed(2)}</span>
-            <span>More creative</span>
+      {showAdvanced && (
+        <div className="mt-2 space-y-3">
+          {/* Temperature */}
+          <div>
+            <Label>Temperature</Label>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={temperature}
+              onChange={(e) =>
+                setTemperature(parseFloat(e.target.value))
+              }
+              className="w-full"
+            />
+            <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+              <span>More stable</span>
+              <span>{temperature.toFixed(2)}</span>
+              <span>More creative</span>
+            </div>
+          </div>
+
+          {/* Max tokens */}
+          <div>
+            <Label>Max tokens</Label>
+            <Input
+              type="number"
+              min={100}
+              max={4000}
+              step={50}
+              value={maxTokens}
+              onChange={(e) =>
+                setMaxTokens(
+                  parseInt(e.target.value || "0", 10) || 0
+                )
+              }
+            />
+          </div>
+
+          {/* API config + health check */}
+          <div className="space-y-2">
+            <Label>API base URL</Label>
+            <Input
+              placeholder="https://content-engine-backend-v2.vercel.app/api"
+              value={apiBaseUrl}
+              onChange={(e) => setApiBaseUrl(e.target.value)}
+            />
+            <div className="flex items-center gap-2">
+              <Button onClick={checkHealth}>
+                Check connection
+              </Button>
+              <span className="text-xs text-gray-500">
+                Status: {apiStatus}
+              </span>
+            </div>
           </div>
         </div>
+      )}
+    </div>
+  </CardBody>
+</Card>
 
-        {/* Max tokens */}
-        <div>
-          <Label>Max tokens</Label>
-          <Input
-            type="number"
-            min={100}
-            max={4000}
-            step={50}
-            value={maxTokens}
-            onChange={(e) =>
-              setMaxTokens(
-                parseInt(e.target.value || "0", 10) || 0
-              )
-            }
-          />
-        </div>
-
-        {/* API base + status */}
-        <div>
-          <Label>API base URL</Label>
-          <Input
-            placeholder="https://content-engine-backend-v2.vercel.app/api"
-            value={apiBaseUrl}
-            onChange={(e) => setApiBaseUrl(e.target.value)}
-          />
-          <div className="flex items-center gap-2 mt-1">
-            <Button onClick={checkHealth}>
-              Check connection
-            </Button>
-            <span className="text-xs text-gray-500">
-              Status: {apiStatus}
-            </span>
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-</CardBody>
-
-                </Card>
 
                 {/* Diagnostics */}
                 <Card>
@@ -1018,60 +1020,23 @@ export default function App() {
                           onChange={(e) => addFiles(e.target.files)}
                         />
 
-                        {/* Existing sources */}
-                        <div className="mt-4 space-y-2">
-                          {parsed.length === 0 &&
-                          urlSources.length === 0 ? (
-                            <p className="text-xs text-gray-500">
-                              No sources added yet. Start by uploading one or
-                              more files, or paste a URL to pull in public
-                              content. These sources will be used as the
-                              primary basis for your draft.
-                            </p>
-                          ) : (
-                            <>
-                              {parsed.map((p, i) => (
-                                <div
-                                  key={i}
-                                  className="text-sm border p-2 rounded-xl bg-gray-50"
-                                >
-                                  <b>{p.file.name}</b>
-                                  <div className="text-xs text-gray-500">
-                                    {String(p.text || "").slice(0, 160)}
-                                  </div>
-                                </div>
-                              ))}
-
-                              {urlSources.map((u, i) => (
-                                <div
-                                  key={`url-${i}`}
-                                  className="text-sm border p-2 rounded-xl bg-gray-50"
-                                >
-                                  <b>{u.url}</b>
-                                  <div className="text-xs text-gray-500">
-                                    {String(u.text || "").slice(0, 160)}
-                                  </div>
-                                </div>
-                              ))}
-                            </>
-                          )}
-                        </div>
-
                         {/* URL input row */}
-<div className="mt-4 flex gap-2 items-stretch">
+<div className="mt-4 flex gap-2">
   <Input
     placeholder="https://example.com/article"
     value={urlInput}
     onChange={(e) => setUrlInput(e.target.value)}
+    className="h-9"
   />
   <Button
     variant="secondary"
     onClick={addUrlSource}
-    className="whitespace-nowrap"
+    className="h-9 whitespace-nowrap"
   >
     Add URL
   </Button>
 </div>
+
 
                       </CardBody>
                     </Card>
