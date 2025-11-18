@@ -164,9 +164,27 @@ const Toggle = ({ checked, onChange }) => (
 // -----------------------------
 // Constants
 // -----------------------------
+const SCENARIO_TYPES = [
+  {
+    id: "new-investment",
+    label: "New investment",
+    description: "Draft content about a new investment announcement.",
+  },
+  {
+    id: "exit",
+    label: "Exit / realisation",
+    description: "Draft content about an exit or realisation event.",
+  },
+  {
+    id: "portfolio-update",
+    label: "Portfolio / fund update",
+    description: "Ongoing reporting updates for existing investors.",
+  },
+];
+
 const OUTPUT_TYPES = [
-  { label: "Transaction text", value: "transaction" },
-  { label: "Investor letter", value: "investor_letter" },
+  { label: "Transaction text", value: "investor" },
+  { label: "Investor letter", value: "detailed" },
   { label: "Press release", value: "press" },
   { label: "LinkedIn post", value: "linkedin" },
 ];
@@ -213,13 +231,15 @@ const getModelLabel = (id) =>
   MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
 
 const getScenarioLabel = (id) =>
-  SCENARIO_OPTIONS.find((s) => s.id === id)?.label || id;
+  SCENARIO_OPTIONS.find((s) => s.id === id)?.label ||
+  "No scenario selected";
 
 const getOutputLabel = (value) =>
   OUTPUT_TYPES.find((o) => o.value === value)?.label || value;
 
 // Quality score → label + Tailwind classes
 const getScoreMeta = (score) => {
+  // No score yet (new project / no versions selected)
   if (typeof score !== "number" || Number.isNaN(score)) {
     return {
       label: "No score yet",
@@ -246,9 +266,6 @@ const getScoreMeta = (score) => {
     className: "bg-red-50 text-red-800 border-red-400",
   };
 };
-
-const getScenarioLabel = (id) =>
-  SCENARIO_OPTIONS.find((s) => s.id === id)?.label || id;
 
 // -----------------------------
 // App Component
@@ -295,6 +312,7 @@ export default function App() {
   const [publicSearch, setPublicSearch] = useState(false);
   const [promptNotes, setPromptNotes] = useState("");
   const [title, setTitle] = useState("");
+  const [scenario, setScenario] = useState("new-investment");
 
   const toggleType = (t) => {
     setSelectedTypes((prev) =>
@@ -400,7 +418,11 @@ export default function App() {
     }
   };
 
-  const buildMetrics = () => ({ clarity: 0.8, accuracy: 0.75, structure: 0.82 });
+  const buildMetrics = () => ({
+    clarity: 0.8,
+    accuracy: 0.75,
+    structure: 0.82,
+  });
 
   const summarizeRewrite = (notes) => {
     if (!notes)
@@ -434,7 +456,7 @@ export default function App() {
         selectedTypes,
         publicSearch,
         workspaceMode,
-        scenario: workspaceMode === "client" ? selectedScenario : null,
+        scenario: selectedScenario,
         model: { id: modelId, temperature, maxTokens },
         modelId,
         temperature,
@@ -457,8 +479,8 @@ export default function App() {
         urls: urlSources,
         model: { id: modelId, temperature, maxTokens },
         workspaceMode,
-        scenario: workspaceMode === "client" ? selectedScenario : null,
-        outputTypes: [...selectedTypes],
+        scenario: selectedScenario,
+        selectedTypes,
       };
 
       setVersions((prev) => [...prev, newVersion]);
@@ -494,7 +516,7 @@ export default function App() {
         selectedTypes,
         publicSearch,
         workspaceMode,
-        scenario: workspaceMode === "client" ? selectedScenario : base.scenario || null,
+        scenario: selectedScenario,
         model: { id: modelId, temperature, maxTokens },
         modelId,
         temperature,
@@ -520,11 +542,8 @@ export default function App() {
         urls: urlSources,
         model: { id: modelId, temperature, maxTokens },
         workspaceMode,
-        scenario: selectedScenario || base.scenario || null,
-        outputTypes: selectedTypes.length > 0
-        ? [...selectedTypes]
-        : base.outputTypes || [],
-        titleSnapshot: title || base.titleSnapshot || "",
+        scenario: selectedScenario,
+        selectedTypes,
       };
 
       setVersions((prev) => [...prev, newVersion]);
@@ -548,7 +567,6 @@ export default function App() {
     setTitle("");
     setActivePage("dashboard");
     setWorkspaceMode("generic");
-    setSelectedScenario(null);
     showToast("New project started");
     setShowNewConfirm(false);
   };
@@ -580,6 +598,8 @@ export default function App() {
   // -----------------------------
   // Render
   // -----------------------------
+
+  // ---- Output actions ----
   const effectiveText = output || selectedVersion?.content || "";
 
   const copyOutput = () => {
@@ -642,13 +662,15 @@ export default function App() {
                 Brightline Content Engine
               </h1>
               <p className="text-sm text-gray-500">
-                Structured AI drafting for investment, reporting & communications.
+                Structured AI drafting for investment, reporting &amp;
+                communications.
               </p>
             </div>
           </div>
 
           {/* Middle: navigation */}
           <nav className="hidden md:flex items-center gap-3 text-sm">
+            {/* Dashboard */}
             <button
               onClick={() => setActivePage("dashboard")}
               className={
@@ -659,6 +681,8 @@ export default function App() {
             >
               Dashboard
             </button>
+
+            {/* Projects */}
             <button
               onClick={() => setActivePage("projects")}
               className={
@@ -669,6 +693,8 @@ export default function App() {
             >
               Projects
             </button>
+
+            {/* Sources */}
             <button
               onClick={() => setActivePage("sources")}
               className={
@@ -679,6 +705,8 @@ export default function App() {
             >
               Sources
             </button>
+
+            {/* Outputs */}
             <button
               onClick={() => setActivePage("outputs")}
               className={
@@ -689,6 +717,8 @@ export default function App() {
             >
               Outputs
             </button>
+
+            {/* Templates */}
             <button
               onClick={() => setActivePage("templates")}
               className={
@@ -776,6 +806,7 @@ export default function App() {
           <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
             {activePage === "dashboard" && (
               <>
+                {/* Workspace summary */}
                 <Card className="p-4">
                   <h2 className="text-sm font-semibold mb-1">Workspace</h2>
                   <p className="text-xs text-gray-500">
@@ -783,6 +814,7 @@ export default function App() {
                   </p>
                 </Card>
 
+                {/* Status summary */}
                 <Card className="p-4">
                   <h3 className="text-sm font-semibold mb-1">Status</h3>
                   <div className="flex flex-col gap-1 text-xs text-gray-600">
@@ -805,6 +837,7 @@ export default function App() {
                   </div>
                 </Card>
 
+                {/* Model & controls */}
                 <Card>
                   <CardHeader
                     title="Model & controls"
@@ -894,6 +927,7 @@ export default function App() {
                   </CardBody>
                 </Card>
 
+                {/* Diagnostics */}
                 <Card>
                   <CardHeader
                     title="Diagnostics"
@@ -950,6 +984,7 @@ export default function App() {
             {/* Dashboard – generic workspace */}
             {activePage === "dashboard" && workspaceMode === "generic" && (
               <div className="space-y-6">
+                {/* Getting started hint */}
                 {!hasInitialGeneration && (
                   <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-sm text-gray-600">
                     To get started, upload at least one source on the left,
@@ -959,9 +994,11 @@ export default function App() {
                   </div>
                 )}
 
+                {/* Top row: Sources + Configuration side by side */}
                 <div className="grid lg:grid-cols-2 gap-6 items-start">
                   {/* Left column: Sources + Public search */}
                   <div className="space-y-4">
+                    {/* Source documents */}
                     <Card>
                       <CardHeader
                         title="Source documents"
@@ -992,8 +1029,10 @@ export default function App() {
                           onChange={(e) => addFiles(e.target.files)}
                         />
 
+                        {/* Existing sources */}
                         <div className="mt-4 space-y-2">
-                          {parsed.length === 0 && urlSources.length === 0 ? (
+                          {parsed.length === 0 &&
+                          urlSources.length === 0 ? (
                             <p className="text-xs text-gray-500">
                               No sources added yet. Start by uploading one or
                               more files, or paste a URL to pull in public
@@ -1029,19 +1068,24 @@ export default function App() {
                           )}
                         </div>
 
+                        {/* URL input row */}
                         <div className="mt-4 flex gap-2">
                           <Input
                             placeholder="https://example.com/article"
                             value={urlInput}
                             onChange={(e) => setUrlInput(e.target.value)}
                           />
-                          <Button variant="secondary" onClick={addUrlSource}>
+                          <Button
+                            variant="secondary"
+                            onClick={addUrlSource}
+                          >
                             Add URL
                           </Button>
                         </div>
                       </CardBody>
                     </Card>
 
+                    {/* Public domain search card */}
                     <Card>
                       <CardHeader
                         title="Public domain search"
@@ -1082,7 +1126,7 @@ export default function App() {
                         />
                       </div>
 
-                      {/* Scenario selector – only visible if user switches to client mode, but kept here for symmetry */}
+                      {/* Scenario selector – client workspace only */}
                       {workspaceMode === "client" && (
                         <div>
                           <Label>Scenario (client workspace)</Label>
@@ -1091,6 +1135,7 @@ export default function App() {
                             later control which client-specific prompt and
                             review tables are used.
                           </p>
+
                           <div className="flex flex-wrap gap-2">
                             {SCENARIO_OPTIONS.map((s) => {
                               const active = selectedScenario === s.id;
@@ -1159,6 +1204,7 @@ export default function App() {
                         </p>
                       </div>
 
+                      {/* Buttons row with state-based disabling */}
                       <div className="flex gap-2 flex-wrap">
                         <Button
                           variant="primary"
@@ -1198,8 +1244,9 @@ export default function App() {
                   </Card>
                 </div>
 
-                {/* Output + Versions + Roadmap */}
+                {/* Second block: Output, Versions, Roadmap stacked */}
                 <div className="space-y-6">
+                  {/* Draft output */}
                   <Card>
                     <CardHeader
                       title="Draft output"
@@ -1213,7 +1260,7 @@ export default function App() {
                                 : selectedVersion.score >= 70
                                 ? "average"
                                 : "poor"
-                              : undefined
+                              : undefined // no colour when there is no score yet
                           }
                           className="px-3"
                         >
@@ -1221,96 +1268,159 @@ export default function App() {
                         </Pill>
                       }
                     />
+
                     <CardBody className="space-y-3">
-  {/* Context summary */}
-  <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-1">
-    <span className="px-2 py-0.5 rounded-full bg-gray-100">
-      Title:{" "}
-      <span className="font-medium">
-        {title || "Untitled draft"}
-      </span>
-    </span>
+                      {/* Context strip */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 mb-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium text-gray-800">
+                            {title || "Untitled draft"}
+                          </span>
 
-    {hasOutputTypes && (
-      <span className="flex flex-wrap items-center gap-1">
-        Output types:
-        {selectedTypes.map((ot) => (
-          <span
-            key={ot}
-            className="px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200"
-          >
-            {getOutputLabel(ot)}
-          </span>
-        ))}
-      </span>
-    )}
+                          <Pill variant="outline" className="px-2">
+                            {workspaceMode === "client"
+                              ? "Client workspace"
+                              : "Generic workspace"}
+                          </Pill>
 
-    <span className="px-2 py-0.5 rounded-full bg-gray-100">
-      Public search:{" "}
-      <span className="font-medium">
-        {publicSearch ? "On" : "Off"}
-      </span>
-    </span>
-  </div>
+                          {selectedScenario && (
+                            <Pill variant="outline" className="px-2">
+                              {getScenarioLabel(selectedScenario)}
+                            </Pill>
+                          )}
 
-  <Textarea
-    rows={18}
-    value={output || selectedVersion?.content || ""}
-    onChange={(e) => setOutput(e.target.value)}
-    placeholder="Generated content..."
-    className="placeholder:text-gray-400"
-  />
+                          {selectedTypes.map((t) => (
+                            <Pill
+                              key={t}
+                              variant="subtle"
+                              className="px-2"
+                            >
+                              {getOutputLabel(t)}
+                            </Pill>
+                          ))}
+                        </div>
 
-  <p className="text-xs text-gray-500 mt-1">
-    You can edit this draft directly. Use{" "}
-    <strong>Rewrite</strong> to generate an updated version
-    while keeping this one saved.
-  </p>
+                        <div className="flex items-center gap-2">
+                          <Pill variant="outline" className="px-2">
+                            {getModelLabel(modelId)}
+                          </Pill>
+                          <Pill variant="outline" className="px-2">
+                            {publicSearch
+                              ? "Public search: On"
+                              : "Public search: Off"}
+                          </Pill>
+                        </div>
+                      </div>
 
-  {/* Export options block – below the editor */}
-  <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
-    <div className="text-sm font-medium text-gray-800">
-      Export &amp; download
-    </div>
-    <p className="text-xs text-gray-500">
-      Copy the draft or download a file to use in Word or
-      other tools.
-    </p>
-    <div className="flex flex-wrap gap-2">
-      <Button
-        variant="quiet"
-        className="text-xs"
-        onClick={copyOutput}
-      >
-        Copy to clipboard
-      </Button>
-      <Button
-        variant="quiet"
-        className="text-xs"
-        onClick={() => downloadOutput("txt")}
-      >
-        Download .TXT
-      </Button>
-      <Button
-        variant="quiet"
-        className="text-xs"
-        onClick={() => downloadOutput("doc")}
-      >
-        Download .DOC
-      </Button>
-      <Button
-        variant="quiet"
-        className="text-xs opacity-60 cursor-not-allowed"
-        disabled
-      >
-        .PDF (coming soon)
-      </Button>
-    </div>
-  </div>
-</CardBody>
+                      <Textarea
+                        rows={18}
+                        value={output || selectedVersion?.content || ""}
+                        onChange={(e) => setOutput(e.target.value)}
+                        placeholder="Generated content..."
+                        className="placeholder:text-gray-400"
+                      />
 
+                      <p className="text-xs text-gray-500 mt-1">
+                        You can edit this draft directly. Use{" "}
+                        <strong>Rewrite</strong> to generate an updated version
+                        while keeping this one saved.
+                      </p>
+
+                      {/* Export options block – below the editor */}
+                      <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
+                        <div className="text-sm font-medium text-gray-800">
+                          Export &amp; download
+                        </div>
+
+                        <p className="text-xs text-gray-500">
+                          Copy the draft or download a file to use in Word or
+                          other tools.
+                        </p>
+
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="quiet"
+                            className="text-xs"
+                            onClick={copyOutput}
+                          >
+                            Copy to clipboard
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            className="text-xs"
+                            onClick={() => downloadOutput("txt")}
+                          >
+                            Download .TXT
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            className="text-xs"
+                            onClick={() => downloadOutput("doc")}
+                          >
+                            Download .DOC
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            className="text-xs opacity-60 cursor-not-allowed"
+                            disabled
+                          >
+                            .PDF (coming soon)
+                          </Button>
+                        </div>
+                      </div>
+                    </CardBody>
                   </Card>
 
+                  {/* Client workspace: review tables scaffold (unreachable while generic, but left as placeholder) */}
+                  {workspaceMode === "client" && (
+                    <Card>
+                      <CardHeader
+                        title="Review tables (client workspace)"
+                        subtitle="Structured views to help reviewers check sources, discrepancies and compliance."
+                      />
+                      <CardBody className="space-y-4">
+                        <div className="grid gap-4 lg:grid-cols-3">
+                          <div className="border rounded-2xl p-3 bg-gray-50">
+                            <h4 className="text-sm font-semibold mb-1">
+                              Sources table
+                            </h4>
+                            <p className="text-xs text-gray-600">
+                              Will list each statement in the draft and the
+                              supporting source passages used to justify it.
+                            </p>
+                          </div>
+
+                          <div className="border rounded-2xl p-3 bg-gray-50">
+                            <h4 className="text-sm font-semibold mb-1">
+                              Statement reliability &amp; interpretation table
+                            </h4>
+                            <p className="text-xs text-gray-600">
+                              Will highlight gaps, inferred statements, and
+                              potential inconsistencies between sources.
+                            </p>
+                          </div>
+
+                          <div className="border rounded-2xl p-3 bg-gray-50">
+                            <h4 className="text-sm font-semibold mb-1">
+                              Compliance &amp; transparency
+                            </h4>
+                            <p className="text-xs text-gray-600">
+                              Will summarise style-guide adherence, restricted
+                              phrases, and any compliance flags for review.
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-gray-500">
+                          These tables are placeholders for now. In a later
+                          iteration, they&#39;ll be populated automatically from
+                          the draft and underlying sources.
+                        </p>
+                      </CardBody>
+                    </Card>
+                  )}
+
+                  {/* Versions – timeline style, newest first */}
                   <Card>
                     <CardHeader
                       title="Versions"
@@ -1326,16 +1436,20 @@ export default function App() {
                         </p>
                       ) : (
                         <div className="relative">
+                          {/* Vertical timeline line */}
                           <div
                             className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
                             aria-hidden="true"
                           />
+
                           <div className="space-y-4">
                             {sortedVersions.map((v) => {
                               const isSelected = selectedVersionId === v.id;
                               const vScoreMeta = getScoreMeta(v.score);
+
                               return (
                                 <div key={v.id} className="relative pl-6">
+                                  {/* Dot on the timeline */}
                                   <span
                                     className={
                                       "absolute left-1 top-3 w-2 h-2 rounded-full border " +
@@ -1345,6 +1459,8 @@ export default function App() {
                                     }
                                     aria-hidden="true"
                                   />
+
+                                  {/* Version card */}
                                   <div
                                     className={
                                       "rounded-2xl border p-3 space-y-2 transition " +
@@ -1353,6 +1469,7 @@ export default function App() {
                                         : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
                                     }
                                   >
+                                    {/* Top row: version label + timestamp */}
                                     <div className="flex items-center justify-between gap-3">
                                       <div className="flex items-center gap-2">
                                         <Pill
@@ -1374,11 +1491,13 @@ export default function App() {
                                       </div>
                                     </div>
 
+                                    {/* Comment + score/model pills on same row */}
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                       <div className="text-sm text-gray-800">
                                         {v.comment}
                                       </div>
                                       <div className="flex items-center gap-2 text-xs text-gray-600">
+                                        {/* coloured score pill */}
                                         <Pill
                                           level={
                                             typeof v.score === "number"
@@ -1393,6 +1512,8 @@ export default function App() {
                                         >
                                           {vScoreMeta.label}
                                         </Pill>
+
+                                        {/* single model pill */}
                                         <Pill
                                           variant="outline"
                                           className="px-2"
@@ -1402,6 +1523,7 @@ export default function App() {
                                       </div>
                                     </div>
 
+                                    {/* Metadata row */}
                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
                                       <span>
                                         Workspace:{" "}
@@ -1413,24 +1535,17 @@ export default function App() {
                                       {v.scenario && (
                                         <span>
                                           Scenario:{" "}
-                                          <span className="font-medium">
-                                            {getScenarioLabel(v.scenario)}
-                                          </span>
+                                          {getScenarioLabel(v.scenario)}
                                         </span>
                                       )}
 
-                                      {Array.isArray(v.outputTypes) &&
-                                        v.outputTypes.length > 0 && (
-                                          <span className="flex flex-wrap items-center gap-1">
-                                            Output types:
-                                            {v.outputTypes.map((ot) => (
-                                              <span
-                                                key={ot}
-                                                className="px-1.5 py-0.5 rounded-full border border-gray-300 bg-gray-50 text-[10px] text-gray-700"
-                                              >
-                                                {getOutputLabel(ot)}
-                                              </span>
-                                            ))}
+                                      {Array.isArray(v.selectedTypes) &&
+                                        v.selectedTypes.length > 0 && (
+                                          <span>
+                                            Outputs:{" "}
+                                            {v.selectedTypes
+                                              .map((t) => getOutputLabel(t))
+                                              .join(", ")}
                                           </span>
                                         )}
 
@@ -1452,21 +1567,13 @@ export default function App() {
                                         )}
                                     </div>
 
+                                    {/* Actions row */}
                                     <div className="flex items-center justify-end gap-2 pt-1">
                                       <Button
                                         variant="quiet"
-                                        onClick={() => {
-                                          setSelectedVersionId(v.id);
-                                          setOutput(v.content || "");
-                                          if (Array.isArray(v.outputTypes)) {
-                                            setSelectedTypes(v.outputTypes);
-                                          }
-                                          if (
-                                            typeof v.publicSearch === "boolean"
-                                          ) {
-                                            setPublicSearch(v.publicSearch);
-                                          }
-                                        }}
+                                        onClick={() =>
+                                          setSelectedVersionId(v.id)
+                                        }
                                         className="text-xs"
                                       >
                                         View
@@ -1475,9 +1582,7 @@ export default function App() {
                                         variant="danger"
                                         onClick={() =>
                                           setVersions((prev) =>
-                                            prev.filter(
-                                              (x) => x.id !== v.id
-                                            )
+                                            prev.filter((x) => x.id !== v.id)
                                           )
                                         }
                                         className="text-xs"
@@ -1495,6 +1600,7 @@ export default function App() {
                     </CardBody>
                   </Card>
 
+                  {/* Roadmap */}
                   <Card>
                     <CardHeader
                       title="Future roadmap"
@@ -1529,12 +1635,6 @@ export default function App() {
                             types.
                           </li>
                           <li>
-                            Scenario-aware, multi-output generation that
-                            produces separate deliverables for each selected
-                            output type (e.g. investor letter, press release,
-                            LinkedIn post).
-                          </li>
-                          <li>
                             Templated outputs and reusable blueprints per
                             document family.
                           </li>
@@ -1558,8 +1658,8 @@ export default function App() {
                             with saved workspaces.
                           </li>
                           <li>
-                            Additional UI polish, theming options and efficiency
-                            tweaks.
+                            Additional UI polish, theming options and
+                            efficiency tweaks.
                           </li>
                           <li>
                             Performance instrumentation and optimisation for
@@ -1587,6 +1687,7 @@ export default function App() {
             {/* Dashboard – client workspace */}
             {activePage === "dashboard" && workspaceMode === "client" && (
               <div className="space-y-6">
+                {/* Client overview */}
                 <Card>
                   <CardHeader
                     title="Client workspace overview"
@@ -1623,7 +1724,9 @@ export default function App() {
                   </CardBody>
                 </Card>
 
+                {/* Core configuration: style guide + prompts */}
                 <div className="grid lg:grid-cols-2 gap-6 items-start">
+                  {/* Style guide & rules */}
                   <Card>
                     <CardHeader
                       title="Client style guide & rules"
@@ -1658,6 +1761,7 @@ export default function App() {
                     </CardBody>
                   </Card>
 
+                  {/* Prompt packs & scenarios */}
                   <Card>
                     <CardHeader
                       title="Prompt packs & scenarios"
@@ -1683,10 +1787,11 @@ export default function App() {
                   </Card>
                 </div>
 
+                {/* Review tables & QA */}
                 <Card>
                   <CardHeader
                     title="Review tables & quality checks"
-                    subtitle="Where sources, reliability and compliance checks will live."
+                    subtitle="Where sources, discrepancies and compliance checks will live."
                   />
                   <CardBody className="space-y-2 text-sm text-gray-600">
                     <p>
@@ -1703,17 +1808,16 @@ export default function App() {
                           Statement reliability &amp; interpretation table
                         </strong>{" "}
                         – highlight where the model inferred or reconciled
-                        inconsistent data, and how confidently each statement is
-                        supported.
+                        inconsistent data.
                       </li>
                       <li>
                         <strong>Compliance &amp; transparency</strong> – show
                         how well the output adheres to the client&apos;s style
-                        guide, disclosure expectations and restricted phrases.
+                        guide and constraints.
                       </li>
                       <li>
                         <strong>Quality score</strong> – summarise rubric-based
-                        scoring for clarity, structure, tone and correctness.
+                        scores for structure, clarity, tone and spelling.
                       </li>
                     </ul>
                     <p className="text-xs text-gray-500 mt-1">
@@ -1726,7 +1830,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Placeholder pages */}
+            {/* Placeholder: Projects */}
             {activePage === "projects" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Projects</h2>
@@ -1737,6 +1841,7 @@ export default function App() {
               </Card>
             )}
 
+            {/* Placeholder: Sources */}
             {activePage === "sources" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Sources</h2>
@@ -1747,6 +1852,7 @@ export default function App() {
               </Card>
             )}
 
+            {/* Placeholder: Outputs */}
             {activePage === "outputs" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Outputs</h2>
@@ -1757,6 +1863,7 @@ export default function App() {
               </Card>
             )}
 
+            {/* Placeholder: Templates */}
             {activePage === "templates" && (
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Templates</h2>
@@ -1773,7 +1880,9 @@ export default function App() {
         {showRubric && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-2">Quality rubrics</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Quality rubrics
+              </h3>
               <ul className="space-y-2 text-sm">
                 {selectedVersion?.metrics ? (
                   Object.entries(selectedVersion.metrics).map(([k, v]) => (
