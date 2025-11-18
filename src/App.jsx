@@ -1509,29 +1509,34 @@ export default function App() {
                         product is heading as the prototype matures.
                       </p>
                       <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
-                        <li>Richer source ingestion (PDF, DOCX and structured data feeds).</li>
-                        <li>Deeper model integration for drafting and rewriting via /generate.</li>
-                        <li>Output-specific prompts based on selected content types.</li>
-                        <li>Templated outputs and reusable blueprints per document family.</li>
-                        <li>Scoring engine tied to detailed rubrics and a feedback loop.</li>
-                        <li>Dedicated sources table with traceability and filtering.</li>
-                        <li>Statement reliability and inference tracking views.</li>
-                        <li>Role-based access controls, audit logs and enterprise integrations.</li>
-                        <li>Persistent projects stored under the Projects tab with saved workspaces.</li>
-                        <li>Additional UI polish, theming options and efficiency tweaks.</li>
-                        <li>
-                          Performance instrumentation and optimisation for differences between
-                          Generate and Rewrite (token counts, latency, profiling).
-                        </li>
-                        <li>
-                          Replace random scores with a rubric-based quality scoring engine that
-                          captures structure, clarity, tone and spelling.
-                        </li>
-                        <li>
-                          Stricter enforcement of output constraints such as maximum word counts,
-                          using both prompt design and post-processing to trim to target length.
-                        </li>
-                      </ul>
+  <li>Richer source ingestion (PDF, DOCX and structured data feeds).</li>
+  <li>Deeper model integration for drafting and rewriting via /generate.</li>
+  <li>Output-specific prompts based on selected content types.</li>
+  <li>
+    Scenario-aware, multi-output generation that produces separate deliverables
+    for each selected output type (e.g. investor note, press release, LinkedIn post).
+  </li>
+  <li>Templated outputs and reusable blueprints per document family.</li>
+  <li>Scoring engine tied to detailed rubrics and a feedback loop.</li>
+  <li>Dedicated sources table with traceability and filtering.</li>
+  <li>Statement reliability and inference tracking views.</li>
+  <li>Role-based access controls, audit logs and enterprise integrations.</li>
+  <li>Persistent projects stored under the Projects tab with saved workspaces.</li>
+  <li>Additional UI polish, theming options and efficiency tweaks.</li>
+  <li>
+    Performance instrumentation and optimisation for differences between
+    Generate and Rewrite (token counts, latency, profiling).
+  </li>
+  <li>
+    Replace random scores with a rubric-based quality scoring engine that
+    captures structure, clarity, tone and spelling.
+  </li>
+  <li>
+    Stricter enforcement of output constraints such as maximum word counts,
+    using both prompt design and post-processing to trim to target length.
+  </li>
+</ul>
+
                     </CardBody>
                   )}
                 </Card>
