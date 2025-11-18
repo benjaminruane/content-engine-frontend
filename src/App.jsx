@@ -1577,62 +1577,50 @@ export default function App() {
                           These items are not yet live. They outline where the
                           product is heading as the prototype matures.
                         </p>
-                        <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
-                          <li>
-                            Richer source ingestion (PDF, DOCX and structured
-                            data feeds).
-                          </li>
-                          <li>
-                            Deeper model integration for drafting and rewriting
-                            via /generate.
-                          </li>
-                          <li>
-                            Output-specific prompts based on selected content
-                            types.
-                          </li>
-                          <li>
-                            Templated outputs and reusable blueprints per
-                            document family.
-                          </li>
-                          <li>
-                            Scoring engine tied to detailed rubrics and a
-                            feedback loop.
-                          </li>
-                          <li>
-                            Dedicated sources table with traceability and
-                            filtering.
-                          </li>
-                          <li>
-                            Statement reliability and inference tracking views.
-                          </li>
-                          <li>
-                            Role-based access controls, audit logs and
-                            enterprise integrations.
-                          </li>
-                          <li>
-                            Persistent projects stored under the Projects tab
-                            with saved workspaces.
-                          </li>
-                          <li>
-                            Additional UI polish, theming options and
-                            efficiency tweaks.
-                          </li>
-                          <li>
-                            Performance instrumentation and optimisation for
-                            differences between Generate and Rewrite (token
-                            counts, latency, profiling).
-                          </li>
-                          <li>
-                            Replace random scores with a rubric-based quality
-                            scoring engine that captures structure, clarity,
-                            tone and spelling.
-                          </li>
-                          <li>
-                            Stricter enforcement of output constraints such as
-                            maximum word counts, using both prompt design and
-                            post-processing to trim to target length.
-                          </li>
-                        </ul>
+                      <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
+  <li>
+    Scenario- and output-specific prompt flows using
+    workspace mode, scenario and selected output types.
+  </li>
+  <li>
+    Client-level style guides and prompt packs that feed
+    directly into /generate for client workspaces.
+  </li>
+  <li>
+    Richer source ingestion (PDF, DOCX and structured
+    data feeds) with cleaned text extraction.
+  </li>
+  <li>
+    Dedicated sources & statements table with
+    traceability, reliability flags and compliance
+    checks.
+  </li>
+  <li>
+    A real scoring engine tied to detailed rubrics
+    (not random scores) with drill-down metrics.
+  </li>
+  <li>
+    Persistent projects under the Projects tab, with
+    saved versions, sources and configuration per
+    workspace.
+  </li>
+  <li>
+    Role-based access controls, audit logs and optional
+    enterprise integrations.
+  </li>
+  <li>
+    Privacy-first handling of uploaded documents
+    (configurable retention and non-public processing
+    paths).
+  </li>
+  <li>
+    Performance & observability: latency, error and
+    scoring instrumentation plus additional UI polish
+    and theming.
+  </li>
+</ul>
+
+                        
                       </CardBody>
                     )}
                   </Card>
