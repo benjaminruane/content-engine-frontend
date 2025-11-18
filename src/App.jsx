@@ -164,26 +164,6 @@ const Toggle = ({ checked, onChange }) => (
 // -----------------------------
 // Constants
 // -----------------------------
-// -----------------------------
-// Constants
-// -----------------------------
-const SCENARIO_TYPES = [
-  {
-    id: "new-investment",
-    label: "New investment",
-    description: "Draft content about a new investment announcement.",
-  },
-  {
-    id: "exit",
-    label: "Exit / realisation",
-    description: "Draft content about an exit or realisation event.",
-  },
-  {
-    id: "portfolio-update",
-    label: "Portfolio / fund update",
-    description: "Ongoing reporting updates for existing investors.",
-  },
-];
 
 const OUTPUT_TYPES = [
   { label: "Investor reporting commentary", value: "investor" },
@@ -309,9 +289,7 @@ export default function App() {
   const [publicSearch, setPublicSearch] = useState(false);
   const [promptNotes, setPromptNotes] = useState("");
   const [title, setTitle] = useState("");
-  const [scenario, setScenario] = useState("new-investment");
-
-
+ 
   const toggleType = (t) => {
     setSelectedTypes((prev) =>
       prev.includes(t) ? prev.filter((v) => v !== t) : [...prev, t]
@@ -557,11 +535,13 @@ export default function App() {
   setPromptNotes("");
   setSelectedTypes([]);
   setTitle("");
+  setSelectedScenario(null);   // reset client scenario
   setActivePage("dashboard");
   setWorkspaceMode("generic");
   showToast("New project started");
   setShowNewConfirm(false);
 };
+
 
 
   // selection + score meta
@@ -1312,55 +1292,7 @@ export default function App() {
                   </CardBody>
                 </Card>
 
-                {/* Client workspace: review tables scaffold */}
-                {workspaceMode === "client" && (
-                  <Card>
-                    <CardHeader
-                      title="Review tables (client workspace)"
-                      subtitle="Structured views to help reviewers check sources, discrepancies and compliance."
-                    />
-                    <CardBody className="space-y-4">
-                      <div className="grid gap-4 lg:grid-cols-3">
-                        <div className="border rounded-2xl p-3 bg-gray-50">
-                          <h4 className="text-sm font-semibold mb-1">
-                            Sources table
-                          </h4>
-                          <p className="text-xs text-gray-600">
-                            Will list each statement in the draft and the supporting
-                            source passages used to justify it.
-                          </p>
-                        </div>
-
-                        <div className="border rounded-2xl p-3 bg-gray-50">
-                          <h4 className="text-sm font-semibold mb-1">
-                            Discrepancies &amp; inferences
-                          </h4>
-                          <p className="text-xs text-gray-600">
-                            Will highlight gaps, inferred statements, and potential
-                            inconsistencies between sources.
-                          </p>
-                        </div>
-
-                        <div className="border rounded-2xl p-3 bg-gray-50">
-                          <h4 className="text-sm font-semibold mb-1">
-                            Compliance checks
-                          </h4>
-                          <p className="text-xs text-gray-600">
-                            Will summarise style-guide adherence, restricted phrases,
-                            and any compliance flags for review.
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-gray-500">
-                        These tables are placeholders for now. In a later iteration,
-                        they&#39;ll be populated automatically from the draft and
-                        underlying sources.
-                      </p>
-                    </CardBody>
-                  </Card>
-                )}
-
+                
                 {/* Versions – timeline style, newest first */}
                 <Card>
                   <CardHeader
