@@ -844,87 +844,94 @@ export default function App() {
                     subtitle="Select the model and basic generation settings."
                   />
                   <CardBody className="space-y-3">
-                    <div>
-                      <Label>Model</Label>
-                      <select
-                        className="w-full px-3 py-2 border rounded-xl text-sm"
-                        value={modelId}
-                        onChange={(e) => setModelId(e.target.value)}
-                      >
-                        {MODEL_OPTIONS.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+  <div>
+    <Label>Model</Label>
+    <select
+      className="w-full px-3 py-2 border rounded-xl text-sm"
+      value={modelId}
+      onChange={(e) => setModelId(e.target.value)}
+    >
+      {MODEL_OPTIONS.map((m) => (
+        <option key={m.id} value={m.id}>
+          {m.label}
+        </option>
+      ))}
+    </select>
+  </div>
 
-                    <div>
-                      <Label>Temperature</Label>
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        value={temperature}
-                        onChange={(e) =>
-                          setTemperature(parseFloat(e.target.value))
-                        }
-                        className="w-full"
-                      />
-                      <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
-                        <span>More stable</span>
-                        <span>{temperature.toFixed(2)}</span>
-                        <span>More creative</span>
-                      </div>
-                    </div>
+  <div className="mt-2">
+    <Button
+      variant="quiet"
+      onClick={() => setShowAdvanced((v) => !v)}
+      className="text-xs"
+    >
+      {showAdvanced
+        ? "Hide advanced settings"
+        : "Show advanced settings"}
+    </Button>
 
-                    <div>
-                      <Label>Max tokens</Label>
-                      <Input
-                        type="number"
-                        min={100}
-                        max={4000}
-                        step={50}
-                        value={maxTokens}
-                        onChange={(e) =>
-                          setMaxTokens(
-                            parseInt(e.target.value || "0", 10) || 0
-                          )
-                        }
-                      />
-                    </div>
+    {showAdvanced && (
+      <div className="mt-2 space-y-3">
+        {/* Temperature */}
+        <div>
+          <Label>Temperature</Label>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={temperature}
+            onChange={(e) =>
+              setTemperature(parseFloat(e.target.value))
+            }
+            className="w-full"
+          />
+          <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
+            <span>More stable</span>
+            <span>{temperature.toFixed(2)}</span>
+            <span>More creative</span>
+          </div>
+        </div>
 
-                    <div className="mt-2">
-                      <Button
-                        variant="quiet"
-                        onClick={() => setShowAdvanced((v) => !v)}
-                        className="text-xs"
-                      >
-                        {showAdvanced
-                          ? "Hide advanced settings"
-                          : "Show advanced settings"}
-                      </Button>
-                      {showAdvanced && (
-                        <div className="mt-2 space-y-2">
-                          <Label>API base URL</Label>
-                          <Input
-                            placeholder="https://content-engine-backend-v2.vercel.app/api"
-                            value={apiBaseUrl}
-                            onChange={(e) => setApiBaseUrl(e.target.value)}
-                          />
-                          <div className="flex items-center gap-2">
-                            <Button onClick={checkHealth}>
-                              Check connection
-                            </Button>
-                            <span className="text-xs text-gray-500">
-                              Status: {apiStatus}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardBody>
+        {/* Max tokens */}
+        <div>
+          <Label>Max tokens</Label>
+          <Input
+            type="number"
+            min={100}
+            max={4000}
+            step={50}
+            value={maxTokens}
+            onChange={(e) =>
+              setMaxTokens(
+                parseInt(e.target.value || "0", 10) || 0
+              )
+            }
+          />
+        </div>
+
+        {/* API base + status */}
+        <div>
+          <Label>API base URL</Label>
+          <Input
+            placeholder="https://content-engine-backend-v2.vercel.app/api"
+            value={apiBaseUrl}
+            onChange={(e) => setApiBaseUrl(e.target.value)}
+          />
+          <div className="flex items-center gap-2 mt-1">
+            <Button onClick={checkHealth}>
+              Check connection
+            </Button>
+            <span className="text-xs text-gray-500">
+              Status: {apiStatus}
+            </span>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</CardBody>
+
                 </Card>
 
                 {/* Diagnostics */}
@@ -1069,19 +1076,21 @@ export default function App() {
                         </div>
 
                         {/* URL input row */}
-                        <div className="mt-4 flex gap-2">
-                          <Input
-                            placeholder="https://example.com/article"
-                            value={urlInput}
-                            onChange={(e) => setUrlInput(e.target.value)}
-                          />
-                          <Button
-                            variant="secondary"
-                            onClick={addUrlSource}
-                          >
-                            Add URL
-                          </Button>
-                        </div>
+<div className="mt-4 flex gap-2 items-stretch">
+  <Input
+    placeholder="https://example.com/article"
+    value={urlInput}
+    onChange={(e) => setUrlInput(e.target.value)}
+  />
+  <Button
+    variant="secondary"
+    onClick={addUrlSource}
+    className="whitespace-nowrap"
+  >
+    Add URL
+  </Button>
+</div>
+
                       </CardBody>
                     </Card>
 
