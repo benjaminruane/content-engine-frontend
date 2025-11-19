@@ -377,7 +377,7 @@ export default function App() {
         // not JSON
       }
 
-            if (!data) return raw || "[No output from backend]";
+                  if (!data) return raw || "[No output from backend]";
 
       // New backend schema: { outputs: [{ text, outputType, score, metrics }], ... }
       if (Array.isArray(data.outputs) && data.outputs.length > 0) {
@@ -400,6 +400,7 @@ export default function App() {
         return data.result;
       }
       return JSON.stringify(data, null, 2);
+
 
     } catch (e) {
       console.error("Backend error during fetch:", e);
