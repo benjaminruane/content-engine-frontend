@@ -377,7 +377,15 @@ export default function App() {
         // not JSON
       }
 
-      if (!data) return raw || "[No output from backend]";
+            if (!data) return raw || "[No output from backend]";
+
+      // New backend schema: { outputs: [{ text, outputType, score, metrics }], ... }
+      if (Array.isArray(data.outputs) && data.outputs.length > 0) {
+        const first = data.outputs[0];
+        if (typeof first.text === "string" && first.text.trim().length > 0) {
+          return first.text;
+        }
+      }
 
       if (typeof data.output === "string" && data.output.trim().length > 0) {
         return data.output;
@@ -392,6 +400,7 @@ export default function App() {
         return data.result;
       }
       return JSON.stringify(data, null, 2);
+
     } catch (e) {
       console.error("Backend error during fetch:", e);
       return `[Backend error while generating output: ${
@@ -1038,7 +1047,44 @@ export default function App() {
 </div>
 
 
-                      </CardBody>
+  {/* Source list */}
+  {(parsed.length > 0 || urlSources.length > 0) && (
+    <div className="mt-4 space-y-2 text-sm text-gray-700">
+      {parsed.length > 0 && (
+        <div>
+          <div className="font-medium mb-1">Uploaded files</div>
+          <ul className="space-y-1">
+            {parsed.map((p, idx) => (
+              <li key={idx} className="flex items-center justify-between">
+                <span>{p.file?.name || `File ${idx + 1}`}</span>
+                <span className="text-xs text-gray-500">
+                  {p.file?.size
+                    ? `${Math.round(p.file.size / 1024)} KB`
+                    : "Text only"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {urlSources.length > 0 && (
+        <div>
+          <div className="font-medium mb-1">URL sources</div>
+          <ul className="space-y-1">
+            {urlSources.map((u, idx) => (
+              <li key={idx} className="flex items-center justify-between">
+                <span className="truncate max-w-[260px]">{u.url}</span>
+                <span className="text-xs text-gray-500">Fetched</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )}
+</CardBody>
+
                     </Card>
 
                     {/* Public domain search card */}
