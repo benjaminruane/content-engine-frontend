@@ -36,12 +36,13 @@ function Card({ className = "", children }) {
 function CardHeader({ className = "", children }) {
   return (
     <div
-      className={`px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2 ${className}`}
+      className={`px-4 py-3 border-b border-slate-100 flex gap-2 ${className}`}
     >
       {children}
     </div>
   );
 }
+
 
 function CardBody({ className = "", children }) {
   return <div className={`px-4 py-3 ${className}`}>{children}</div>;
@@ -149,6 +150,10 @@ function App() {
 
   const [maxWords, setMaxWords] = useState("");
 
+  // Controls whether a new generation is allowed in this "session"
+const [canGenerate, setCanGenerate] = useState(true);
+
+  
   // sources: { name, text, size, kind: "file" | "url" }
   const [sources, setSources] = useState([]);
   const fileInputRef = useRef(null);
@@ -360,7 +365,7 @@ function App() {
       }
 
       const now = new Date();
-      const newVersions = outputs.map((o, idx) => {
+            const newVersions = outputs.map((o, idx) => {
         const id = `${now.getTime()}-${idx}`;
         return {
           id,
@@ -379,7 +384,11 @@ function App() {
       const primary = newVersions[0];
       setSelectedVersionId(primary.id);
       setDraftText(primary.text);
+
+      // After a successful generation, lock the Generate button
+      setCanGenerate(false);
       showToast("Draft generated");
+
     } catch (e) {
       console.error("Error generating", e);
       showToast("Error generating draft");
@@ -388,90 +397,121 @@ function App() {
     }
   };
 
-  const handleRewrite = async () => {
-    if (!currentVersion) {
-      showToast("Select a version to rewrite");
-      return;
-    }
-    if (!apiBaseUrl) {
-      showToast("Set API base URL first");
-      return;
-    }
-    const textPayload = draftText || currentVersion.text;
-    if (!textPayload) {
-      showToast("Nothing to rewrite");
-      return;
-    }
+  // --- START of NEW handleRewrite ---
+const handleRewrite = async () => {
+  if (!apiBaseUrl) {
+    showToast("Set API base URL first");
+    return;
+  }
 
-    const numericMaxWords =
-      maxWords && !Number.isNaN(parseInt(maxWords, 10))
-        ? parseInt(maxWords, 10)
-        : undefined;
+  const textPayload = draftText && draftText.trim();
+  if (!textPayload) {
+    showToast("Nothing to rewrite");
+    return;
+  }
 
-    const existingMax =
-      versions.reduce(
-        (max, v) =>
-          v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
-        0
-      ) || 0;
+  const numericMaxWords =
+    maxWords && !Number.isNaN(parseInt(maxWords, 10))
+      ? parseInt(maxWords, 10)
+      : undefined;
 
-    setIsRewriting(true);
-    try {
-      const payload = {
-        text: textPayload,
-        notes: rewriteNotes,
-        outputType: currentVersion.outputType,
-        scenario,
-        modelId,
-        temperature,
-        maxTokens,
-        maxWords: numericMaxWords,
-      };
+  const existingMax =
+    versions.reduce(
+      (max, v) =>
+        v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
+      0
+    ) || 0;
 
-      const data = await callBackend("rewrite", payload);
-      const out =
-        Array.isArray(data.outputs) && data.outputs[0]
-          ? data.outputs[0]
-          : null;
+  // Prefer the current version's type; fall back to selected output type; fall back to a sensible default.
+  const baseOutputType =
+    currentVersion?.outputType ||
+    (selectedTypes.length > 0 ? selectedTypes[0] : "transaction_text");
 
-      if (!out) {
-        showToast("No rewrite returned from backend");
-        setIsRewriting(false);
-        return;
-      }
+  setIsRewriting(true);
+  try {
+    const payload = {
+      text: textPayload,
+      notes: rewriteNotes,
+      outputType: baseOutputType,
+      scenario,
+      modelId,
+      temperature,
+      maxTokens,
+      maxWords: numericMaxWords,
+    };
 
-      const now = new Date();
-      const id = `${now.getTime()}-rw`;
+    const data = await callBackend("rewrite", payload);
+    const out =
+      Array.isArray(data.outputs) && data.outputs[0]
+        ? data.outputs[0]
+        : null;
 
-      const newVersion = {
-        id,
-        versionNumber: existingMax + 1,
-        createdAt: now.toISOString(),
-        title: title || currentVersion.title || "Untitled",
-        scenario,
-        outputType: currentVersion.outputType,
-        text: out.text,
-        score: out.score,
-        metrics: out.metrics || {},
-      };
-
-      setVersions((prev) => [...prev, newVersion]);
-      setSelectedVersionId(id);
-      setDraftText(out.text);
-      showToast("Rewrite completed");
-    } catch (e) {
-      console.error("Error rewriting", e);
-      showToast("Error rewriting draft");
-    } finally {
+    if (!out) {
+      showToast("No rewrite returned from backend");
       setIsRewriting(false);
+      return;
     }
-  };
+
+    const now = new Date();
+    const id = `${now.getTime()}-rw`;
+
+    const newVersion = {
+      id,
+      versionNumber: existingMax + 1,
+      createdAt: now.toISOString(),
+      title: title || currentVersion?.title || "Untitled",
+      scenario,
+      outputType: baseOutputType,
+      text: out.text,
+      score: out.score,
+      metrics: out.metrics || {},
+    };
+
+    setVersions((prev) => [...prev, newVersion]);
+    setSelectedVersionId(id);
+    setDraftText(out.text);
+    showToast("Rewrite completed");
+  } catch (e) {
+    console.error("Error rewriting", e);
+    showToast("Error rewriting draft");
+  } finally {
+    setIsRewriting(false);
+  }
+};
+// --- END of NEW handleRewrite ---
+
 
   const handleSelectVersion = (id) => {
     setSelectedVersionId(id);
     const v = versions.find((v) => v.id === id);
     if (v) setDraftText(v.text);
   };
+
+  const handleNewOutput = () => {
+  // Reset the core configuration for a fresh output
+  setTitle("");
+  setNotes("");
+  setRawText("");
+  setScenario("new_investment");
+  setSelectedTypes(["transaction_text"]);
+  setPublicSearch(false);
+  setMaxWords("");
+
+  // Reset sources
+  setSources([]);
+  setUrlInput("");
+
+  // Reset versions and draft
+  setVersions([]);
+  setSelectedVersionId(null);
+  setDraftText("");
+  setRewriteNotes("");
+
+  // Allow Generate again
+  setCanGenerate(true);
+
+  showToast("New output session started");
+};
 
   const handleDeleteVersion = (id) => {
     setVersions((prev) => {
@@ -533,25 +573,33 @@ function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Header */}
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-xl bg-black text-white flex items-center justify-center text-xs font-semibold">
-              CE
-            </div>
-            <div>
-              <div className="text-sm font-semibold">
-                Content Engine – single workspace
-              </div>
-              <div className="text-xs text-slate-500">
-                Event-based prompts • Multi-output • Scored versions
-              </div>
-            </div>
-          </div>
-          <div className="hidden md:block text-xs text-slate-400">
-            Brightline prototype
-          </div>
+  <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+    <div className="flex items-center gap-3">
+      <div className="h-8 w-8 rounded-xl bg-black text-white flex items-center justify-center text-xs font-semibold">
+        CE
+      </div>
+      <div>
+        <div className="text-sm font-semibold">
+          Content Engine – single workspace
         </div>
-      </header>
+        <div className="text-xs text-slate-500">
+          Event-based prompts • Multi-output • Scored versions
+        </div>
+      </div>
+    </div>
+    <div className="hidden md:flex items-center gap-3">
+      <div className="text-xs text-slate-400">Brightline prototype</div>
+      <Button
+        variant="primary"
+        className="text-xs"
+        onClick={handleNewOutput}
+      >
+        New output
+      </Button>
+    </div>
+  </div>
+</header>
+
 
       {/* Main layout */}
       <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
@@ -559,8 +607,8 @@ function App() {
         <div className="space-y-4">
           {/* Event & title */}
           <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-1">
+                <CardHeader className="items-center justify-between">
+                <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Event & title</div>
                 <div className="text-xs text-slate-500">
                   Define what happened and what you need written.
@@ -624,8 +672,8 @@ function App() {
 
           {/* Sources */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
+          <CardHeader className="items-center justify-between">
+            <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Source material</div>
               </div>
             </CardHeader>
@@ -786,8 +834,8 @@ function App() {
 
           {/* Advanced settings */}
           <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-1">
+          <CardHeader className="items-center justify-between">
+            <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Advanced settings</div>
                 <div className="text-xs text-slate-500">
                   Connection details and model controls.
@@ -958,12 +1006,13 @@ function App() {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
-                    variant="primary"
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? "Generating..." : "Generate draft"}
-                  </Button>
+  variant="primary"
+  onClick={handleGenerate}
+  disabled={isGenerating || !canGenerate}
+>
+  {isGenerating ? "Generating..." : "Generate draft"}
+</Button>
+
                 </div>
               </div>
             </CardBody>
@@ -1032,20 +1081,21 @@ function App() {
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <Button
-                  variant="default"
-                  onClick={handleRewrite}
-                  disabled={isRewriting}
-                >
-                  {isRewriting ? "Rewriting..." : "Rewrite draft"}
-                </Button>
+  variant="default"
+  onClick={handleRewrite}
+  disabled={isRewriting || versions.length === 0}
+>
+  {isRewriting ? "Rewriting..." : "Rewrite draft"}
+</Button>
+
               </div>
             </CardBody>
           </Card>
 
           {/* Versions timeline */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
+          <CardHeader className="items-center justify-between">
+            <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Versions</div>
                 <div className="text-xs text-slate-500">
                   {sortedVersions.length === 0
