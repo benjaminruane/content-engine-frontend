@@ -15,14 +15,22 @@ function Button({ variant = "default", className = "", children, ...props }) {
       "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 shadow-sm",
   };
 
+  const isDisabled = props.disabled;
+
+  const variantClass = isDisabled
+    ? "bg-slate-200 border border-slate-300 text-slate-500 cursor-not-allowed opacity-80"
+    : variants[variant] || variants.default;
+
   return (
     <button
-      className={`${base} ${variants[variant] || variants.default} ${className}`}
+      className={`${base} ${variantClass} ${className}`}
       {...props}
     >
       {children}
     </button>
   );
+}
+
 }
 
 function Card({ className = "", children }) {
@@ -556,18 +564,24 @@ const handleRewrite = async () => {
     showToast("Draft downloaded");
   };
 
-  const sortedVersions = [...versions].sort((a, b) => {
+    const sortedVersions = [...versions].sort((a, b) => {
     const av = a.versionNumber || 0;
     const bv = b.versionNumber || 0;
-    if (av !== bv) return av - bv;
-    return new Date(a.createdAt) - new Date(b.createdAt);
+    if (av !== bv) return bv - av; // higher versionNumber first
+    return new Date(b.createdAt) - new Date(a.createdAt); // newer first
   });
+
 
   const primaryOutputLabel =
     selectedTypes.length === 1
       ? OUTPUT_TYPES.find((t) => t.id === selectedTypes[0])?.label ||
         selectedTypes[0]
       : `${selectedTypes.length} outputs selected`;
+
+    const draftWordCount =
+    draftText && draftText.trim().length > 0
+      ? draftText.trim().split(/\s+/).filter(Boolean).length
+      : 0;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -1056,6 +1070,11 @@ const handleRewrite = async () => {
                 onChange={(e) => setDraftText(e.target.value)}
                 placeholder="Generated draft will appear here. You can edit before rewriting."
               />
+
+              <div className="text-[11px] text-slate-500 text-right mt-1">
+                Word count: {draftWordCount}
+              </div>
+              
               {/* Export options */}
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex gap-2">
@@ -1120,6 +1139,11 @@ const handleRewrite = async () => {
                 const versionNumber = v.versionNumber || idx + 1;
                 const isSelected = v.id === selectedVersionId;
 
+        const wordCount =
+    v.text && v.text.trim().length > 0
+      ? v.text.trim().split(/\s+/).filter(Boolean).length
+      : 0;
+
                 return (
                   <div key={v.id} className="flex items-stretch gap-2">
                     {/* Timeline column */}
@@ -1141,15 +1165,21 @@ const handleRewrite = async () => {
                           : "border-slate-200 hover:bg-slate-50"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <div className="text-xs font-medium truncate">
-                          v{versionNumber} ·{" "}
-                          <span className="capitalize">{outputLabel}</span>
-                        </div>
-                        <div className="text-[11px] text-slate-600">
-                          Score: {v.score != null ? v.score : "–"}
-                        </div>
-                      </div>
+                              <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="text-xs font-medium truncate">
+            v{versionNumber} ·{" "}
+            <span className="capitalize">{outputLabel}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-600">
+              Score: {v.score != null ? v.score : "–"}
+            </span>
+            <Pill className="text-[10px]">
+              {wordCount} words
+            </Pill>
+          </div>
+        </div>
+
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-col">
                           <span className="text-[11px] text-slate-500">
