@@ -602,7 +602,8 @@ function App() {
       </header>
 
       {/* Main layout */}
-      <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
+      <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]">
+
         {/* Left column – inputs */}
         <div className="space-y-4">
           {/* Event & title */}
@@ -1157,19 +1158,21 @@ function App() {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <div className="text-xs font-medium truncate">
-                          v{versionNumber} ·{" "}
-                          <span className="capitalize">{outputLabel}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] text-slate-600">
-                            Score: {v.score != null ? v.score : "–"}
-                          </span>
-                          <Pill className="text-[10px]">
-                            {wordCount} words
-                          </Pill>
-                        </div>
-                      </div>
+  <div className="text-xs font-medium truncate">
+    v{versionNumber} ·{" "}
+    <span className="capitalize">{outputLabel}</span>
+  </div>
+  <div className="flex items-center gap-2">
+  <Pill className="text-[10px]">
+    {wordCount} words
+  </Pill>
+  <Pill tone={qualityTone(v.score)} className="text-[10px]">
+    Score: {v.score != null ? v.score : "–"}
+  </Pill>
+</div>
+
+</div>
+
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-col">
                           <span className="text-[11px] text-slate-500">
