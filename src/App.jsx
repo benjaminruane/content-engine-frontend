@@ -650,7 +650,7 @@ function App() {
           </Card>
 
           {/* Output types */}
-          <Card">
+          <Card>
             <CardHeader>
               <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Output types</div>
