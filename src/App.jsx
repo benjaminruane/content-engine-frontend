@@ -100,17 +100,17 @@ function formatDateTime(d) {
 }
 
 const SCENARIOS = [
-  { id: "new_investment", label: "New investment" },
-  { id: "exit_realisation", label: "Exit / realisation" },
-  { id: "portfolio_update", label: "Portfolio update" },
-  { id: "default", label: "General update" },
+  { id: "new_investment", label: "New direct investment" },
+  { id: "new_fund_commitment", label: "New fund commitment" },
+  { id: "exit_realisation", label: "Exit/realization" },
+  { id: "revaluation", label: "Revaluation" },
 ];
 
 const OUTPUT_TYPES = [
-  { id: "press_release", label: "Press release" },
-  { id: "investment_note", label: "Investment note" },
-  { id: "linkedin_post", label: "LinkedIn post" },
   { id: "transaction_text", label: "Transaction text" },
+  { id: "investment_note", label: "Investor letter" },
+  { id: "press_release", label: "Press release" },
+  { id: "linkedin_post", label: "LinkedIn post" },
 ];
 
 function App() {
@@ -123,14 +123,17 @@ function App() {
   const [notes, setNotes] = useState("");
   const [rawText, setRawText] = useState("");
 
-  const [scenario, setScenario] = useState("default");
-  const [selectedTypes, setSelectedTypes] = useState(["press_release"]);
+  const [scenario, setScenario] = useState("new_investment");
+  const [selectedTypes, setSelectedTypes] = useState(["transaction_text"]);
 
   const [modelId, setModelId] = useState("gpt-4o-mini");
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(2048);
 
   const [publicSearch, setPublicSearch] = useState(false);
+
+  // NEW: max words limit
+  const [maxWords, setMaxWords] = useState("");
 
   // sources: { name, text, size, kind: "file" | "url" }
   const [sources, setSources] = useState([]);
@@ -297,6 +300,11 @@ function App() {
       return;
     }
 
+    const numericMaxWords =
+      maxWords && !Number.isNaN(parseInt(maxWords, 10))
+        ? parseInt(maxWords, 10)
+        : undefined;
+
     setIsGenerating(true);
     try {
       const payload = {
@@ -309,6 +317,7 @@ function App() {
         temperature,
         maxTokens,
         publicSearch,
+        maxWords: numericMaxWords,
       };
 
       const data = await callBackend("generate", payload);
@@ -363,6 +372,11 @@ function App() {
       return;
     }
 
+    const numericMaxWords =
+      maxWords && !Number.isNaN(parseInt(maxWords, 10))
+        ? parseInt(maxWords, 10)
+        : undefined;
+
     setIsRewriting(true);
     try {
       const payload = {
@@ -373,6 +387,7 @@ function App() {
         modelId,
         temperature,
         maxTokens,
+        maxWords: numericMaxWords,
       };
 
       const data = await callBackend("rewrite", payload);
@@ -471,7 +486,7 @@ function App() {
                 </div>
                 <div>
                   <label className="text-xs font-medium text-slate-700 mb-1 block">
-                    Event type (scenario)
+                    Event type
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     {SCENARIOS.map((s) => (
@@ -635,12 +650,13 @@ function App() {
           </Card>
 
           {/* Output types */}
-          <Card>
+          <Card">
             <CardHeader>
               <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Output types</div>
                 <div className="text-xs text-slate-500">
-                  Choose which formats you want for this event.
+                  Choose which formats you want for this event and optionally
+                  cap the length.
                 </div>
               </div>
             </CardHeader>
@@ -664,14 +680,29 @@ function App() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-1">
-                <Button
-                  variant="primary"
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? "Generating..." : "Generate draft"}
-                </Button>
+              <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-3 items-end">
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">
+                    Maximum words (optional)
+                  </label>
+                  <Input
+                    type="number"
+                    min="50"
+                    className="text-xs"
+                    placeholder="e.g. 300"
+                    value={maxWords}
+                    onChange={(e) => setMaxWords(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="primary"
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? "Generating..." : "Generate draft"}
+                  </Button>
+                </div>
               </div>
             </CardBody>
           </Card>
