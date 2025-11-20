@@ -27,7 +27,9 @@ function Button({ variant = "default", className = "", children, ...props }) {
 
 function Card({ className = "", children }) {
   return (
-    <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className}`}>
+    <div
+      className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className}`}
+    >
       {children}
     </div>
   );
@@ -35,7 +37,9 @@ function Card({ className = "", children }) {
 
 function CardHeader({ className = "", children }) {
   return (
-    <div className={`px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2 ${className}`}>
+    <div
+      className={`px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2 ${className}`}
+    >
       {children}
     </div>
   );
@@ -126,10 +130,11 @@ function App() {
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(2048);
 
+  const [publicSearch, setPublicSearch] = useState(false);
+
   // sources: { name, text, size, kind: "file" | "url" }
   const [sources, setSources] = useState([]);
   const fileInputRef = useRef(null);
-
   const [urlInput, setUrlInput] = useState("");
 
   const [versions, setVersions] = useState([]);
@@ -142,6 +147,7 @@ function App() {
   const [rewriteNotes, setRewriteNotes] = useState("");
 
   const [toast, setToast] = useState(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const showToast = (message, duration = 2500) => {
     setToast(message);
@@ -189,7 +195,6 @@ function App() {
       return;
     }
 
-    // Basic client-side URL validation
     try {
       new URL(trimmed);
     } catch {
@@ -241,7 +246,7 @@ function App() {
   const toggleType = (id) => {
     setSelectedTypes((prev) => {
       if (prev.includes(id)) {
-        if (prev.length === 1) return prev; // keep at least one
+        if (prev.length === 1) return prev;
         return prev.filter((t) => t !== id);
       }
       return [...prev, id];
@@ -303,6 +308,7 @@ function App() {
         modelId,
         temperature,
         maxTokens,
+        publicSearch,
       };
 
       const data = await callBackend("generate", payload);
@@ -431,31 +437,8 @@ function App() {
               </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Input
-              className="w-56 text-xs"
-              value={apiBaseUrl}
-              onChange={(e) => setApiBaseUrl(e.target.value)}
-              placeholder="Backend API base URL"
-            />
-            <Button
-              variant="quiet"
-              className="text-xs"
-              onClick={handleCheckConnection}
-            >
-              Check connection
-            </Button>
-            {connectionStatus === "ok" && (
-              <Pill tone="success" className="text-[10px]">
-                Connected
-              </Pill>
-            )}
-            {connectionStatus === "error" && (
-              <Pill tone="danger" className="text-[10px]">
-                Error
-              </Pill>
-            )}
+          <div className="hidden md:block text-xs text-slate-400">
+            Brightline prototype
           </div>
         </div>
       </header>
@@ -464,7 +447,7 @@ function App() {
       <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
         {/* Left column – inputs */}
         <div className="space-y-4">
-          {/* Project meta */}
+          {/* Event & title */}
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-1">
@@ -523,6 +506,34 @@ function App() {
             </CardBody>
           </Card>
 
+          {/* Public domain search */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">
+                  Public domain search
+                </div>
+                <div className="text-xs text-slate-500">
+                  Optional: allow the engine to supplement your sources with
+                  public web context.
+                </div>
+              </div>
+              <Button
+                variant={publicSearch ? "primary" : "quiet"}
+                className="text-xs"
+                onClick={() => setPublicSearch((v) => !v)}
+              >
+                {publicSearch ? "Search enabled" : "Search disabled"}
+              </Button>
+            </CardHeader>
+            <CardBody className="space-y-1">
+              <div className="text-xs text-slate-600">
+                This flag is passed to the backend as <code>publicSearch</code>.
+                Actual web-search behaviour can be implemented later.
+              </div>
+            </CardBody>
+          </Card>
+
           {/* Sources */}
           <Card>
             <CardHeader>
@@ -534,159 +545,122 @@ function App() {
               </div>
             </CardHeader>
             <CardBody className="space-y-3">
+              {/* File upload */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs text-slate-600">
+                  Upload investment memos, notes, or summaries as text files.
+                </div>
+                <Button
+                  variant="quiet"
+                  className="text-xs"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload files
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+              </div>
+
+              {/* URL source */}
+              <div className="flex items-center gap-2">
+                <Input
+                  className="text-xs"
+                  placeholder="https://example.com/article"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                />
+                <Button
+                  variant="default"
+                  className="text-xs whitespace-nowrap"
+                  onClick={handleAddUrlSource}
+                >
+                  Add URL
+                </Button>
+              </div>
+
+              {/* Paste text */}
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
                   Paste or draft source text
                 </label>
                 <TextArea
-                  rows={6}
+                  rows={3}
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
                   placeholder="Paste IM extracts, memos, emails, notes..."
                 />
               </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="text-xs text-slate-600">
-                    Or upload investment memos, notes, or summaries as text files.
-                  </div>
-                  <Button
-                    variant="quiet"
-                    className="text-xs"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Upload files
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => handleFiles(e.target.files)}
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Input
-                    className="text-xs"
-                    placeholder="https://example.com/article"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                  />
-                  <Button
-                    variant="default"
-                    className="text-xs whitespace-nowrap"
-                    onClick={handleAddUrlSource}
-                  >
-                    Add URL
-                  </Button>
-                </div>
-              </div>
-
+              {/* Source list */}
               {sources.length > 0 && (
                 <div className="border border-slate-100 rounded-xl px-3 py-2 bg-slate-50">
                   <div className="text-[11px] font-medium text-slate-600 mb-1">
                     Attached sources
                   </div>
                   <ul className="space-y-1 text-xs text-slate-700">
-                    {sources.map((s, idx) => (
-                      <li
-                        key={`${s.name}-${idx}`}
-                        className="flex items-center justify-between gap-2"
-                      >
-                        <span className="truncate">{s.name}</span>
-                        <span className="text-[10px] text-slate-500">
-                          {s.kind === "file"
-                            ? s.size
-                              ? `${Math.round(s.size / 1024)} KB`
-                              : "file"
-                            : "URL"}
-                        </span>
-                      </li>
-                    ))}
+                    {sources.map((s, idx) => {
+                      let meta = "";
+                      if (s.kind === "file") {
+                        meta = s.size
+                          ? `${Math.round(s.size / 1024)} KB`
+                          : "file";
+                      } else if (s.kind === "url") {
+                        const len = s.text ? s.text.length : 0;
+                        const k = Math.max(1, Math.round(len / 1000));
+                        meta = `URL · ~${k}k chars`;
+                      } else {
+                        meta = "source";
+                      }
+                      return (
+                        <li
+                          key={`${s.name}-${idx}`}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <span className="truncate">{s.name}</span>
+                          <span className="text-[10px] text-slate-500">
+                            {meta}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
             </CardBody>
           </Card>
 
-          {/* Model + output types */}
+          {/* Output types */}
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">Model & outputs</div>
+                <div className="text-sm font-semibold">Output types</div>
                 <div className="text-xs text-slate-500">
-                  Choose model settings and the formats you need.
+                  Choose which formats you want for this event.
                 </div>
               </div>
             </CardHeader>
             <CardBody className="space-y-3">
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-slate-700 mb-1 block">
-                    Output types
-                  </label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {OUTPUT_TYPES.map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => toggleType(t.id)}
-                        className={`px-2.5 py-1 rounded-full text-[11px] border ${
-                          selectedTypes.includes(t.id)
-                            ? "bg-black text-white border-black"
-                            : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
-                        }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div>
-                      <div className="text-[11px] font-medium text-slate-700 mb-1">
-                        Model
-                      </div>
-                      <Input
-                        className="text-[11px]"
-                        value={modelId}
-                        onChange={(e) => setModelId(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <div className="text-[11px] font-medium text-slate-700 mb-1">
-                        Temp
-                      </div>
-                      <Input
-                        type="number"
-                        step="0.05"
-                        min="0"
-                        max="1"
-                        className="text-[11px]"
-                        value={temperature}
-                        onChange={(e) =>
-                          setTemperature(parseFloat(e.target.value) || 0)
-                        }
-                      />
-                    </div>
-                    <div>
-                      <div className="text-[11px] font-medium text-slate-700 mb-1">
-                        Max tokens
-                      </div>
-                      <Input
-                        type="number"
-                        min="256"
-                        className="text-[11px]"
-                        value={maxTokens}
-                        onChange={(e) =>
-                          setMaxTokens(parseInt(e.target.value, 10) || 512)
-                        }
-                      />
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {OUTPUT_TYPES.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => toggleType(t.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                        selectedTypes.includes(t.id)
+                          ? "bg-black text-white border-black"
+                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -700,6 +674,104 @@ function App() {
                 </Button>
               </div>
             </CardBody>
+          </Card>
+
+          {/* Advanced settings */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Advanced settings</div>
+                <div className="text-xs text-slate-500">
+                  Connection details and model controls.
+                </div>
+              </div>
+              <Button
+                variant="quiet"
+                className="text-xs"
+                onClick={() => setShowAdvanced((v) => !v)}
+              >
+                {showAdvanced ? "Hide" : "Show"}
+              </Button>
+            </CardHeader>
+            {showAdvanced && (
+              <CardBody className="space-y-3">
+                {/* API + connection */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">
+                    Backend API base URL
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      className="text-xs"
+                      value={apiBaseUrl}
+                      onChange={(e) => setApiBaseUrl(e.target.value)}
+                      placeholder="https://your-backend.vercel.app/api"
+                    />
+                    <Button
+                      variant="quiet"
+                      className="text-xs whitespace-nowrap"
+                      onClick={handleCheckConnection}
+                    >
+                      Check
+                    </Button>
+                    {connectionStatus === "ok" && (
+                      <Pill tone="success" className="text-[10px]">
+                        Connected
+                      </Pill>
+                    )}
+                    {connectionStatus === "error" && (
+                      <Pill tone="danger" className="text-[10px]">
+                        Error
+                      </Pill>
+                    )}
+                  </div>
+                </div>
+
+                {/* Model controls */}
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                      Model
+                    </div>
+                    <Input
+                      className="text-[11px]"
+                      value={modelId}
+                      onChange={(e) => setModelId(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                      Temp
+                    </div>
+                    <Input
+                      type="number"
+                      step="0.05"
+                      min="0"
+                      max="1"
+                      className="text-[11px]"
+                      value={temperature}
+                      onChange={(e) =>
+                        setTemperature(parseFloat(e.target.value) || 0)
+                      }
+                    />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                      Max tokens
+                    </div>
+                    <Input
+                      type="number"
+                      min="256"
+                      className="text-[11px]"
+                      value={maxTokens}
+                      onChange={(e) =>
+                        setMaxTokens(parseInt(e.target.value, 10) || 512)
+                      }
+                    />
+                  </div>
+                </div>
+              </CardBody>
+            )}
           </Card>
         </div>
 
@@ -769,6 +841,13 @@ function App() {
               )}
               {versions.map((v) => {
                 const dt = new Date(v.createdAt);
+                const outputLabel = v.outputType
+                  ? v.outputType.replace("_", " ")
+                  : "output";
+                const scenarioLabel = v.scenario
+                  ? v.scenario.replace("_", " ")
+                  : "default";
+
                 return (
                   <button
                     key={v.id}
@@ -783,16 +862,18 @@ function App() {
                     <div className="flex flex-col gap-0.5">
                       <div className="text-xs font-medium truncate">
                         {v.title} ·{" "}
-                        <span className="capitalize">
-                          {v.outputType.replace("_", " ")}
-                        </span>
+                        <span className="capitalize">{outputLabel}</span>
                       </div>
-                      <div className="text-[11px] text-slate-500 flex flex-wrap gap-1">
-                        <span>{formatDateTime(dt)}</span>
-                        <span>•</span>
-                        <span className="capitalize">
-                          {v.scenario?.replace("_", " ") || "default"}
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-[11px] text-slate-500">
+                          {formatDateTime(dt)}
                         </span>
+                        <Pill tone="neutral" className="text-[10px]">
+                          {outputLabel}
+                        </Pill>
+                        <Pill tone="neutral" className="text-[10px]">
+                          {scenarioLabel}
+                        </Pill>
                       </div>
                     </div>
                     <Pill tone={qualityTone(v.score)}>
