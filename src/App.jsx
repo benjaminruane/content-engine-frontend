@@ -126,8 +126,11 @@ function App() {
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(2048);
 
-  const [sources, setSources] = useState([]); // { name, text }
+  // sources: { name, text, size, kind: "file" | "url" }
+  const [sources, setSources] = useState([]);
   const fileInputRef = useRef(null);
+
+  const [urlInput, setUrlInput] = useState("");
 
   const [versions, setVersions] = useState([]);
   const [selectedVersionId, setSelectedVersionId] = useState(null);
@@ -171,11 +174,68 @@ function App() {
             name: file.name,
             text,
             size: file.size,
+            kind: "file",
           },
         ]);
       };
       reader.readAsText(file);
     });
+  };
+
+  const handleAddUrlSource = async () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) {
+      showToast("Enter a URL first");
+      return;
+    }
+
+    // Basic client-side URL validation
+    try {
+      new URL(trimmed);
+    } catch {
+      showToast("Invalid URL");
+      return;
+    }
+
+    if (!apiBaseUrl) {
+      showToast("Set API base URL first");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/fetch-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: trimmed }),
+      });
+
+      if (!res.ok) {
+        console.error("URL fetch failed with status", res.status);
+        showToast("Failed to fetch URL");
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.text || !data.text.trim()) {
+        showToast("No readable text found at URL");
+        return;
+      }
+
+      setSources((prev) => [
+        ...prev,
+        {
+          name: trimmed,
+          text: data.text,
+          size: null,
+          kind: "url",
+        },
+      ]);
+      setUrlInput("");
+      showToast("URL source added");
+    } catch (e) {
+      console.error("URL fetch error", e);
+      showToast("Failed to fetch URL");
+    }
   };
 
   const toggleType = (id) => {
@@ -224,7 +284,7 @@ function App() {
     }
     const textPayload = combinedText();
     if (!textPayload) {
-      showToast("Add some source text or upload a file first");
+      showToast("Add some source text or upload a file/URL first");
       return;
     }
     if (!selectedTypes.length) {
@@ -469,7 +529,7 @@ function App() {
               <div className="flex items-center gap-2">
                 <div className="text-sm font-semibold">Source material</div>
                 <Pill className="text-[11px]">
-                  {sources.length} file(s) attached
+                  {sources.length} source(s) attached
                 </Pill>
               </div>
             </CardHeader>
@@ -486,30 +546,48 @@ function App() {
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-slate-600">
-                  Or upload investment memos, notes, or summaries as text files.
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-xs text-slate-600">
+                    Or upload investment memos, notes, or summaries as text files.
+                  </div>
+                  <Button
+                    variant="quiet"
+                    className="text-xs"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Upload files
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFiles(e.target.files)}
+                  />
                 </div>
-                <Button
-                  variant="quiet"
-                  className="text-xs"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  Upload files
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => handleFiles(e.target.files)}
-                />
+
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="text-xs"
+                    placeholder="https://example.com/article"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                  />
+                  <Button
+                    variant="default"
+                    className="text-xs whitespace-nowrap"
+                    onClick={handleAddUrlSource}
+                  >
+                    Add URL
+                  </Button>
+                </div>
               </div>
 
               {sources.length > 0 && (
                 <div className="border border-slate-100 rounded-xl px-3 py-2 bg-slate-50">
                   <div className="text-[11px] font-medium text-slate-600 mb-1">
-                    Attached files
+                    Attached sources
                   </div>
                   <ul className="space-y-1 text-xs text-slate-700">
                     {sources.map((s, idx) => (
@@ -519,9 +597,11 @@ function App() {
                       >
                         <span className="truncate">{s.name}</span>
                         <span className="text-[10px] text-slate-500">
-                          {s.size
-                            ? `${Math.round(s.size / 1024)} KB`
-                            : "text"}
+                          {s.kind === "file"
+                            ? s.size
+                              ? `${Math.round(s.size / 1024)} KB`
+                              : "file"
+                            : "URL"}
                         </span>
                       </li>
                     ))}
