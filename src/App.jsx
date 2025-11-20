@@ -1162,7 +1162,7 @@ function App() {
     v{versionNumber} ·{" "}
     <span className="capitalize">{outputLabel}</span>
   </div>
-  <div className="flex items-center gap-2">
+  <div className="flex items-center gap-2 shrink-0">
   <Pill className="text-[10px]">
     {wordCount} words
   </Pill>
@@ -1170,6 +1170,7 @@ function App() {
     Score: {v.score != null ? v.score : "–"}
   </Pill>
 </div>
+
 
 </div>
 
