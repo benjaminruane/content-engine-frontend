@@ -49,7 +49,6 @@ function CardHeader({ className = "", children }) {
   );
 }
 
-
 function CardBody({ className = "", children }) {
   return <div className={`px-4 py-3 ${className}`}>{children}</div>;
 }
@@ -157,9 +156,8 @@ function App() {
   const [maxWords, setMaxWords] = useState("");
 
   // Controls whether a new generation is allowed in this "session"
-const [canGenerate, setCanGenerate] = useState(true);
+  const [canGenerate, setCanGenerate] = useState(true);
 
-  
   // sources: { name, text, size, kind: "file" | "url" }
   const [sources, setSources] = useState([]);
   const fileInputRef = useRef(null);
@@ -371,7 +369,7 @@ const [canGenerate, setCanGenerate] = useState(true);
       }
 
       const now = new Date();
-            const newVersions = outputs.map((o, idx) => {
+      const newVersions = outputs.map((o, idx) => {
         const id = `${now.getTime()}-${idx}`;
         return {
           id,
@@ -393,8 +391,8 @@ const [canGenerate, setCanGenerate] = useState(true);
 
       // After a successful generation, lock the Generate button
       setCanGenerate(false);
-      showToast("Draft generated");
 
+      showToast("Draft generated");
     } catch (e) {
       console.error("Error generating", e);
       showToast("Error generating draft");
@@ -403,89 +401,85 @@ const [canGenerate, setCanGenerate] = useState(true);
     }
   };
 
-  // --- START of NEW handleRewrite ---
-const handleRewrite = async () => {
-  if (!apiBaseUrl) {
-    showToast("Set API base URL first");
-    return;
-  }
-
-  const textPayload = draftText && draftText.trim();
-  if (!textPayload) {
-    showToast("Nothing to rewrite");
-    return;
-  }
-
-  const numericMaxWords =
-    maxWords && !Number.isNaN(parseInt(maxWords, 10))
-      ? parseInt(maxWords, 10)
-      : undefined;
-
-  const existingMax =
-    versions.reduce(
-      (max, v) =>
-        v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
-      0
-    ) || 0;
-
-  // Prefer the current version's type; fall back to selected output type; fall back to a sensible default.
-  const baseOutputType =
-    currentVersion?.outputType ||
-    (selectedTypes.length > 0 ? selectedTypes[0] : "transaction_text");
-
-  setIsRewriting(true);
-  try {
-    const payload = {
-      text: textPayload,
-      notes: rewriteNotes,
-      outputType: baseOutputType,
-      scenario,
-      modelId,
-      temperature,
-      maxTokens,
-      maxWords: numericMaxWords,
-    };
-
-    const data = await callBackend("rewrite", payload);
-    const out =
-      Array.isArray(data.outputs) && data.outputs[0]
-        ? data.outputs[0]
-        : null;
-
-    if (!out) {
-      showToast("No rewrite returned from backend");
-      setIsRewriting(false);
+  const handleRewrite = async () => {
+    if (!apiBaseUrl) {
+      showToast("Set API base URL first");
       return;
     }
 
-    const now = new Date();
-    const id = `${now.getTime()}-rw`;
+    const textPayload = draftText && draftText.trim();
+    if (!textPayload) {
+      showToast("Nothing to rewrite");
+      return;
+    }
 
-    const newVersion = {
-      id,
-      versionNumber: existingMax + 1,
-      createdAt: now.toISOString(),
-      title: title || currentVersion?.title || "Untitled",
-      scenario,
-      outputType: baseOutputType,
-      text: out.text,
-      score: out.score,
-      metrics: out.metrics || {},
-    };
+    const numericMaxWords =
+      maxWords && !Number.isNaN(parseInt(maxWords, 10))
+        ? parseInt(maxWords, 10)
+        : undefined;
 
-    setVersions((prev) => [...prev, newVersion]);
-    setSelectedVersionId(id);
-    setDraftText(out.text);
-    showToast("Rewrite completed");
-  } catch (e) {
-    console.error("Error rewriting", e);
-    showToast("Error rewriting draft");
-  } finally {
-    setIsRewriting(false);
-  }
-};
-// --- END of NEW handleRewrite ---
+    const existingMax =
+      versions.reduce(
+        (max, v) =>
+          v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
+        0
+      ) || 0;
 
+    const baseOutputType =
+      currentVersion?.outputType ||
+      (selectedTypes.length > 0 ? selectedTypes[0] : "transaction_text");
+
+    setIsRewriting(true);
+    try {
+      const payload = {
+        text: textPayload,
+        notes: rewriteNotes,
+        outputType: baseOutputType,
+        scenario,
+        modelId,
+        temperature,
+        maxTokens,
+        maxWords: numericMaxWords,
+      };
+
+      const data = await callBackend("rewrite", payload);
+      const out =
+        Array.isArray(data.outputs) && data.outputs[0]
+          ? data.outputs[0]
+          : null;
+
+      if (!out) {
+        showToast("No rewrite returned from backend");
+        setIsRewriting(false);
+        return;
+      }
+
+      const now = new Date();
+      const id = `${now.getTime()}-rw`;
+
+      const newVersion = {
+        id,
+        versionNumber: existingMax + 1,
+        createdAt: now.toISOString(),
+        title: title || currentVersion?.title || "Untitled",
+        scenario,
+        outputType: baseOutputType,
+        text: out.text,
+        score: out.score,
+        metrics: out.metrics || {},
+      };
+
+      setVersions((prev) => [...prev, newVersion]);
+      setSelectedVersionId(id);
+      setDraftText(out.text);
+      showToast("Rewrite completed");
+    } catch (e) {
+      console.error("Error rewriting", e);
+      showToast("Error rewriting draft");
+    } finally {
+      setIsRewriting(false);
+    }
+  };
 
   const handleSelectVersion = (id) => {
     setSelectedVersionId(id);
@@ -493,37 +487,11 @@ const handleRewrite = async () => {
     if (v) setDraftText(v.text);
   };
 
-  const handleNewOutput = () => {
-  // Reset the core configuration for a fresh output
-  setTitle("");
-  setNotes("");
-  setRawText("");
-  setScenario("new_investment");
-  setSelectedTypes(["transaction_text"]);
-  setPublicSearch(false);
-  setMaxWords("");
-
-  // Reset sources
-  setSources([]);
-  setUrlInput("");
-
-  // Reset versions and draft
-  setVersions([]);
-  setSelectedVersionId(null);
-  setDraftText("");
-  setRewriteNotes("");
-
-  // Allow Generate again
-  setCanGenerate(true);
-
-  showToast("New output session started");
-};
-
   const handleDeleteVersion = (id) => {
     setVersions((prev) => {
       const filtered = prev.filter((v) => v.id !== id);
       if (selectedVersionId === id) {
-        const fallback = filtered[filtered.length - 1] || null;
+        const fallback = filtered[0] || null;
         setSelectedVersionId(fallback ? fallback.id : null);
         setDraftText(fallback ? fallback.text : "");
       }
@@ -562,13 +530,34 @@ const handleRewrite = async () => {
     showToast("Draft downloaded");
   };
 
-    const sortedVersions = [...versions].sort((a, b) => {
+  const handleNewOutput = () => {
+    setTitle("");
+    setNotes("");
+    setRawText("");
+    setScenario("new_investment");
+    setSelectedTypes(["transaction_text"]);
+    setPublicSearch(false);
+    setMaxWords("");
+
+    setSources([]);
+    setUrlInput("");
+
+    setVersions([]);
+    setSelectedVersionId(null);
+    setDraftText("");
+    setRewriteNotes("");
+
+    setCanGenerate(true);
+
+    showToast("New output session started");
+  };
+
+  const sortedVersions = [...versions].sort((a, b) => {
     const av = a.versionNumber || 0;
     const bv = b.versionNumber || 0;
-    if (av !== bv) return bv - av; // higher versionNumber first
+    if (av !== bv) return bv - av; // higher version first
     return new Date(b.createdAt) - new Date(a.createdAt); // newer first
   });
-
 
   const primaryOutputLabel =
     selectedTypes.length === 1
@@ -576,7 +565,7 @@ const handleRewrite = async () => {
         selectedTypes[0]
       : `${selectedTypes.length} outputs selected`;
 
-    const draftWordCount =
+  const draftWordCount =
     draftText && draftText.trim().length > 0
       ? draftText.trim().split(/\s+/).filter(Boolean).length
       : 0;
@@ -585,33 +574,32 @@ const handleRewrite = async () => {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Header */}
       <header className="border-b border-slate-200 bg-white">
-  <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
-    <div className="flex items-center gap-3">
-      <div className="h-8 w-8 rounded-xl bg-black text-white flex items-center justify-center text-xs font-semibold">
-        CE
-      </div>
-      <div>
-        <div className="text-sm font-semibold">
-          Content Engine – single workspace
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-xl bg-black text-white flex items-center justify-center text-xs font-semibold">
+              CE
+            </div>
+            <div>
+              <div className="text-sm font-semibold">
+                Content Engine – single workspace
+              </div>
+              <div className="text-xs text-slate-500">
+                Event-based prompts • Multi-output • Scored versions
+              </div>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-3">
+            <div className="text-xs text-slate-400">Brightline prototype</div>
+            <Button
+              variant="primary"
+              className="text-xs"
+              onClick={handleNewOutput}
+            >
+              New output
+            </Button>
+          </div>
         </div>
-        <div className="text-xs text-slate-500">
-          Event-based prompts • Multi-output • Scored versions
-        </div>
-      </div>
-    </div>
-    <div className="hidden md:flex items-center gap-3">
-      <div className="text-xs text-slate-400">Brightline prototype</div>
-      <Button
-        variant="primary"
-        className="text-xs"
-        onClick={handleNewOutput}
-      >
-        New output
-      </Button>
-    </div>
-  </div>
-</header>
-
+      </header>
 
       {/* Main layout */}
       <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
@@ -619,8 +607,8 @@ const handleRewrite = async () => {
         <div className="space-y-4">
           {/* Event & title */}
           <Card>
-                <CardHeader className="items-center justify-between">
-                <div className="flex flex-col gap-1">
+            <CardHeader className="items-center justify-between">
+              <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Event & title</div>
                 <div className="text-xs text-slate-500">
                   Define what happened and what you need written.
@@ -684,8 +672,8 @@ const handleRewrite = async () => {
 
           {/* Sources */}
           <Card>
-          <CardHeader className="items-center justify-between">
-            <div className="flex flex-col gap-1">
+            <CardHeader className="items-center justify-between">
+              <div className="flex items-center gap-2">
                 <div className="text-sm font-semibold">Source material</div>
               </div>
             </CardHeader>
@@ -846,8 +834,8 @@ const handleRewrite = async () => {
 
           {/* Advanced settings */}
           <Card>
-          <CardHeader className="items-center justify-between">
-            <div className="flex flex-col gap-1">
+            <CardHeader className="items-center justify-between">
+              <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Advanced settings</div>
                 <div className="text-xs text-slate-500">
                   Connection details and model controls.
@@ -969,7 +957,7 @@ const handleRewrite = async () => {
         <div className="space-y-4">
           {/* Output types */}
           <Card>
-            <CardHeader>
+            <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
                 <div className="text-sm font-semibold">Output types</div>
                 <div className="text-xs text-slate-500">
@@ -1018,13 +1006,12 @@ const handleRewrite = async () => {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
-  variant="primary"
-  onClick={handleGenerate}
-  disabled={isGenerating || !canGenerate}
->
-  {isGenerating ? "Generating..." : "Generate draft"}
-</Button>
-
+                    variant="primary"
+                    onClick={handleGenerate}
+                    disabled={isGenerating || !canGenerate}
+                  >
+                    {isGenerating ? "Generating..." : "Generate draft"}
+                  </Button>
                 </div>
               </div>
             </CardBody>
@@ -1072,14 +1059,22 @@ const handleRewrite = async () => {
               <div className="text-[11px] text-slate-500 text-right mt-1">
                 Word count: {draftWordCount}
               </div>
-              
+
               {/* Export options */}
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex gap-2">
-                  <Button variant="default" className="text-xs" onClick={handleCopyDraft}>
+                  <Button
+                    variant="default"
+                    className="text-xs"
+                    onClick={handleCopyDraft}
+                  >
                     Copy draft
                   </Button>
-                  <Button variant="quiet" className="text-xs" onClick={handleDownloadDraft}>
+                  <Button
+                    variant="quiet"
+                    className="text-xs"
+                    onClick={handleDownloadDraft}
+                  >
                     Download .txt
                   </Button>
                 </div>
@@ -1098,21 +1093,20 @@ const handleRewrite = async () => {
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <Button
-  variant="default"
-  onClick={handleRewrite}
-  disabled={isRewriting || versions.length === 0}
->
-  {isRewriting ? "Rewriting..." : "Rewrite draft"}
-</Button>
-
+                  variant="default"
+                  onClick={handleRewrite}
+                  disabled={isRewriting || versions.length === 0}
+                >
+                  {isRewriting ? "Rewriting..." : "Rewrite draft"}
+                </Button>
               </div>
             </CardBody>
           </Card>
 
           {/* Versions timeline */}
           <Card>
-          <CardHeader className="items-center justify-between">
-            <div className="flex flex-col gap-1">
+            <CardHeader className="items-center justify-between">
+              <div className="flex items-center gap-2">
                 <div className="text-sm font-semibold">Versions</div>
                 <div className="text-xs text-slate-500">
                   {sortedVersions.length === 0
@@ -1136,11 +1130,10 @@ const handleRewrite = async () => {
                   : "output";
                 const versionNumber = v.versionNumber || idx + 1;
                 const isSelected = v.id === selectedVersionId;
-
-        const wordCount =
-    v.text && v.text.trim().length > 0
-      ? v.text.trim().split(/\s+/).filter(Boolean).length
-      : 0;
+                const wordCount =
+                  v.text && v.text.trim().length > 0
+                    ? v.text.trim().split(/\s+/).filter(Boolean).length
+                    : 0;
 
                 return (
                   <div key={v.id} className="flex items-stretch gap-2">
@@ -1163,21 +1156,20 @@ const handleRewrite = async () => {
                           : "border-slate-200 hover:bg-slate-50"
                       }`}
                     >
-                              <div className="flex items-center justify-between gap-2 mb-1">
-          <div className="text-xs font-medium truncate">
-            v{versionNumber} ·{" "}
-            <span className="capitalize">{outputLabel}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-600">
-              Score: {v.score != null ? v.score : "–"}
-            </span>
-            <Pill className="text-[10px]">
-              {wordCount} words
-            </Pill>
-          </div>
-        </div>
-
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="text-xs font-medium truncate">
+                          v{versionNumber} ·{" "}
+                          <span className="capitalize">{outputLabel}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-slate-600">
+                            Score: {v.score != null ? v.score : "–"}
+                          </span>
+                          <Pill className="text-[10px]">
+                            {wordCount} words
+                          </Pill>
+                        </div>
+                      </div>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-col">
                           <span className="text-[11px] text-slate-500">
