@@ -1,38 +1,23 @@
 import React, { useState, useRef } from "react";
 
-// -----------------------------
-// UI Primitive Components
-// -----------------------------
-function Button({
-  variant = "default",
-  className = "",
-  children,
-  disabled,
-  ...props
-}) {
+function Button({ variant = "default", className = "", children, ...props }) {
   const base =
-    "px-3 py-2 rounded-xl text-sm font-medium transition active:scale-[.98]";
+    "inline-flex items-center justify-center rounded-xl text-sm font-medium px-3 py-2 transition active:scale-[.98] focus:outline-none focus:ring-2 focus:ring-offset-1";
 
   const variants = {
     default:
-      "bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 shadow-sm",
-    primary: "bg-black text-white border border-black hover:bg-gray-900",
-    secondary:
-      "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200",
+      "bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-sm",
+    primary:
+      "bg-black text-white border border-black hover:bg-slate-900 shadow-sm",
     quiet:
-      "bg-transparent text-gray-600 hover:bg-gray-100 border border-transparent",
+      "bg-transparent text-slate-600 hover:bg-slate-100 border border-transparent",
     danger:
-      "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100",
+      "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 shadow-sm",
   };
-
-  const disabledStyles = disabled
-    ? "opacity-40 cursor-not-allowed hover:bg-inherit"
-    : "";
 
   return (
     <button
-      className={`${base} ${variants[variant]} ${disabledStyles} ${className}`}
-      disabled={disabled}
+      className={`${base} ${variants[variant] || variants.default} ${className}`}
       {...props}
     >
       {children}
@@ -40,1884 +25,717 @@ function Button({
   );
 }
 
-function Pill({ level, variant = "subtle", children, className = "" }) {
-  const base =
-    "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border";
-
-  // Old behaviour (subtle / outline / solid)
-  const variantStyles = {
-    subtle: "bg-gray-50 text-gray-700 border-gray-200",
-    outline: "bg-white text-gray-700 border-gray-300",
-    solid: "bg-gray-900 text-white border-gray-900",
-  };
-
-  // Score-based colour levels
-  const levelStyles = {
-    default: "bg-gray-100 text-gray-700 border-gray-300",
-    good: "bg-emerald-50 text-emerald-800 border-emerald-400",
-    average: "bg-amber-50 text-amber-800 border-amber-400",
-    poor: "bg-red-50 text-red-800 border-red-400",
-    info: "bg-blue-50 text-blue-800 border-blue-300",
-  };
-
-  const style =
-    level && levelStyles[level]
-      ? levelStyles[level]
-      : variantStyles[variant] || variantStyles.subtle;
-
+function Card({ className = "", children }) {
   return (
-    <span className={`${base} ${style} ${className}`}>
+    <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function CardHeader({ className = "", children }) {
+  return (
+    <div className={`px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function CardBody({ className = "", children }) {
+  return <div className={`px-4 py-3 ${className}`}>{children}</div>;
+}
+
+function Input({ className = "", ...props }) {
+  return (
+    <input
+      className={`w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black ${className}`}
+      {...props}
+    />
+  );
+}
+
+function TextArea({ className = "", ...props }) {
+  return (
+    <textarea
+      className={`w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-black focus:border-black ${className}`}
+      {...props}
+    />
+  );
+}
+
+function Pill({ children, tone = "neutral", className = "" }) {
+  const tones = {
+    neutral: "bg-slate-100 text-slate-700",
+    success: "bg-emerald-50 text-emerald-700",
+    warning: "bg-amber-50 text-amber-700",
+    danger: "bg-red-50 text-red-700",
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]} ${className}`}
+    >
       {children}
     </span>
   );
 }
 
-function Card({ children, className = "" }) {
-  return (
-    <div
-      className={`rounded-3xl border border-gray-100 shadow-sm bg-white ${className}`}
-    >
-      {children}
-    </div>
-  );
+function qualityTone(score) {
+  if (score == null) return "neutral";
+  if (score >= 85) return "success";
+  if (score >= 70) return "warning";
+  return "danger";
 }
 
-function CardHeader({ title, subtitle, right }) {
-  return (
-    <div className="flex items-start justify-between p-4 border-b rounded-t-3xl bg-gray-50">
-      <div>
-        <h3 className="text-lg font-semibold">{title}</h3>
-        {subtitle && (
-          <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
-        )}
-      </div>
-      <div>{right}</div>
-    </div>
-  );
+function formatDateTime(d) {
+  return d.toLocaleString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "short",
+  });
 }
 
-function CardBody({ children, className = "" }) {
-  return <div className={`p-4 ${className}`}>{children}</div>;
-}
-
-function Spinner() {
-  return (
-    <span
-      className="inline-block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-1"
-      aria-hidden="true"
-    />
-  );
-}
-
-const Label = ({ children }) => (
-  <label className="text-sm text-gray-700 font-medium block mb-1">
-    {children}
-  </label>
-);
-
-const Input = ({ className = "", ...props }) => (
-  <input
-    className={`w-full px-3 py-2 border rounded-xl text-sm ${className}`}
-    {...props}
-  />
-);
-
-const Textarea = ({ className = "", ...props }) => (
-  <textarea
-    className={`w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 ${className}`}
-    {...props}
-  />
-);
-
-const Toggle = ({ checked, onChange }) => (
-  <button
-    type="button"
-    onClick={() => onChange(!checked)}
-    style={{
-      width: "44px",
-      height: "24px",
-      borderRadius: "999px",
-      padding: "2px",
-      border: "1px solid #d1d5db",
-      backgroundColor: checked ? "#111827" : "#e5e7eb",
-      display: "flex",
-      alignItems: "center",
-      boxSizing: "border-box",
-      cursor: "pointer",
-      transition: "background-color 150ms ease",
-    }}
-  >
-    <span
-      style={{
-        width: "18px",
-        height: "18px",
-        borderRadius: "999px",
-        backgroundColor: "#ffffff",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-        transform: checked ? "translateX(18px)" : "translateX(0)",
-        transition: "transform 150ms ease",
-      }}
-    />
-  </button>
-);
-
-// -----------------------------
-// Constants
-// -----------------------------
-
-const OUTPUT_TYPES = [
-  { label: "Transaction text", value: "investor" },
-  { label: "Investor letter", value: "detailed" },
-  { label: "Press release", value: "press" },
-  { label: "LinkedIn post", value: "linkedin" },
-];
-
-// Client-mode scenarios (you can edit this list freely)
-const SCENARIO_OPTIONS = [
+const SCENARIOS = [
   { id: "new_investment", label: "New investment" },
   { id: "exit_realisation", label: "Exit / realisation" },
-  { id: "portfolio_update", label: "Portfolio / quarterly update" },
+  { id: "portfolio_update", label: "Portfolio update" },
+  { id: "default", label: "General update" },
 ];
 
-const MODEL_OPTIONS = [
-  { id: "gpt-4o-mini", label: "GPT-4o Mini" },
-  { id: "gpt-4o", label: "GPT-4o" },
+const OUTPUT_TYPES = [
+  { id: "press_release", label: "Press release" },
+  { id: "investment_note", label: "Investment note" },
+  { id: "linkedin_post", label: "LinkedIn post" },
+  { id: "transaction_text", label: "Transaction text" },
 ];
 
-const PAGE_META = {
-  dashboard: {
-    title: "Dashboard",
-    subtitle: "Manage sources, generate drafts, and track versions.",
-  },
-  projects: {
-    title: "Projects",
-    subtitle: "Track and reopen previous drafting workspaces.",
-  },
-  sources: {
-    title: "Sources",
-    subtitle: "Manage uploaded documents and web links.",
-  },
-  outputs: {
-    title: "Outputs",
-    subtitle: "Browse and organise generated documents.",
-  },
-  templates: {
-    title: "Templates",
-    subtitle: "Manage reusable prompt and document blueprints.",
-  },
-};
+function App() {
+  const [apiBaseUrl, setApiBaseUrl] = useState(
+    "https://content-engine-backend-v2.vercel.app/api"
+  );
+  const [connectionStatus, setConnectionStatus] = useState(null);
 
-// -----------------------------
-// Helpers
-// -----------------------------
-const getModelLabel = (id) =>
-  MODEL_OPTIONS.find((m) => m.id === id)?.label || id;
+  const [title, setTitle] = useState("");
+  const [notes, setNotes] = useState("");
+  const [rawText, setRawText] = useState("");
 
-const getScenarioLabel = (id) =>
-  SCENARIO_OPTIONS.find((s) => s.id === id)?.label ||
-  "No scenario selected";
+  const [scenario, setScenario] = useState("default");
+  const [selectedTypes, setSelectedTypes] = useState(["press_release"]);
 
-const getOutputLabel = (value) =>
-  OUTPUT_TYPES.find((o) => o.value === value)?.label || value;
+  const [modelId, setModelId] = useState("gpt-4o-mini");
+  const [temperature, setTemperature] = useState(0.3);
+  const [maxTokens, setMaxTokens] = useState(2048);
 
-// Quality score → label + Tailwind classes
-const getScoreMeta = (score) => {
-  // No score yet (new project / no versions selected)
-  if (typeof score !== "number" || Number.isNaN(score)) {
-    return {
-      label: "No score yet",
-      className: "bg-transparent text-gray-400 border-gray-300",
-    };
-  }
-
-  if (score >= 85) {
-    return {
-      label: `${score}/100`,
-      className: "bg-emerald-50 text-emerald-800 border-emerald-400",
-    };
-  }
-
-  if (score >= 70) {
-    return {
-      label: `${score}/100`,
-      className: "bg-amber-50 text-amber-800 border-amber-400",
-    };
-  }
-
-  return {
-    label: `${score}/100`,
-    className: "bg-red-50 text-red-800 border-red-400",
-  };
-};
-
-// -----------------------------
-// App Component
-// -----------------------------
-export default function App() {
-  // Source handling
-  const [parsed, setParsed] = useState([]);
-  const [urlInput, setUrlInput] = useState("");
-  const [urlSources, setUrlSources] = useState([]);
+  const [sources, setSources] = useState([]); // { name, text }
   const fileInputRef = useRef(null);
 
-  const addFiles = async (files) => {
-    if (!files) return;
-    const arr = [];
-    for (let f of files) {
-      const text = await f.text();
-      arr.push({ file: f, text });
-    }
-    setParsed((prev) => [...prev, ...arr]);
-    showToast("Source files added");
-  };
-
-  const addUrlSource = async () => {
-    if (!urlInput) return;
-    const url = urlInput.trim();
-    if (!url) return;
-    try {
-      const res = await fetch(url);
-      const text = await res.text();
-      setUrlSources((prev) => [...prev, { url, text }]);
-      showToast("URL source added");
-      setUrlInput("");
-    } catch (e) {
-      console.error("URL fetch failed", e);
-      setUrlSources((prev) => [
-        ...prev,
-        { url, text: "[Error fetching URL]" },
-      ]);
-    }
-  };
-
-  // Config
-  const [selectedTypes, setSelectedTypes] = useState([]);
-  const [publicSearch, setPublicSearch] = useState(false);
-  const [promptNotes, setPromptNotes] = useState("");
-  const [title, setTitle] = useState("");
-
-  const toggleType = (t) => {
-    setSelectedTypes((prev) =>
-      prev.includes(t) ? prev.filter((v) => v !== t) : [...prev, t]
-    );
-  };
-
-  // Versions
-  const [output, setOutput] = useState("");
   const [versions, setVersions] = useState([]);
   const [selectedVersionId, setSelectedVersionId] = useState(null);
-  const [showRubric, setShowRubric] = useState(false);
-  const [showNewConfirm, setShowNewConfirm] = useState(false);
-  const [showRoadmap, setShowRoadmap] = useState(false);
-  const [activePage, setActivePage] = useState("dashboard");
-  // Workspace mode: generic vs client
-  const [workspaceMode, setWorkspaceMode] = useState("generic");
-  // Client workspace scenario (e.g. new investment, exit, update)
-  const [selectedScenario, setSelectedScenario] = useState(null);
 
-  // Toast notifications
+  const [draftText, setDraftText] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isRewriting, setIsRewriting] = useState(false);
+
+  const [rewriteNotes, setRewriteNotes] = useState("");
+
   const [toast, setToast] = useState(null);
+
   const showToast = (message, duration = 2500) => {
     setToast(message);
     setTimeout(() => setToast(null), duration);
   };
 
-  // Model config
-  const [modelId, setModelId] = useState("gpt-4o-mini");
-  const [temperature, setTemperature] = useState(0.3);
-  const [maxTokens, setMaxTokens] = useState(2048);
+  const currentVersion =
+    versions.find((v) => v.id === selectedVersionId) || null;
 
-  // Backend
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [apiBaseUrl, setApiBaseUrl] = useState(
-    "https://content-engine-backend-v2.vercel.app/api"
-  );
-  const [apiStatus, setApiStatus] = useState("Unknown");
-
-  // Diagnostics & loading
-  const [diagnostics, setDiagnostics] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isRewriting, setIsRewriting] = useState(false);
-
-  const checkHealth = async () => {
-    if (!apiBaseUrl) return;
-    try {
-      const r = await fetch(`${apiBaseUrl}/health`);
-      setApiStatus(r.ok ? "OK" : "Error");
-      if (r.ok) showToast("API connected");
-      else showToast("API connection failed");
-    } catch {
-      setApiStatus("Error");
-    }
+  const combinedText = () => {
+    const parts = [];
+    if (rawText && rawText.trim().length > 0) parts.push(rawText.trim());
+    sources.forEach((s) => {
+      if (s.text && s.text.trim().length > 0) parts.push(s.text.trim());
+    });
+    return parts.join("\n\n");
   };
 
-  const runGenerateRequest = async (body) => {
-    if (!apiBaseUrl) {
-      return (
-        "DEMO OUTPUT\n\n" +
-        `Title: ${body.title || "(untitled)"}\n` +
-        `Public search: ${body.publicSearch ? "ON" : "OFF"}\n` +
-        `Types: ${body.selectedTypes?.join(", ") || "(none)"}\n\n` +
-        "[This is demo text because no API Base URL is configured.]"
-      );
-    }
+  const handleFiles = (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = String(e.target?.result || "");
+        setSources((prev) => [
+          ...prev,
+          {
+            name: file.name,
+            text,
+            size: file.size,
+          },
+        ]);
+      };
+      reader.readAsText(file);
+    });
+  };
+
+  const toggleType = (id) => {
+    setSelectedTypes((prev) => {
+      if (prev.includes(id)) {
+        if (prev.length === 1) return prev; // keep at least one
+        return prev.filter((t) => t !== id);
+      }
+      return [...prev, id];
+    });
+  };
+
+  const handleCheckConnection = async () => {
     try {
-      const res = await fetch(`${apiBaseUrl}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const raw = await res.text();
-
-      let data = null;
-      try {
-        data = JSON.parse(raw);
-      } catch {
-        // not JSON
-      }
-
-                  if (!data) return raw || "[No output from backend]";
-
-      // New backend schema: { outputs: [{ text, outputType, score, metrics }], ... }
-      if (Array.isArray(data.outputs) && data.outputs.length > 0) {
-        const first = data.outputs[0];
-        if (typeof first.text === "string" && first.text.trim().length > 0) {
-          return first.text;
-        }
-      }
-
-      if (typeof data.output === "string" && data.output.trim().length > 0) {
-        return data.output;
-      }
-      if (
-        Array.isArray(data.choices) &&
-        data.choices[0]?.message?.content
-      ) {
-        return data.choices[0].message.content;
-      }
-      if (typeof data.result === "string") {
-        return data.result;
-      }
-      return JSON.stringify(data, null, 2);
-
-
+      setConnectionStatus("checking");
+      const res = await fetch(`${apiBaseUrl}/health`);
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      setConnectionStatus("ok");
+      showToast("Backend connection OK");
     } catch (e) {
-      console.error("Backend error during fetch:", e);
-      return `[Backend error while generating output: ${
-        e.message || String(e)
-      }]`;
+      console.error("Health check failed", e);
+      setConnectionStatus("error");
+      showToast("Backend connection failed");
     }
   };
 
-  const buildMetrics = () => ({
-    clarity: 0.8,
-    accuracy: 0.75,
-    structure: 0.82,
-  });
-
-  const summarizeRewrite = (notes) => {
-    if (!notes)
-      return "Rewrite with updated instructions (no details provided).";
-    const trimmed = notes.trim();
-    if (trimmed.length <= 80) return `Rewrite: ${trimmed}`;
-    return `Rewrite: ${trimmed.slice(0, 77)}...`;
+  const callBackend = async (path, payload) => {
+    const res = await fetch(`${apiBaseUrl}/${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+    return res.json();
   };
-
-  // -----------------------------
-  // Handlers & derived state
-  // -----------------------------
-  const hasInitialGeneration = versions.length > 0;
-  const hasSources = parsed.length + urlSources.length > 0;
-  const hasOutputTypes = selectedTypes.length > 0;
 
   const handleGenerate = async () => {
-    if (isGenerating || isRewriting) return;
+    if (!apiBaseUrl) {
+      showToast("Set API base URL first");
+      return;
+    }
+    const textPayload = combinedText();
+    if (!textPayload) {
+      showToast("Add some source text or upload a file first");
+      return;
+    }
+    if (!selectedTypes.length) {
+      showToast("Select at least one output type");
+      return;
+    }
+
     setIsGenerating(true);
-
     try {
-      const allText = [
-        ...parsed.map((p) => p.text),
-        ...urlSources.map((u) => u.text),
-      ].join("\n");
-
-      const body = {
-        mode: "generate",
+      const payload = {
         title,
-        notes: promptNotes,
+        notes,
+        text: textPayload,
         selectedTypes,
-        publicSearch,
-        workspaceMode,
-        scenario: selectedScenario,
-        model: { id: modelId, temperature, maxTokens },
+        scenario,
         modelId,
         temperature,
         maxTokens,
-        text: allText,
       };
 
-      const out = await runGenerateRequest(body);
+      const data = await callBackend("generate", payload);
 
-      const versionNumber = versions.length + 1;
-      const newVersion = {
-        id: crypto.randomUUID(),
-        versionNumber,
-        timestamp: new Date().toISOString(),
-        content: out,
-        comment: "Initial generation",
-        score: Math.round(Math.random() * 40) + 60,
-        metrics: buildMetrics(),
-        publicSearch,
-        urls: urlSources,
-        model: { id: modelId, temperature, maxTokens },
-        workspaceMode,
-        scenario: selectedScenario,
-        selectedTypes,
-      };
+      const outputs = Array.isArray(data.outputs) ? data.outputs : [];
+      if (!outputs.length) {
+        showToast("No outputs returned from backend");
+        setIsGenerating(false);
+        return;
+      }
 
-      setVersions((prev) => [...prev, newVersion]);
-      setSelectedVersionId(newVersion.id);
-      setOutput(out);
+      const now = new Date();
+      const newVersions = outputs.map((o, idx) => {
+        const id = `${now.getTime()}-${idx}`;
+        return {
+          id,
+          createdAt: now.toISOString(),
+          title: title || "Untitled",
+          scenario,
+          outputType: o.outputType,
+          text: o.text,
+          score: o.score,
+          metrics: o.metrics || {},
+        };
+      });
+
+      setVersions((prev) => [...prev, ...newVersions]);
+      const primary = newVersions[0];
+      setSelectedVersionId(primary.id);
+      setDraftText(primary.text);
       showToast("Draft generated");
+    } catch (e) {
+      console.error("Error generating", e);
+      showToast("Error generating draft");
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleRewrite = async () => {
-    if (!selectedVersionId || isRewriting || isGenerating) return;
-
-    const base =
-      versions.find((v) => v.id === selectedVersionId) ||
-      (versions.length > 0 ? versions[versions.length - 1] : null);
-
-    if (!base) return;
+    if (!currentVersion) {
+      showToast("Select a version to rewrite");
+      return;
+    }
+    if (!apiBaseUrl) {
+      showToast("Set API base URL first");
+      return;
+    }
+    const textPayload = draftText || currentVersion.text;
+    if (!textPayload) {
+      showToast("Nothing to rewrite");
+      return;
+    }
 
     setIsRewriting(true);
-
     try {
-      const allText = [
-        ...parsed.map((p) => p.text),
-        ...urlSources.map((u) => u.text),
-      ].join("\n");
-
-      const body = {
-        mode: "rewrite",
-        title,
-        notes: promptNotes,
-        selectedTypes,
-        publicSearch,
-        workspaceMode,
-        scenario: selectedScenario,
-        model: { id: modelId, temperature, maxTokens },
+      const payload = {
+        text: textPayload,
+        notes: rewriteNotes,
+        outputType: currentVersion.outputType,
+        scenario,
         modelId,
         temperature,
         maxTokens,
-        text: allText,
-        previousContent: base.content,
       };
 
-      const out = await runGenerateRequest(body);
+      const data = await callBackend("rewrite", payload);
+      const out =
+        Array.isArray(data.outputs) && data.outputs[0]
+          ? data.outputs[0]
+          : null;
 
-      const versionNumber = versions.length + 1;
+      if (!out) {
+        showToast("No rewrite returned from backend");
+        setIsRewriting(false);
+        return;
+      }
+
+      const now = new Date();
+      const id = `${now.getTime()}-rw`;
+
       const newVersion = {
-        id: crypto.randomUUID(),
-        versionNumber,
-        timestamp: new Date().toISOString(),
-        content: out,
-        comment: `${summarizeRewrite(promptNotes)} (${
-          promptNotes || "no explicit notes"
-        })`,
-        score: Math.round(Math.random() * 40) + 60,
-        metrics: buildMetrics(),
-        publicSearch,
-        urls: urlSources,
-        model: { id: modelId, temperature, maxTokens },
-        workspaceMode,
-        scenario: selectedScenario,
-        selectedTypes,
+        id,
+        createdAt: now.toISOString(),
+        title: title || currentVersion.title || "Untitled",
+        scenario,
+        outputType: currentVersion.outputType,
+        text: out.text,
+        score: out.score,
+        metrics: out.metrics || {},
       };
 
       setVersions((prev) => [...prev, newVersion]);
-      setSelectedVersionId(newVersion.id);
-      setOutput(out);
-      showToast("Version rewritten");
-      setPromptNotes("");
+      setSelectedVersionId(id);
+      setDraftText(out.text);
+      showToast("Rewrite completed");
+    } catch (e) {
+      console.error("Error rewriting", e);
+      showToast("Error rewriting draft");
     } finally {
       setIsRewriting(false);
     }
   };
 
-  const handleNewOutput = () => {
-    setParsed([]);
-    setUrlSources([]);
-    setSelectedVersionId(null);
-    setVersions([]);
-    setOutput("");
-    setPromptNotes("");
-    setSelectedTypes([]);
-    setTitle("");
-    setActivePage("dashboard");
-    setWorkspaceMode("generic");
-    showToast("New project started");
-    setShowNewConfirm(false);
-  };
-
-  // selection + score meta
-  const selectedVersion =
-    versions.find((v) => v.id === selectedVersionId) ||
-    (versions.length > 0 ? versions[versions.length - 1] : null);
-
-  const sortedVersions = [...versions].sort(
-    (a, b) => b.versionNumber - a.versionNumber
-  );
-
-  const selectedScoreMeta = getScoreMeta(selectedVersion?.score);
-
-  const runDiagnostics = () => {
-    const msgs = [];
-    if (OUTPUT_TYPES.length === 4) msgs.push("OK: Output types defined.");
-    if (MODEL_OPTIONS.length >= 2) msgs.push("OK: Model options present.");
-    if (versions.length === 0)
-      msgs.push("OK: No versions yet (fresh session).");
-    if (typeof publicSearch === "boolean")
-      msgs.push("OK: Public search is boolean.");
-    setDiagnostics(msgs);
-  };
-
-  const currentPageMeta = PAGE_META[activePage] || PAGE_META.dashboard;
-
-  // -----------------------------
-  // Render
-  // -----------------------------
-
-  // ---- Output actions ----
-  const effectiveText = output || selectedVersion?.content || "";
-
-  const copyOutput = () => {
-    if (!effectiveText) {
-      showToast("Nothing to copy");
-      return;
-    }
-    navigator.clipboard.writeText(effectiveText);
-    showToast("Copied to clipboard");
-  };
-
-  const downloadOutput = (format = "txt") => {
-    if (!effectiveText) {
-      showToast("Nothing to download");
-      return;
-    }
-
-    const baseName = title || "draft";
-    let mime = "text/plain";
-    let ext = "txt";
-
-    if (format === "doc") {
-      mime = "application/msword";
-      ext = "doc";
-    }
-
-    const blob = new Blob([effectiveText], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${baseName}.${ext}`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast(`Downloaded as .${ext.toUpperCase()}`);
+  const handleSelectVersion = (id) => {
+    setSelectedVersionId(id);
+    const v = versions.find((v) => v.id === id);
+    if (v) setDraftText(v.text);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
-      {/* Toast notification */}
-      {toast && (
-        <div
-          className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-black text-white text-sm rounded-xl shadow-lg"
-          role="status"
-          aria-live="polite"
-        >
-          {toast}
-        </div>
-      )}
-
-      <div className="max-w-6xl mx-auto py-8 px-4">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-6">
-          {/* Left: brand + tagline */}
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Header */}
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center text-lg font-bold">
+            <div className="h-8 w-8 rounded-xl bg-black text-white flex items-center justify-center text-xs font-semibold">
               CE
             </div>
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Brightline Content Engine
-              </h1>
-              <p className="text-sm text-gray-500">
-                Structured AI drafting for investment, reporting &amp;
-                communications.
-              </p>
-            </div>
-          </div>
-
-          {/* Middle: navigation */}
-          <nav className="hidden md:flex items-center gap-3 text-sm">
-            {/* Dashboard */}
-            <button
-              onClick={() => setActivePage("dashboard")}
-              className={
-                activePage === "dashboard"
-                  ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
-                  : "px-3 py-1.5 text-gray-600 hover:text-black transition"
-              }
-            >
-              Dashboard
-            </button>
-
-            {/* Projects */}
-            <button
-              onClick={() => setActivePage("projects")}
-              className={
-                activePage === "projects"
-                  ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
-                  : "px-3 py-1.5 text-gray-600 hover:text-black transition"
-              }
-            >
-              Projects
-            </button>
-
-            {/* Sources */}
-            <button
-              onClick={() => setActivePage("sources")}
-              className={
-                activePage === "sources"
-                  ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
-                  : "px-3 py-1.5 text-gray-600 hover:text-black transition"
-              }
-            >
-              Sources
-            </button>
-
-            {/* Outputs */}
-            <button
-              onClick={() => setActivePage("outputs")}
-              className={
-                activePage === "outputs"
-                  ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
-                  : "px-3 py-1.5 text-gray-600 hover:text-black transition"
-              }
-            >
-              Outputs
-            </button>
-
-            {/* Templates */}
-            <button
-              onClick={() => setActivePage("templates")}
-              className={
-                activePage === "templates"
-                  ? "px-3 py-1.5 rounded-full bg-black text-white font-medium"
-                  : "px-3 py-1.5 text-gray-600 hover:text-black transition"
-              }
-            >
-              Templates
-            </button>
-          </nav>
-
-          {/* Right: version + user badge */}
-          <div className="flex items-center gap-4">
-            <Pill variant="subtle" className="px-3">
-              v3.0.0
-            </Pill>
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-700">
-              BR
-            </div>
-          </div>
-        </header>
-
-        {/* Page toolbar / intro */}
-        <div className="flex items-center justify-between mt-4 mb-6">
-          <div>
-            <h2 className="text-lg font-semibold">{currentPageMeta.title}</h2>
-            <p className="text-sm text-gray-500">
-              {activePage === "dashboard" && workspaceMode === "client"
-                ? "Client-specific drafting workspace with custom prompts and style guides."
-                : currentPageMeta.subtitle}
-            </p>
-
-            {activePage === "dashboard" && (
-              <div className="mt-2 inline-flex rounded-full bg-gray-100 p-1 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setWorkspaceMode("generic")}
-                  className={
-                    "px-3 py-1 rounded-full transition " +
-                    (workspaceMode === "generic"
-                      ? "bg-white shadow-sm text-gray-900"
-                      : "text-gray-600 hover:text-gray-900")
-                  }
-                >
-                  Generic workspace
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWorkspaceMode("client")}
-                  className={
-                    "px-3 py-1 rounded-full transition " +
-                    (workspaceMode === "client"
-                      ? "bg-white shadow-sm text-gray-900"
-                      : "text-gray-600 hover:text-gray-900")
-                  }
-                >
-                  Client workspace
-                </button>
+              <div className="text-sm font-semibold">
+                Content Engine – single workspace
               </div>
-            )}
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => {
-                setActivePage("dashboard");
-                setWorkspaceMode("generic");
-                setShowNewConfirm(true);
-              }}
-            >
-              New project
-            </Button>
-            <Button type="button" variant="secondary">
-              View history
-            </Button>
-          </div>
-        </div>
-
-        {/* Main layout: sidebar + content */}
-        <div className="mt-2 flex gap-6">
-          {/* Sidebar */}
-          <aside className="hidden md:flex w-60 shrink-0 flex-col gap-5">
-            {activePage === "dashboard" && (
-              <>
-                {/* Workspace summary */}
-                <Card className="p-4">
-                  <h2 className="text-sm font-semibold mb-1">Workspace</h2>
-                  <p className="text-xs text-gray-500">
-                    Overview of your drafting session.
-                  </p>
-                </Card>
-
-                {/* Status summary */}
-                <Card className="p-4">
-                  <h3 className="text-sm font-semibold mb-1">Status</h3>
-                  <div className="flex flex-col gap-1 text-xs text-gray-600">
-                    <div className="flex justify-between">
-                      <span>Sources</span>
-                      <span className="font-medium">
-                        {parsed.length + urlSources.length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Versions</span>
-                      <span className="font-medium">{versions.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Model</span>
-                      <span className="font-medium">
-                        {getModelLabel(modelId)}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Model & controls */}
-<Card>
-  <CardHeader
-    title="Model & controls"
-    subtitle="Select the model and advanced generation settings."
-  />
-  <CardBody className="space-y-3">
-    {/* Basic model selector (always visible) */}
-    <div>
-      <Label>Model</Label>
-      <select
-        className="w-full px-3 py-2 border rounded-xl text-sm"
-        value={modelId}
-        onChange={(e) => setModelId(e.target.value)}
-      >
-        {MODEL_OPTIONS.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.label}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    {/* Advanced settings (collapsed by default) */}
-    <div className="mt-2">
-      <Button
-        variant="quiet"
-        onClick={() => setShowAdvanced((v) => !v)}
-        className="text-xs"
-      >
-        {showAdvanced
-          ? "Hide advanced settings"
-          : "Show advanced settings"}
-      </Button>
-
-      {showAdvanced && (
-        <div className="mt-2 space-y-3">
-          {/* Temperature */}
-          <div>
-            <Label>Temperature</Label>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={temperature}
-              onChange={(e) =>
-                setTemperature(parseFloat(e.target.value))
-              }
-              className="w-full"
-            />
-            <div className="flex items-center justify-between text-xs text-gray-600 mt-1">
-              <span>More stable</span>
-              <span>{temperature.toFixed(2)}</span>
-              <span>More creative</span>
+              <div className="text-xs text-slate-500">
+                Event-based prompts • Multi-output • Scored versions
+              </div>
             </div>
           </div>
 
-          {/* Max tokens */}
-          <div>
-            <Label>Max tokens</Label>
+          <div className="flex items-center gap-2">
             <Input
-              type="number"
-              min={100}
-              max={4000}
-              step={50}
-              value={maxTokens}
-              onChange={(e) =>
-                setMaxTokens(
-                  parseInt(e.target.value || "0", 10) || 0
-                )
-              }
-            />
-          </div>
-
-          {/* API config + health check */}
-          <div className="space-y-2">
-            <Label>API base URL</Label>
-            <Input
-              placeholder="https://content-engine-backend-v2.vercel.app/api"
+              className="w-56 text-xs"
               value={apiBaseUrl}
               onChange={(e) => setApiBaseUrl(e.target.value)}
+              placeholder="Backend API base URL"
             />
-            <div className="flex items-center gap-2">
-              <Button onClick={checkHealth}>
-                Check connection
-              </Button>
-              <span className="text-xs text-gray-500">
-                Status: {apiStatus}
-              </span>
-            </div>
+            <Button
+              variant="quiet"
+              className="text-xs"
+              onClick={handleCheckConnection}
+            >
+              Check connection
+            </Button>
+            {connectionStatus === "ok" && (
+              <Pill tone="success" className="text-[10px]">
+                Connected
+              </Pill>
+            )}
+            {connectionStatus === "error" && (
+              <Pill tone="danger" className="text-[10px]">
+                Error
+              </Pill>
+            )}
           </div>
         </div>
-      )}
-    </div>
-  </CardBody>
-</Card>
+      </header>
 
-
-                {/* Diagnostics */}
-                <Card>
-                  <CardHeader
-                    title="Diagnostics"
-                    subtitle="Quick sanity checks for this session."
+      {/* Main layout */}
+      <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
+        {/* Left column – inputs */}
+        <div className="space-y-4">
+          {/* Project meta */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Event & title</div>
+                <div className="text-xs text-slate-500">
+                  Define what happened and what you need written.
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-[1.3fr_minmax(0,1fr)]">
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">
+                    Title / headline
+                  </label>
+                  <Input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Acquisition of XYZ by ABC Partners"
                   />
-                  <CardBody>
-                    {diagnostics ? (
-                      <>
-                        <div className="flex gap-2 mb-3">
-                          <Button onClick={runDiagnostics}>
-                            Re-run diagnostics
-                          </Button>
-                          <Button onClick={() => setDiagnostics(null)}>
-                            Clear
-                          </Button>
-                        </div>
-                        <ul className="space-y-1 text-sm">
-                          {diagnostics.map((d, i) => (
-                            <li
-                              key={i}
-                              className="px-2 py-1 rounded-md bg-gray-50 text-gray-700"
-                            >
-                              {d}
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-start gap-2 text-sm text-gray-500">
-                        <p>No diagnostics run yet for this session.</p>
-                        <Button onClick={runDiagnostics}>
-                          Run diagnostics
-                        </Button>
-                      </div>
-                    )}
-                  </CardBody>
-                </Card>
-              </>
-            )}
-
-            {activePage !== "dashboard" && (
-              <Card className="p-4">
-                <h3 className="text-sm font-semibold mb-1">Sidebar</h3>
-                <p className="text-xs text-gray-500">
-                  Sidebar tools for “{PAGE_META[activePage].title}” will
-                  appear here in a future update.
-                </p>
-              </Card>
-            )}
-          </aside>
-
-          {/* Main content */}
-          <main className="flex-1">
-            {/* Dashboard – generic workspace */}
-            {activePage === "dashboard" && workspaceMode === "generic" && (
-              <div className="space-y-6">
-                {/* Getting started hint */}
-                {!hasInitialGeneration && (
-                  <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-sm text-gray-600">
-                    To get started, upload at least one source on the left,
-                    choose one or more output types on the right, then click{" "}
-                    <strong>Generate</strong>. Your first draft will appear
-                    below in the Draft output panel.
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">
+                    Event type (scenario)
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SCENARIOS.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setScenario(s.id)}
+                        className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                          scenario === s.id
+                            ? "bg-black text-white border-black"
+                            : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
+              </div>
 
-                {/* Top row: Sources + Configuration side by side */}
-                <div className="grid lg:grid-cols-2 gap-6 items-start">
-                  {/* Left column: Sources + Public search */}
-                  <div className="space-y-4">
-                    {/* Source documents */}
-                    <Card>
-                      <CardHeader
-                        title="Source documents"
-                        subtitle="Bring in files or web pages as drafting sources."
-                        right={
-                          <Pill variant="outline" className="px-3">
-                            {parsed.length + urlSources.length} source
-                            {parsed.length + urlSources.length === 1
-                              ? ""
-                              : "s"}
-                          </Pill>
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Instructions / constraints
+                </label>
+                <TextArea
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Key messages, must-include points, audience notes..."
+                />
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Sources */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold">Source material</div>
+                <Pill className="text-[11px]">
+                  {sources.length} file(s) attached
+                </Pill>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Paste or draft source text
+                </label>
+                <TextArea
+                  rows={6}
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                  placeholder="Paste IM extracts, memos, emails, notes..."
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs text-slate-600">
+                  Or upload investment memos, notes, or summaries as text files.
+                </div>
+                <Button
+                  variant="quiet"
+                  className="text-xs"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload files
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+              </div>
+
+              {sources.length > 0 && (
+                <div className="border border-slate-100 rounded-xl px-3 py-2 bg-slate-50">
+                  <div className="text-[11px] font-medium text-slate-600 mb-1">
+                    Attached files
+                  </div>
+                  <ul className="space-y-1 text-xs text-slate-700">
+                    {sources.map((s, idx) => (
+                      <li
+                        key={`${s.name}-${idx}`}
+                        className="flex items-center justify-between gap-2"
+                      >
+                        <span className="truncate">{s.name}</span>
+                        <span className="text-[10px] text-slate-500">
+                          {s.size
+                            ? `${Math.round(s.size / 1024)} KB`
+                            : "text"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardBody>
+          </Card>
+
+          {/* Model + output types */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Model & outputs</div>
+                <div className="text-xs text-slate-500">
+                  Choose model settings and the formats you need.
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">
+                    Output types
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {OUTPUT_TYPES.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => toggleType(t.id)}
+                        className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                          selectedTypes.includes(t.id)
+                            ? "bg-black text-white border-black"
+                            : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-700 mb-1">
+                        Model
+                      </div>
+                      <Input
+                        className="text-[11px]"
+                        value={modelId}
+                        onChange={(e) => setModelId(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-700 mb-1">
+                        Temp
+                      </div>
+                      <Input
+                        type="number"
+                        step="0.05"
+                        min="0"
+                        max="1"
+                        className="text-[11px]"
+                        value={temperature}
+                        onChange={(e) =>
+                          setTemperature(parseFloat(e.target.value) || 0)
                         }
                       />
-                      <CardBody>
-                        <Button
-                          variant="primary"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          Upload files
-                        </Button>
-
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          multiple
-                          className="hidden"
-                          style={{ display: "none" }}
-                          onChange={(e) => addFiles(e.target.files)}
-                        />
-
-                        {/* URL input row */}
-<div className="mt-4 flex gap-2">
-  <Input
-    placeholder="https://example.com/article"
-    value={urlInput}
-    onChange={(e) => setUrlInput(e.target.value)}
-    className="h-9"
-  />
-  <Button
-    variant="secondary"
-    onClick={addUrlSource}
-    className="h-9 whitespace-nowrap"
-  >
-    Add URL
-  </Button>
-</div>
-
-
-  {/* Source list */}
-  {(parsed.length > 0 || urlSources.length > 0) && (
-    <div className="mt-4 space-y-2 text-sm text-gray-700">
-      {parsed.length > 0 && (
-        <div>
-          <div className="font-medium mb-1">Uploaded files</div>
-          <ul className="space-y-1">
-            {parsed.map((p, idx) => (
-              <li key={idx} className="flex items-center justify-between">
-                <span>{p.file?.name || `File ${idx + 1}`}</span>
-                <span className="text-xs text-gray-500">
-                  {p.file?.size
-                    ? `${Math.round(p.file.size / 1024)} KB`
-                    : "Text only"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {urlSources.length > 0 && (
-        <div>
-          <div className="font-medium mb-1">URL sources</div>
-          <ul className="space-y-1">
-            {urlSources.map((u, idx) => (
-              <li key={idx} className="flex items-center justify-between">
-                <span className="truncate max-w-[260px]">{u.url}</span>
-                <span className="text-xs text-gray-500">Fetched</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  )}
-</CardBody>
-
-                    </Card>
-
-                    {/* Public domain search card */}
-                    <Card>
-                      <CardHeader
-                        title="Public domain search"
-                        subtitle="Allow the engine to draw additional context from the open web."
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-700 mb-1">
+                        Max tokens
+                      </div>
+                      <Input
+                        type="number"
+                        min="256"
+                        className="text-[11px]"
+                        value={maxTokens}
+                        onChange={(e) =>
+                          setMaxTokens(parseInt(e.target.value, 10) || 512)
+                        }
                       />
-                      <CardBody>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-700 font-medium">
-                            Include public domain search
-                          </span>
-                          <Toggle
-                            checked={publicSearch}
-                            onChange={setPublicSearch}
-                          />
-                        </div>
-                        <p className="mt-2 text-xs text-gray-500">
-                          When enabled, the backend may fetch extra public
-                          information to enrich the draft. Uploaded sources
-                          remain private and are always treated as primary.
-                        </p>
-                      </CardBody>
-                    </Card>
+                    </div>
                   </div>
-
-                  {/* Right column: Configuration */}
-                  <Card>
-                    <CardHeader
-                      title="Configuration"
-                      subtitle="Control how the engine drafts and rewrites content."
-                    />
-                    <CardBody className="space-y-3">
-                      <div>
-                        <Label>Title</Label>
-                        <Input
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          placeholder="e.g., Q3 Portfolio Update"
-                        />
-                      </div>
-
-                      {/* Scenario selector – client workspace only */}
-                      {workspaceMode === "client" && (
-                        <div>
-                          <Label>Scenario (client workspace)</Label>
-                          <p className="text-xs text-gray-500 mb-2">
-                            Pick the situation you are drafting for. This will
-                            later control which client-specific prompt and
-                            review tables are used.
-                          </p>
-
-                          <div className="flex flex-wrap gap-2">
-                            {SCENARIO_OPTIONS.map((s) => {
-                              const active = selectedScenario === s.id;
-                              return (
-                                <button
-                                  key={s.id}
-                                  type="button"
-                                  onClick={() => setSelectedScenario(s.id)}
-                                  className={
-                                    "px-3 py-1.5 rounded-full text-xs border transition " +
-                                    (active
-                                      ? "bg-black text-white border-black shadow-sm"
-                                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-                                  }
-                                >
-                                  {s.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <Label>Output types</Label>
-                        <p className="text-xs text-gray-500 mb-2">
-                          Choose one or more content formats to generate in this
-                          run.
-                        </p>
-
-                        <div className="flex flex-wrap gap-2">
-                          {OUTPUT_TYPES.map((o) => {
-                            const active = selectedTypes.includes(o.value);
-                            return (
-                              <button
-                                key={o.value}
-                                type="button"
-                                onClick={() => toggleType(o.value)}
-                                className={
-                                  "px-3 py-1.5 rounded-full text-xs border transition " +
-                                  (active
-                                    ? "bg-black text-white border-black shadow-sm"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50")
-                                }
-                              >
-                                {o.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label>Prompt notes / rewrite instructions</Label>
-                        <Textarea
-                          rows={4}
-                          value={promptNotes}
-                          onChange={(e) => setPromptNotes(e.target.value)}
-                          placeholder="Key points, tone, constraints, or rewrite instructions..."
-                          className="placeholder:text-gray-400"
-                        />
-                        <p className="mt-1 text-xs text-gray-500">
-                          Use this to guide the initial draft or to tell the
-                          engine how to change the current version (e.g.
-                          &quot;shorter, more formal, add risk section&quot;).
-                        </p>
-                      </div>
-
-                      {/* Buttons row with state-based disabling */}
-                      <div className="flex gap-2 flex-wrap">
-                        <Button
-                          variant="primary"
-                          onClick={handleGenerate}
-                          disabled={
-                            hasInitialGeneration ||
-                            isGenerating ||
-                            isRewriting ||
-                            !hasSources ||
-                            !hasOutputTypes
-                          }
-                        >
-                          {isGenerating && <Spinner />}
-                          {isGenerating ? "Generating..." : "Generate"}
-                        </Button>
-
-                        <Button
-                          onClick={handleRewrite}
-                          disabled={
-                            !hasInitialGeneration ||
-                            isRewriting ||
-                            isGenerating
-                          }
-                        >
-                          {isRewriting && <Spinner />}
-                          {isRewriting ? "Rewriting..." : "Rewrite"}
-                        </Button>
-
-                        <Button
-                          variant="quiet"
-                          onClick={() => setShowRubric(true)}
-                        >
-                          View rubrics
-                        </Button>
-                      </div>
-                    </CardBody>
-                  </Card>
-                </div>
-
-                {/* Second block: Output, Versions, Roadmap stacked */}
-                <div className="space-y-6">
-                  {/* Draft output */}
-                  <Card>
-                    <CardHeader
-                      title="Draft output"
-                      subtitle="Your generated draft appears here. Edit directly or use Rewrite to create a new version."
-                      right={
-                        <Pill
-                          level={
-                            typeof selectedVersion?.score === "number"
-                              ? selectedVersion.score >= 85
-                                ? "good"
-                                : selectedVersion.score >= 70
-                                ? "average"
-                                : "poor"
-                              : undefined // no colour when there is no score yet
-                          }
-                          className="px-3"
-                        >
-                          {selectedScoreMeta.label}
-                        </Pill>
-                      }
-                    />
-
-                    <CardBody className="space-y-3">
-                      {/* Context strip */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 mb-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium text-gray-800">
-                            {title || "Untitled draft"}
-                          </span>
-
-                          <Pill variant="outline" className="px-2">
-                            {workspaceMode === "client"
-                              ? "Client workspace"
-                              : "Generic workspace"}
-                          </Pill>
-
-                          {selectedScenario && (
-                            <Pill variant="outline" className="px-2">
-                              {getScenarioLabel(selectedScenario)}
-                            </Pill>
-                          )}
-
-                          {selectedTypes.map((t) => (
-                            <Pill
-                              key={t}
-                              variant="subtle"
-                              className="px-2"
-                            >
-                              {getOutputLabel(t)}
-                            </Pill>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Pill variant="outline" className="px-2">
-                            {getModelLabel(modelId)}
-                          </Pill>
-                          <Pill variant="outline" className="px-2">
-                            {publicSearch
-                              ? "Public search: On"
-                              : "Public search: Off"}
-                          </Pill>
-                        </div>
-                      </div>
-
-                      <Textarea
-                        rows={18}
-                        value={output || selectedVersion?.content || ""}
-                        onChange={(e) => setOutput(e.target.value)}
-                        placeholder="Generated content..."
-                        className="placeholder:text-gray-400"
-                      />
-
-                      <p className="text-xs text-gray-500 mt-1">
-                        You can edit this draft directly. Use{" "}
-                        <strong>Rewrite</strong> to generate an updated version
-                        while keeping this one saved.
-                      </p>
-
-                      {/* Export options block – below the editor */}
-                      <div className="pt-3 mt-2 border-t border-gray-100 space-y-2">
-                        <div className="text-sm font-medium text-gray-800">
-                          Export &amp; download
-                        </div>
-
-                        <p className="text-xs text-gray-500">
-                          Copy the draft or download a file to use in Word or
-                          other tools.
-                        </p>
-
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            variant="quiet"
-                            className="text-xs"
-                            onClick={copyOutput}
-                          >
-                            Copy to clipboard
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            className="text-xs"
-                            onClick={() => downloadOutput("txt")}
-                          >
-                            Download .TXT
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            className="text-xs"
-                            onClick={() => downloadOutput("doc")}
-                          >
-                            Download .DOC
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            className="text-xs opacity-60 cursor-not-allowed"
-                            disabled
-                          >
-                            .PDF (coming soon)
-                          </Button>
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
-
-                  {/* Client workspace: review tables scaffold (unreachable while generic, but left as placeholder) */}
-                  {workspaceMode === "client" && (
-                    <Card>
-                      <CardHeader
-                        title="Review tables (client workspace)"
-                        subtitle="Structured views to help reviewers check sources, discrepancies and compliance."
-                      />
-                      <CardBody className="space-y-4">
-                        <div className="grid gap-4 lg:grid-cols-3">
-                          <div className="border rounded-2xl p-3 bg-gray-50">
-                            <h4 className="text-sm font-semibold mb-1">
-                              Sources table
-                            </h4>
-                            <p className="text-xs text-gray-600">
-                              Will list each statement in the draft and the
-                              supporting source passages used to justify it.
-                            </p>
-                          </div>
-
-                          <div className="border rounded-2xl p-3 bg-gray-50">
-                            <h4 className="text-sm font-semibold mb-1">
-                              Statement reliability &amp; interpretation table
-                            </h4>
-                            <p className="text-xs text-gray-600">
-                              Will highlight gaps, inferred statements, and
-                              potential inconsistencies between sources.
-                            </p>
-                          </div>
-
-                          <div className="border rounded-2xl p-3 bg-gray-50">
-                            <h4 className="text-sm font-semibold mb-1">
-                              Compliance &amp; transparency
-                            </h4>
-                            <p className="text-xs text-gray-600">
-                              Will summarise style-guide adherence, restricted
-                              phrases, and any compliance flags for review.
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-gray-500">
-                          These tables are placeholders for now. In a later
-                          iteration, they&#39;ll be populated automatically from
-                          the draft and underlying sources.
-                        </p>
-                      </CardBody>
-                    </Card>
-                  )}
-
-                  {/* Versions – timeline style, newest first */}
-                  <Card>
-                    <CardHeader
-                      title="Versions"
-                      subtitle="Saved versions with comments and scores."
-                    />
-                    <CardBody>
-                      {sortedVersions.length === 0 ? (
-                        <p className="text-sm text-gray-500">
-                          No versions yet. Once you click{" "}
-                          <strong>Generate</strong>, your first draft will
-                          appear here as Version 1, and each rewrite will be
-                          saved as a new version.
-                        </p>
-                      ) : (
-                        <div className="relative">
-                          {/* Vertical timeline line */}
-                          <div
-                            className="absolute left-2 top-2 bottom-4 w-px bg-gray-200"
-                            aria-hidden="true"
-                          />
-
-                          <div className="space-y-4">
-                            {sortedVersions.map((v) => {
-                              const isSelected = selectedVersionId === v.id;
-                              const vScoreMeta = getScoreMeta(v.score);
-
-                              return (
-                                <div key={v.id} className="relative pl-6">
-                                  {/* Dot on the timeline */}
-                                  <span
-                                    className={
-                                      "absolute left-1 top-3 w-2 h-2 rounded-full border " +
-                                      (isSelected
-                                        ? "bg-black border-black"
-                                        : "bg-white border-gray-400")
-                                    }
-                                    aria-hidden="true"
-                                  />
-
-                                  {/* Version card */}
-                                  <div
-                                    className={
-                                      "rounded-2xl border p-3 space-y-2 transition " +
-                                      (isSelected
-                                        ? "bg-gray-50 border-gray-500"
-                                        : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-400")
-                                    }
-                                  >
-                                    {/* Top row: version label + timestamp */}
-                                    <div className="flex items-center justify-between gap-3">
-                                      <div className="flex items-center gap-2">
-                                        <Pill
-                                          variant="subtle"
-                                          className="px-2"
-                                        >
-                                          V{v.versionNumber}
-                                        </Pill>
-                                        {isSelected && (
-                                          <span className="text-[11px] text-gray-500">
-                                            Currently viewing
-                                          </span>
-                                        )}
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        {new Date(
-                                          v.timestamp
-                                        ).toLocaleString()}
-                                      </div>
-                                    </div>
-
-                                    {/* Comment + score/model pills on same row */}
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                      <div className="text-sm text-gray-800">
-                                        {v.comment}
-                                      </div>
-                                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                                        {/* coloured score pill */}
-                                        <Pill
-                                          level={
-                                            typeof v.score === "number"
-                                              ? v.score >= 85
-                                                ? "good"
-                                                : v.score >= 70
-                                                ? "average"
-                                                : "poor"
-                                              : "default"
-                                          }
-                                          className="px-2"
-                                        >
-                                          {vScoreMeta.label}
-                                        </Pill>
-
-                                        {/* single model pill */}
-                                        <Pill
-                                          variant="outline"
-                                          className="px-2"
-                                        >
-                                          {getModelLabel(v.model?.id)}
-                                        </Pill>
-                                      </div>
-                                    </div>
-
-                                    {/* Metadata row */}
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                                      <span>
-                                        Workspace:{" "}
-                                        {v.workspaceMode === "client"
-                                          ? "Client"
-                                          : "Generic"}
-                                      </span>
-
-                                      {v.scenario && (
-                                        <span>
-                                          Scenario:{" "}
-                                          {getScenarioLabel(v.scenario)}
-                                        </span>
-                                      )}
-
-                                      {Array.isArray(v.selectedTypes) &&
-                                        v.selectedTypes.length > 0 && (
-                                          <span>
-                                            Outputs:{" "}
-                                            {v.selectedTypes
-                                              .map((t) => getOutputLabel(t))
-                                              .join(", ")}
-                                          </span>
-                                        )}
-
-                                      <span>
-                                        Public search:{" "}
-                                        {v.publicSearch
-                                          ? "Enabled"
-                                          : "Disabled"}
-                                      </span>
-
-                                      {Array.isArray(v.urls) &&
-                                        v.urls.length > 0 && (
-                                          <span className="truncate">
-                                            URLs:{" "}
-                                            {v.urls
-                                              .map((u) => u.url)
-                                              .join(", ")}
-                                          </span>
-                                        )}
-                                    </div>
-
-                                    {/* Actions row */}
-                                    <div className="flex items-center justify-end gap-2 pt-1">
-                                      <Button
-                                        variant="quiet"
-                                        onClick={() =>
-                                          setSelectedVersionId(v.id)
-                                        }
-                                        className="text-xs"
-                                      >
-                                        View
-                                      </Button>
-                                      <Button
-                                        variant="danger"
-                                        onClick={() =>
-                                          setVersions((prev) =>
-                                            prev.filter((x) => x.id !== v.id)
-                                          )
-                                        }
-                                        className="text-xs"
-                                      >
-                                        Delete
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </CardBody>
-                  </Card>
-
-                  {/* Roadmap */}
-                  <Card>
-                    <CardHeader
-                      title="Future roadmap"
-                      subtitle="Planned capabilities for this content engine."
-                      right={
-                        <Button
-                          variant="quiet"
-                          className="text-xs"
-                          onClick={() => setShowRoadmap((v) => !v)}
-                        >
-                          {showRoadmap ? "Hide" : "Show"}
-                        </Button>
-                      }
-                    />
-                    {showRoadmap && (
-                      <CardBody className="space-y-2">
-                        <p className="text-xs text-gray-500">
-                          These items are not yet live. They outline where the
-                          product is heading as the prototype matures.
-                        </p>
-                      <ul className="list-disc pl-5 text-sm space-y-1 text-gray-700">
-  <li>
-    Scenario- and output-specific prompt flows using
-    workspace mode, scenario and selected output types.
-  </li>
-  <li>
-    Client-level style guides and prompt packs that feed
-    directly into /generate for client workspaces.
-  </li>
-  <li>
-    Richer source ingestion (PDF, DOCX and structured
-    data feeds) with cleaned text extraction.
-  </li>
-  <li>
-    Dedicated sources & statements table with
-    traceability, reliability flags and compliance
-    checks.
-  </li>
-  <li>
-    A real scoring engine tied to detailed rubrics
-    (not random scores) with drill-down metrics.
-  </li>
-  <li>
-    Persistent projects under the Projects tab, with
-    saved versions, sources and configuration per
-    workspace.
-  </li>
-  <li>
-    Role-based access controls, audit logs and optional
-    enterprise integrations.
-  </li>
-  <li>
-    Privacy-first handling of uploaded documents
-    (configurable retention and non-public processing
-    paths).
-  </li>
-  <li>
-    Performance & observability: latency, error and
-    scoring instrumentation plus additional UI polish
-    and theming.
-  </li>
-</ul>
-
-                        
-                      </CardBody>
-                    )}
-                  </Card>
                 </div>
               </div>
-            )}
 
-            {/* Dashboard – client workspace */}
-            {activePage === "dashboard" && workspaceMode === "client" && (
-              <div className="space-y-6">
-                {/* Client overview */}
-                <Card>
-                  <CardHeader
-                    title="Client workspace overview"
-                    subtitle="A tailored drafting environment for a specific client or mandate."
-                    right={
-                      <div className="flex items-center gap-2">
-                        <Pill level="info" className="px-3">
-                          Prototype mode
-                        </Pill>
-                        <Pill variant="outline" className="px-3">
-                          Not yet configured
-                        </Pill>
-                      </div>
-                    }
-                  />
-                  <CardBody className="space-y-2 text-sm text-gray-600">
-                    <p>
-                      This workspace will eventually hold client-specific
-                      prompts, style guides, and review flows. For now, it is a
-                      structured preview of how those elements will be
-                      organised.
-                    </p>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Keep the generic workspace clean and reusable.</li>
-                      <li>
-                        Use this client area for bespoke prompts, tone and
-                        compliance rules.
-                      </li>
-                      <li>
-                        Add review tables so editors can check statements,
-                        sources and discrepancies efficiently.
-                      </li>
-                    </ul>
-                  </CardBody>
-                </Card>
-
-                {/* Core configuration: style guide + prompts */}
-                <div className="grid lg:grid-cols-2 gap-6 items-start">
-                  {/* Style guide & rules */}
-                  <Card>
-                    <CardHeader
-                      title="Client style guide & rules"
-                      subtitle="Tone, language and structural expectations for all outputs."
-                    />
-                    <CardBody className="space-y-2 text-sm text-gray-600">
-                      <p>
-                        This panel will eventually load and display the
-                        client&apos;s writing guidelines and house rules.
-                      </p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>
-                          Voice &amp; tone (e.g. formal, neutral, concise).
-                        </li>
-                        <li>
-                          Investment-specific preferences (jargon usage,
-                          disclaimers, risk framing).
-                        </li>
-                        <li>
-                          Formatting rules (headings, bullet styles, length
-                          constraints).
-                        </li>
-                        <li>
-                          Regional or regulatory nuances to respect in all
-                          drafts.
-                        </li>
-                      </ul>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Later, this can be wired to a client-specific style
-                        guide object or configuration loaded from the backend.
-                      </p>
-                    </CardBody>
-                  </Card>
-
-                  {/* Prompt packs & scenarios */}
-                  <Card>
-                    <CardHeader
-                      title="Prompt packs & scenarios"
-                      subtitle="Client-specific prompt sets for different situations."
-                    />
-                    <CardBody className="space-y-2 text-sm text-gray-600">
-                      <p>
-                        Here you&apos;ll define and select from prompt packs
-                        tailored to this client&apos;s use cases.
-                      </p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>New investment announcement prompts.</li>
-                        <li>Exit / realisation prompts.</li>
-                        <li>Quarterly reporting commentary prompts.</li>
-                        <li>Social and stakeholder messaging prompts.</li>
-                      </ul>
-                      <p className="text-xs text-gray-500 mt-1">
-                        In a future iteration, this panel could show a dropdown
-                        of &quot;scenarios&quot; and attach the chosen prompt
-                        pack to the generation request.
-                      </p>
-                    </CardBody>
-                  </Card>
-                </div>
-
-                {/* Review tables & QA */}
-                <Card>
-                  <CardHeader
-                    title="Review tables & quality checks"
-                    subtitle="Where sources, discrepancies and compliance checks will live."
-                  />
-                  <CardBody className="space-y-2 text-sm text-gray-600">
-                    <p>
-                      This area is reserved for structured review artefacts
-                      produced alongside each draft.
-                    </p>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>
-                        <strong>Sources table</strong> – trace statements back
-                        to underlying documents or web pages.
-                      </li>
-                      <li>
-                        <strong>
-                          Statement reliability &amp; interpretation table
-                        </strong>{" "}
-                        – highlight where the model inferred or reconciled
-                        inconsistent data.
-                      </li>
-                      <li>
-                        <strong>Compliance &amp; transparency</strong> – show
-                        how well the output adheres to the client&apos;s style
-                        guide and constraints.
-                      </li>
-                      <li>
-                        <strong>Quality score</strong> – summarise rubric-based
-                        scores for structure, clarity, tone and spelling.
-                      </li>
-                    </ul>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Eventually, each generation in the client workspace could
-                      produce both narrative text and these tables as a combined
-                      review package.
-                    </p>
-                  </CardBody>
-                </Card>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button
+                  variant="primary"
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? "Generating..." : "Generate draft"}
+                </Button>
               </div>
-            )}
-
-            {/* Placeholder: Projects */}
-            {activePage === "projects" && (
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-2">Projects</h2>
-                <p className="text-sm text-gray-500">
-                  A full Projects workspace will appear here in a future
-                  release.
-                </p>
-              </Card>
-            )}
-
-            {/* Placeholder: Sources */}
-            {activePage === "sources" && (
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-2">Sources</h2>
-                <p className="text-sm text-gray-500">
-                  This page will manage uploaded files and URL sources once
-                  implemented.
-                </p>
-              </Card>
-            )}
-
-            {/* Placeholder: Outputs */}
-            {activePage === "outputs" && (
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-2">Outputs</h2>
-                <p className="text-sm text-gray-500">
-                  A central repository for your generated documents is coming
-                  soon.
-                </p>
-              </Card>
-            )}
-
-            {/* Placeholder: Templates */}
-            {activePage === "templates" && (
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-2">Templates</h2>
-                <p className="text-sm text-gray-500">
-                  Reusable prompt templates and blueprints will be added here
-                  later.
-                </p>
-              </Card>
-            )}
-          </main>
+            </CardBody>
+          </Card>
         </div>
 
-        {/* Rubric modal */}
-        {showRubric && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-2">
-                Quality rubrics
-              </h3>
-              <ul className="space-y-2 text-sm">
-                {selectedVersion?.metrics ? (
-                  Object.entries(selectedVersion.metrics).map(([k, v]) => (
-                    <li key={k} className="flex justify-between">
-                      <span>{k}</span>
-                      <span>{Math.round(v * 100)}/100</span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-sm text-gray-500">
-                    No version selected or no metrics available yet.
-                  </li>
+        {/* Right column – output & versions */}
+        <div className="space-y-4">
+          {/* Current draft */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold">Draft output</div>
+                {currentVersion && (
+                  <Pill tone={qualityTone(currentVersion.score)}>
+                    Score: {currentVersion.score ?? "–"}
+                  </Pill>
                 )}
-              </ul>
-              <div className="text-right mt-4">
-                <Button onClick={() => setShowRubric(false)}>Close</Button>
               </div>
-            </div>
-          </div>
-        )}
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <TextArea
+                rows={18}
+                value={draftText}
+                onChange={(e) => setDraftText(e.target.value)}
+                placeholder="Generated draft will appear here. You can edit before rewriting."
+              />
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Rewrite instructions (optional)
+                </label>
+                <TextArea
+                  rows={3}
+                  value={rewriteNotes}
+                  onChange={(e) => setRewriteNotes(e.target.value)}
+                  placeholder="e.g. Shorten, make tone more neutral, add risk disclosure..."
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button
+                  variant="default"
+                  onClick={handleRewrite}
+                  disabled={isRewriting}
+                >
+                  {isRewriting ? "Rewriting..." : "Rewrite draft"}
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
 
-        {/* New output modal */}
-        {showNewConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-2">
-                Start new output?
-              </h3>
-              <p className="text-sm text-gray-600">
-                This will clear the current workspace (title, notes, selections,
-                versions, and uploaded text).
-              </p>
-              <div className="mt-4 flex gap-2 justify-end">
-                <Button onClick={() => setShowNewConfirm(false)}>
-                  Cancel
-                </Button>
-                <Button variant="danger" onClick={handleNewOutput}>
-                  Confirm
-                </Button>
+          {/* Versions */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold">Versions</div>
+                <div className="text-xs text-slate-500">
+                  {versions.length === 0
+                    ? "No versions yet"
+                    : `${versions.length} version${
+                        versions.length > 1 ? "s" : ""
+                      }`}
+                </div>
               </div>
-            </div>
+            </CardHeader>
+            <CardBody className="space-y-2 max-h-[260px] overflow-auto">
+              {versions.length === 0 && (
+                <div className="text-xs text-slate-500">
+                  Generate a draft to start building a version history.
+                </div>
+              )}
+              {versions.map((v) => {
+                const dt = new Date(v.createdAt);
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => handleSelectVersion(v.id)}
+                    className={`w-full text-left rounded-xl border px-3 py-2 mb-1 flex items-center justify-between gap-3 ${
+                      v.id === selectedVersionId
+                        ? "border-black bg-slate-50"
+                        : "border-slate-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <div className="text-xs font-medium truncate">
+                        {v.title} ·{" "}
+                        <span className="capitalize">
+                          {v.outputType.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 flex flex-wrap gap-1">
+                        <span>{formatDateTime(dt)}</span>
+                        <span>•</span>
+                        <span className="capitalize">
+                          {v.scenario?.replace("_", " ") || "default"}
+                        </span>
+                      </div>
+                    </div>
+                    <Pill tone={qualityTone(v.score)}>
+                      {v.score != null ? `${v.score}` : "–"}
+                    </Pill>
+                  </button>
+                );
+              })}
+            </CardBody>
+          </Card>
+        </div>
+      </main>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
+          <div className="bg-slate-900 text-white text-xs px-3 py-2 rounded-full shadow-lg">
+            {toast}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default App;
