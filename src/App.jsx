@@ -27,9 +27,7 @@ function Button({ variant = "default", className = "", children, ...props }) {
 
 function Card({ className = "", children }) {
   return (
-    <div
-      className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className}`}
-    >
+    <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className}`}>
       {children}
     </div>
   );
@@ -113,6 +111,13 @@ const OUTPUT_TYPES = [
   { id: "linkedin_post", label: "LinkedIn post" },
 ];
 
+const MODEL_OPTIONS = [
+  { id: "gpt-4o-mini", label: "gpt-4o-mini (fast, cheap)" },
+  { id: "gpt-4o", label: "gpt-4o (strong general model)" },
+  { id: "gpt-4.1-mini", label: "gpt-4.1-mini (balanced)" },
+  { id: "gpt-4.1", label: "gpt-4.1 (highest quality)" },
+];
+
 function App() {
   const [apiBaseUrl, setApiBaseUrl] = useState(
     "https://content-engine-backend-v2.vercel.app/api"
@@ -132,7 +137,6 @@ function App() {
 
   const [publicSearch, setPublicSearch] = useState(false);
 
-  // NEW: max words limit
   const [maxWords, setMaxWords] = useState("");
 
   // sources: { name, text, size, kind: "file" | "url" }
@@ -189,6 +193,15 @@ function App() {
       };
       reader.readAsText(file);
     });
+  };
+
+  const handleDropFiles = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      handleFiles(files);
+    }
   };
 
   const handleAddUrlSource = async () => {
@@ -292,7 +305,7 @@ function App() {
     }
     const textPayload = combinedText();
     if (!textPayload) {
-      showToast("Add some source text or upload a file/URL first");
+      showToast("Add some source text, file or URL first");
       return;
     }
     if (!selectedTypes.length) {
@@ -476,13 +489,16 @@ function App() {
               <div className="grid gap-3 md:grid-cols-[1.3fr_minmax(0,1fr)]">
                 <div>
                   <label className="text-xs font-medium text-slate-700 mb-1 block">
-                    Title / headline
+                    Title / headline <span className="font-normal">(optional)</span>
                   </label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Acquisition of XYZ by ABC Partners"
                   />
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Helpful for press releases and LinkedIn posts, but not required for all outputs.
+                  </p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-slate-700 mb-1 block">
@@ -504,6 +520,9 @@ function App() {
                       </button>
                     ))}
                   </div>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Used to adjust scenario-specific prompting and scoring.
+                  </p>
                 </div>
               </div>
 
@@ -521,34 +540,6 @@ function App() {
             </CardBody>
           </Card>
 
-          {/* Public domain search */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">
-                  Public domain search
-                </div>
-                <div className="text-xs text-slate-500">
-                  Optional: allow the engine to supplement your sources with
-                  public web context.
-                </div>
-              </div>
-              <Button
-                variant={publicSearch ? "primary" : "quiet"}
-                className="text-xs"
-                onClick={() => setPublicSearch((v) => !v)}
-              >
-                {publicSearch ? "Search enabled" : "Search disabled"}
-              </Button>
-            </CardHeader>
-            <CardBody className="space-y-1">
-              <div className="text-xs text-slate-600">
-                This flag is passed to the backend as <code>publicSearch</code>.
-                Actual web-search behaviour can be implemented later.
-              </div>
-            </CardBody>
-          </Card>
-
           {/* Sources */}
           <Card>
             <CardHeader>
@@ -560,18 +551,34 @@ function App() {
               </div>
             </CardHeader>
             <CardBody className="space-y-3">
-              {/* File upload */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-slate-600">
-                  Upload investment memos, notes, or summaries as text files.
+              {/* Files */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-700">
+                    Files
+                  </span>
                 </div>
-                <Button
-                  variant="quiet"
-                  className="text-xs"
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Upload investment memos, IM extracts, emails, board papers, or notes.
+                  Text files work best.
+                </p>
+                <div
+                  className="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 px-4 py-6 text-xs text-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-slate-400 hover:bg-slate-100"
                   onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onDrop={handleDropFiles}
                 >
-                  Upload files
-                </Button>
+                  <div className="text-lg mb-1">📄</div>
+                  <div className="font-medium mb-0.5">
+                    Drop files here, or click to upload
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    We’ll extract text and treat each file as a separate source.
+                  </div>
+                </div>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -581,28 +588,41 @@ function App() {
                 />
               </div>
 
-              {/* URL source */}
-              <div className="flex items-center gap-2">
-                <Input
-                  className="text-xs"
-                  placeholder="https://example.com/article"
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                />
-                <Button
-                  variant="default"
-                  className="text-xs whitespace-nowrap"
-                  onClick={handleAddUrlSource}
-                >
-                  Add URL
-                </Button>
+              {/* URL */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  URL
+                </label>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Paste a link to a public article or announcement. The backend will fetch
+                  readable on-page text where possible.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="text-xs"
+                    placeholder="https://example.com/article"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                  />
+                  <Button
+                    variant="default"
+                    className="text-xs whitespace-nowrap"
+                    onClick={handleAddUrlSource}
+                  >
+                    Add URL
+                  </Button>
+                </div>
               </div>
 
-              {/* Paste text */}
-              <div>
+              {/* Manual text */}
+              <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
-                  Paste or draft source text
+                  Manual text
                 </label>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Paste or type any additional source material here – email chains, call notes,
+                  bullet points, internal commentary, etc.
+                </p>
                 <TextArea
                   rows={3}
                   value={rawText}
@@ -646,63 +666,29 @@ function App() {
                   </ul>
                 </div>
               )}
-            </CardBody>
-          </Card>
 
-          {/* Output types */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">Output types</div>
-                <div className="text-xs text-slate-500">
-                  Choose which formats you want for this event and optionally
-                  cap the length.
+              {/* Public domain search toggle */}
+              <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                <div className="text-[11px] text-slate-600">
+                  <span className="font-medium">Public domain search</span>
+                  <span className="ml-1">
+                    – optionally allow limited background context from public web sources.
+                  </span>
                 </div>
-              </div>
-            </CardHeader>
-            <CardBody className="space-y-3">
-              <div className="space-y-2">
-                <div className="flex flex-wrap gap-1.5">
-                  {OUTPUT_TYPES.map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => toggleType(t.id)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
-                        selectedTypes.includes(t.id)
-                          ? "bg-black text-white border-black"
-                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-3 items-end">
-                <div>
-                  <label className="text-xs font-medium text-slate-700 mb-1 block">
-                    Maximum words (optional)
-                  </label>
-                  <Input
-                    type="number"
-                    min="50"
-                    className="text-xs"
-                    placeholder="e.g. 300"
-                    value={maxWords}
-                    onChange={(e) => setMaxWords(e.target.value)}
+                <button
+                  type="button"
+                  onClick={() => setPublicSearch((v) => !v)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                    publicSearch ? "bg-black" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                      publicSearch ? "translate-x-5" : "translate-x-1"
+                    }`}
                   />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="primary"
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? "Generating..." : "Generate draft"}
-                  </Button>
-                </div>
+                  <span className="sr-only">Toggle public domain search</span>
+                </button>
               </div>
             </CardBody>
           </Card>
@@ -756,6 +742,9 @@ function App() {
                       </Pill>
                     )}
                   </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Change this when you deploy a new backend or test a different environment.
+                  </p>
                 </div>
 
                 {/* Model controls */}
@@ -764,11 +753,20 @@ function App() {
                     <div className="text-[11px] font-medium text-slate-700 mb-1">
                       Model
                     </div>
-                    <Input
-                      className="text-[11px]"
+                    <select
+                      className="w-full rounded-xl border border-slate-300 px-2 py-1.5 text-[11px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black bg-white"
                       value={modelId}
                       onChange={(e) => setModelId(e.target.value)}
-                    />
+                    >
+                      {MODEL_OPTIONS.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Mini models are fast and cheap; full models are better for nuance and complex drafting.
+                    </p>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-slate-700 mb-1">
@@ -785,6 +783,9 @@ function App() {
                         setTemperature(parseFloat(e.target.value) || 0)
                       }
                     />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      0.0 = strict and deterministic. Higher values are more creative. Typical range: 0.1–0.4.
+                    </p>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-slate-700 mb-1">
@@ -799,6 +800,9 @@ function App() {
                         setMaxTokens(parseInt(e.target.value, 10) || 512)
                       }
                     />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Technical upper bound on model output length (not the same as words).
+                    </p>
                   </div>
                 </div>
               </CardBody>
@@ -806,8 +810,68 @@ function App() {
           </Card>
         </div>
 
-        {/* Right column – output & versions */}
+        {/* Right column – outputs & versions */}
         <div className="space-y-4">
+          {/* Output types (moved to right column) */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Output types</div>
+                <div className="text-xs text-slate-500">
+                  Choose which formats you want for this event and optionally cap the length.
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {OUTPUT_TYPES.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => toggleType(t.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                        selectedTypes.includes(t.id)
+                          ? "bg-black text-white border-black"
+                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-3 items-end">
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">
+                    Maximum words (optional)
+                  </label>
+                  <Input
+                    type="number"
+                    min="50"
+                    className="text-xs"
+                    placeholder="e.g. 300"
+                    value={maxWords}
+                    onChange={(e) => setMaxWords(e.target.value)}
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Soft guidance plus hard cap. The engine will aim to stay within this length.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="primary"
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? "Generating..." : "Generate draft"}
+                  </Button>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+
           {/* Current draft */}
           <Card>
             <CardHeader>
