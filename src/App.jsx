@@ -104,11 +104,17 @@ function formatDateTime(d) {
 }
 
 const SCENARIOS = [
+  // Direct / asset-level events
   { id: "new_investment", label: "New direct investment" },
+  { id: "exit_realisation", label: "Direct investment exit" },
+  { id: "revaluation", label: "Direct investment revaluation" },
+
+  // Fund-level events
   { id: "new_fund_commitment", label: "New fund commitment" },
-  { id: "exit_realisation", label: "Exit/realization" },
-  { id: "revaluation", label: "Revaluation" },
+  { id: "fund_capital_call", label: "Fund capital call" },
+  { id: "fund_distribution", label: "Fund distribution" },
 ];
+
 
 const OUTPUT_TYPES = [
   { id: "transaction_text", label: "Transaction text" },
