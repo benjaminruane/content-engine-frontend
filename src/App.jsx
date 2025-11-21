@@ -1024,9 +1024,11 @@ function App() {
               <div className="flex items-center gap-2">
                 <div className="text-sm font-semibold">Draft output</div>
                 {currentVersion && (
-                  <Pill tone={qualityTone(currentVersion.score)}>
-                    Score: {currentVersion.score ?? "–"}
-                  </Pill>
+  <Pill tone={qualityTone(currentVersion.score)}>
+    Score (proto): {currentVersion.score ?? "–"}
+  </Pill>
+)}
+
                 )}
               </div>
               <div className="flex flex-wrap gap-1">
@@ -1167,8 +1169,9 @@ function App() {
     {wordCount} words
   </Pill>
   <Pill tone={qualityTone(v.score)} className="text-[10px]">
-    Score: {v.score != null ? v.score : "–"}
-  </Pill>
+  Score (proto): {v.score != null ? v.score : "–"}
+</Pill>
+
 </div>
 
 
