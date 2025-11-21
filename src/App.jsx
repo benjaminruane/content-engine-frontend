@@ -1020,37 +1020,38 @@ function App() {
 
           {/* Current draft */}
           <Card>
-            <CardHeader className="flex-col items-start gap-2">
-              <div className="flex items-center gap-2">
-                <div className="text-sm font-semibold">Draft output</div>
-                {currentVersion && (
-  <Pill tone={qualityTone(currentVersion.score)}>
-    Score (proto): {currentVersion.score ?? "–"}
-  </Pill>
-)}
+  <CardHeader className="flex-col items-start gap-2">
+    <div className="flex items-center gap-2">
+      <div className="text-sm font-semibold">Draft output</div>
+      {currentVersion && (
+        <Pill tone={qualityTone(currentVersion.score)}>
+          Score (proto): {currentVersion.score ?? "–"}
+        </Pill>
+      )}
+    </div>
+    <div className="flex flex-wrap gap-1">
+      <Pill className="text-[10px]">
+        {getScenarioLabel(scenario)}
+      </Pill>
+      <Pill className="text-[10px]">
+        {primaryOutputLabel}
+      </Pill>
+      <Pill className="text-[10px]">
+        {getModelLabel(modelId)}
+      </Pill>
+      {maxWords && (
+        <Pill className="text-[10px]">
+          ≤ {maxWords} words
+        </Pill>
+      )}
+      <Pill className="text-[10px]">
+        Public search: {publicSearch ? "On" : "Off"}
+      </Pill>
+    </div>
+  </CardHeader>
+  {/* CardBody stays as you already have it */}
 
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                <Pill className="text-[10px]">
-                  {getScenarioLabel(scenario)}
-                </Pill>
-                <Pill className="text-[10px]">
-                  {primaryOutputLabel}
-                </Pill>
-                <Pill className="text-[10px]">
-                  {getModelLabel(modelId)}
-                </Pill>
-                {maxWords && (
-                  <Pill className="text-[10px]">
-                    ≤ {maxWords} words
-                  </Pill>
-                )}
-                <Pill className="text-[10px]">
-                  Public search: {publicSearch ? "On" : "Off"}
-                </Pill>
-              </div>
-            </CardHeader>
+            
             <CardBody className="space-y-3">
               <TextArea
                 rows={18}
