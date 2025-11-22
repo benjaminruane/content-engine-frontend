@@ -356,18 +356,17 @@ function App() {
     setIsGenerating(true);
     try {
       const payload = {
-        title,
-        notes,
-        text: textPayload,
-        selectedTypes,
-        scenario,
-        versionType,
-        modelId,
-        temperature,
-        maxTokens,
-        publicSearch,
-        maxWords: numericMaxWords,
-      };
+  text: textPayload,
+  notes: rewriteNotes,
+  outputType: baseOutputType,
+  scenario,
+  versionType,
+  modelId,
+  temperature,
+  maxTokens,
+  maxWords: numericMaxWords,
+};
+
 
       const data = await callBackend("generate", payload);
 
