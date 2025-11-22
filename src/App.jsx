@@ -138,11 +138,6 @@ function getModelLabel(id) {
   return match ? match.label.split(" ")[0] : id || "model";
 }
 
-function getVersionTypeLabel(vt) {
-  if (vt === "public") return "Public";
-  return "Complete";
-}
-
 function App() {
   const [apiBaseUrl, setApiBaseUrl] = useState(
     "https://content-engine-backend-v2.vercel.app/api"
@@ -155,13 +150,14 @@ function App() {
 
   const [scenario, setScenario] = useState("new_investment");
   const [selectedTypes, setSelectedTypes] = useState(["transaction_text"]);
-  const [versionType, setVersionType] = useState("complete"); // complete | public
+  const [versionType, setVersionType] = useState("complete");
 
   const [modelId, setModelId] = useState("gpt-4o-mini");
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(2048);
 
   const [publicSearch, setPublicSearch] = useState(false);
+
   const [maxWords, setMaxWords] = useState("");
 
   // Controls whether a new generation is allowed in this "session"
@@ -356,17 +352,18 @@ function App() {
     setIsGenerating(true);
     try {
       const payload = {
-  text: textPayload,
-  notes: rewriteNotes,
-  outputType: baseOutputType,
-  scenario,
-  versionType,
-  modelId,
-  temperature,
-  maxTokens,
-  maxWords: numericMaxWords,
-};
-
+        title,
+        notes,
+        text: textPayload,
+        selectedTypes,
+        scenario,
+        versionType,
+        modelId,
+        temperature,
+        maxTokens,
+        publicSearch,
+        maxWords: numericMaxWords,
+      };
 
       const data = await callBackend("generate", payload);
 
@@ -412,87 +409,85 @@ function App() {
   };
 
   const handleRewrite = async () => {
-  if (!apiBaseUrl) {
-    showToast("Set API base URL first");
-    return;
-  }
+    if (!apiBaseUrl) {
+      showToast("Set API base URL first");
+      return;
+    }
 
-  const textPayload = draftText && draftText.trim();
-  if (!textPayload) {
-    showToast("Nothing to rewrite");
-    return;
-  }
+    const textPayload = draftText && draftText.trim();
+    if (!textPayload) {
+      showToast("Nothing to rewrite");
+      return;
+    }
 
-  const numericMaxWords =
-    maxWords && !Number.isNaN(parseInt(maxWords, 10))
-      ? parseInt(maxWords, 10)
-      : undefined;
+    const numericMaxWords =
+      maxWords && !Number.isNaN(parseInt(maxWords, 10))
+        ? parseInt(maxWords, 10)
+        : undefined;
 
-  const existingMax =
-    versions.reduce(
-      (max, v) =>
-        v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
-      0
-    ) || 0;
+    const existingMax =
+      versions.reduce(
+        (max, v) =>
+          v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
+        0
+      ) || 0;
 
-  setIsRewriting(true);
-  try {
-    // Decide which output type we’re rewriting
     const baseOutputType =
       currentVersion?.outputType ||
       (selectedTypes.length > 0 ? selectedTypes[0] : "transaction_text");
 
-    const payload = {
-      text: textPayload,
-      notes: rewriteNotes,          // rewrite instructions
-      outputType: baseOutputType,   // what kind of thing this is
-      scenario,
-      versionType,
-      modelId,
-      temperature,
-      maxTokens,
-      maxWords: numericMaxWords,
-    };
+    setIsRewriting(true);
+    try {
+      const payload = {
+        text: textPayload,
+        notes: rewriteNotes,
+        outputType: baseOutputType,
+        scenario,
+        modelId,
+        temperature,
+        maxTokens,
+        maxWords: numericMaxWords,
+      };
 
-    const data = await callBackend("rewrite", payload);
-    const out =
-      Array.isArray(data.outputs) && data.outputs[0]
-        ? data.outputs[0]
-        : null;
+      const data = await callBackend("rewrite", payload);
+      const out =
+        Array.isArray(data.outputs) && data.outputs[0]
+          ? data.outputs[0]
+          : null;
 
-    if (!out) {
-      showToast("No rewrite returned from backend");
+      if (!out) {
+        showToast("No rewrite returned from backend");
+        setIsRewriting(false);
+        return;
+      }
+
+      const now = new Date();
+      const id = `${now.getTime()}-rw`;
+
+      const newVersion = {
+        id,
+        versionNumber: existingMax + 1,
+        createdAt: now.toISOString(),
+        title: title || currentVersion?.title || "Untitled",
+        scenario,
+        versionType,
+        outputType: baseOutputType,
+        text: out.text,
+        score: out.score,
+        metrics: out.metrics || {},
+      };
+
+      setVersions((prev) => [...prev, newVersion]);
+      setSelectedVersionId(id);
+      setDraftText(out.text);
+      showToast("Rewrite completed");
+    } catch (e) {
+      console.error("Error rewriting", e);
+      showToast("Error rewriting draft");
+    } finally {
       setIsRewriting(false);
-      return;
     }
-
-    const now = new Date();
-    const id = `${now.getTime()}-rw`;
-
-    const newVersion = {
-      id,
-      versionNumber: existingMax + 1,
-      createdAt: now.toISOString(),
-      title: title || currentVersion?.title || "Untitled",
-      scenario,
-      outputType: baseOutputType,
-      text: out.text,
-      score: out.score,
-      metrics: out.metrics || {},
-    };
-
-    setVersions((prev) => [...prev, newVersion]);
-    setSelectedVersionId(id);
-    setDraftText(out.text);
-    showToast("Rewrite completed");
-  } catch (e) {
-    console.error("Error rewriting", e);
-    showToast("Error rewriting draft");
-  } finally {
-    setIsRewriting(false);
-  }
-};
-
+  };
 
   const handleSelectVersion = (id) => {
     setSelectedVersionId(id);
@@ -920,8 +915,8 @@ function App() {
                       ))}
                     </select>
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Mini models are fast and cheap; full models are better for
-                      nuance and complex drafting.
+                      Mini models are fast and cheap; full models are better
+                      for nuance and complex drafting.
                     </p>
                   </div>
                   <div>
@@ -958,8 +953,8 @@ function App() {
                       }
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Technical upper bound on model output length (not the same
-                      as words).
+                      Technical upper bound on model output length (not the
+                      same as words).
                     </p>
                   </div>
                 </div>
@@ -1027,8 +1022,8 @@ function App() {
                 </div>
                 <p className="mt-1 text-[11px] text-slate-500">
                   Complete versions follow the full internal brief. Public
-                  versions lean toward publicly safe, high-level wording while
-                  still following the writing guidelines.
+                  versions stay closer to publicly safe, high-level wording
+                  while still following the writing guidelines.
                 </p>
               </div>
 
@@ -1075,15 +1070,11 @@ function App() {
                 )}
               </div>
               <div className="flex flex-wrap gap-1">
-                <Pill className="text-[10px]">
-                  {getScenarioLabel(scenario)}
-                </Pill>
+                <Pill className="text-[10px]">{getScenarioLabel(scenario)}</Pill>
                 <Pill className="text-[10px]">{primaryOutputLabel}</Pill>
-                <Pill className="text-[10px]">
-                  {getModelLabel(modelId)}
-                </Pill>
-                <Pill className="text-[10px]">
-                  {getVersionTypeLabel(versionType)} version
+                <Pill className="text-[10px]">{getModelLabel(modelId)}</Pill>
+                <Pill className="text-[10px] capitalize">
+                  {versionType} version
                 </Pill>
                 {maxWords && (
                   <Pill className="text-[10px]">≤ {maxWords} words</Pill>
@@ -1205,14 +1196,16 @@ function App() {
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <div className="text-xs font-medium truncate">
                           v{versionNumber} ·{" "}
-                          <span className="capitalize">{outputLabel}</span> ·{" "}
-                          {getVersionTypeLabel(v.versionType || "complete")}
+                          <span className="capitalize">{outputLabel}</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <Pill className="text-[10px]">
                             {wordCount} words
                           </Pill>
-                          <Pill tone={qualityTone(v.score)} className="text-[10px]">
+                          <Pill
+                            tone={qualityTone(v.score)}
+                            className="text-[10px]"
+                          >
                             Score (proto):{" "}
                             {v.score != null ? v.score : "–"}
                           </Pill>
