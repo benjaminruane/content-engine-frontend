@@ -412,86 +412,87 @@ function App() {
   };
 
   const handleRewrite = async () => {
-    if (!apiBaseUrl) {
-      showToast("Set API base URL first");
-      return;
-    }
+  if (!apiBaseUrl) {
+    showToast("Set API base URL first");
+    return;
+  }
 
-    const textPayload = draftText && draftText.trim();
-    if (!textPayload) {
-      showToast("Nothing to rewrite");
-      return;
-    }
+  const textPayload = draftText && draftText.trim();
+  if (!textPayload) {
+    showToast("Nothing to rewrite");
+    return;
+  }
 
-    const numericMaxWords =
-      maxWords && !Number.isNaN(parseInt(maxWords, 10))
-        ? parseInt(maxWords, 10)
-        : undefined;
+  const numericMaxWords =
+    maxWords && !Number.isNaN(parseInt(maxWords, 10))
+      ? parseInt(maxWords, 10)
+      : undefined;
 
-    const existingMax =
-      versions.reduce(
-        (max, v) =>
-          v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
-        0
-      ) || 0;
+  const existingMax =
+    versions.reduce(
+      (max, v) =>
+        v.versionNumber && v.versionNumber > max ? v.versionNumber : max,
+      0
+    ) || 0;
 
+  setIsRewriting(true);
+  try {
+    // Decide which output type we’re rewriting
     const baseOutputType =
       currentVersion?.outputType ||
       (selectedTypes.length > 0 ? selectedTypes[0] : "transaction_text");
 
-    setIsRewriting(true);
-    try {
-      const payload = {
-        text: textPayload,
-        notes: rewriteNotes,
-        outputType: baseOutputType,
-        scenario,
-        versionType,
-        modelId,
-        temperature,
-        maxTokens,
-        maxWords: numericMaxWords,
-      };
+    const payload = {
+      text: textPayload,
+      notes: rewriteNotes,          // rewrite instructions
+      outputType: baseOutputType,   // what kind of thing this is
+      scenario,
+      versionType,
+      modelId,
+      temperature,
+      maxTokens,
+      maxWords: numericMaxWords,
+    };
 
-      const data = await callBackend("rewrite", payload);
-      const out =
-        Array.isArray(data.outputs) && data.outputs[0]
-          ? data.outputs[0]
-          : null;
+    const data = await callBackend("rewrite", payload);
+    const out =
+      Array.isArray(data.outputs) && data.outputs[0]
+        ? data.outputs[0]
+        : null;
 
-      if (!out) {
-        showToast("No rewrite returned from backend");
-        setIsRewriting(false);
-        return;
-      }
-
-      const now = new Date();
-      const id = `${now.getTime()}-rw`;
-
-      const newVersion = {
-        id,
-        versionNumber: existingMax + 1,
-        createdAt: now.toISOString(),
-        title: title || currentVersion?.title || "Untitled",
-        scenario,
-        versionType,
-        outputType: baseOutputType,
-        text: out.text,
-        score: out.score,
-        metrics: out.metrics || {},
-      };
-
-      setVersions((prev) => [...prev, newVersion]);
-      setSelectedVersionId(id);
-      setDraftText(out.text);
-      showToast("Rewrite completed");
-    } catch (e) {
-      console.error("Error rewriting", e);
-      showToast("Error rewriting draft");
-    } finally {
+    if (!out) {
+      showToast("No rewrite returned from backend");
       setIsRewriting(false);
+      return;
     }
-  };
+
+    const now = new Date();
+    const id = `${now.getTime()}-rw`;
+
+    const newVersion = {
+      id,
+      versionNumber: existingMax + 1,
+      createdAt: now.toISOString(),
+      title: title || currentVersion?.title || "Untitled",
+      scenario,
+      outputType: baseOutputType,
+      text: out.text,
+      score: out.score,
+      metrics: out.metrics || {},
+    };
+
+    setVersions((prev) => [...prev, newVersion]);
+    setSelectedVersionId(id);
+    setDraftText(out.text);
+    showToast("Rewrite completed");
+  } catch (e) {
+    console.error("Error rewriting", e);
+    showToast("Error rewriting draft");
+  } finally {
+    setIsRewriting(false);
+  }
+};
+
 
   const handleSelectVersion = (id) => {
     setSelectedVersionId(id);
