@@ -22,10 +22,7 @@ function Button({ variant = "default", className = "", children, ...props }) {
     : variants[variant] || variants.default;
 
   return (
-    <button
-      className={`${base} ${variantClass} ${className}`}
-      {...props}
-    >
+    <button className={`${base} ${variantClass} ${className}`} {...props}>
       {children}
     </button>
   );
@@ -33,7 +30,9 @@ function Button({ variant = "default", className = "", children, ...props }) {
 
 function Card({ className = "", children }) {
   return (
-    <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className}`}>
+    <div
+      className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className}`}
+    >
       {children}
     </div>
   );
@@ -115,7 +114,6 @@ const SCENARIOS = [
   { id: "fund_distribution", label: "Fund distribution" },
 ];
 
-
 const OUTPUT_TYPES = [
   { id: "transaction_text", label: "Transaction text" },
   { id: "investment_note", label: "Investor letter" },
@@ -140,6 +138,11 @@ function getModelLabel(id) {
   return match ? match.label.split(" ")[0] : id || "model";
 }
 
+function getVersionTypeLabel(vt) {
+  if (vt === "public") return "Public";
+  return "Complete";
+}
+
 function App() {
   const [apiBaseUrl, setApiBaseUrl] = useState(
     "https://content-engine-backend-v2.vercel.app/api"
@@ -152,13 +155,13 @@ function App() {
 
   const [scenario, setScenario] = useState("new_investment");
   const [selectedTypes, setSelectedTypes] = useState(["transaction_text"]);
+  const [versionType, setVersionType] = useState("complete"); // complete | public
 
   const [modelId, setModelId] = useState("gpt-4o-mini");
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(2048);
 
   const [publicSearch, setPublicSearch] = useState(false);
-
   const [maxWords, setMaxWords] = useState("");
 
   // Controls whether a new generation is allowed in this "session"
@@ -358,6 +361,7 @@ function App() {
         text: textPayload,
         selectedTypes,
         scenario,
+        versionType,
         modelId,
         temperature,
         maxTokens,
@@ -383,6 +387,7 @@ function App() {
           createdAt: now.toISOString(),
           title: title || "Untitled",
           scenario,
+          versionType,
           outputType: o.outputType,
           text: o.text,
           score: o.score,
@@ -442,6 +447,7 @@ function App() {
         notes: rewriteNotes,
         outputType: baseOutputType,
         scenario,
+        versionType,
         modelId,
         temperature,
         maxTokens,
@@ -469,6 +475,7 @@ function App() {
         createdAt: now.toISOString(),
         title: title || currentVersion?.title || "Untitled",
         scenario,
+        versionType,
         outputType: baseOutputType,
         text: out.text,
         score: out.score,
@@ -544,6 +551,7 @@ function App() {
     setSelectedTypes(["transaction_text"]);
     setPublicSearch(false);
     setMaxWords("");
+    setVersionType("complete");
 
     setSources([]);
     setUrlInput("");
@@ -609,7 +617,6 @@ function App() {
 
       {/* Main layout */}
       <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]">
-
         {/* Left column – inputs */}
         <div className="space-y-4">
           {/* Event & title */}
@@ -625,7 +632,8 @@ function App() {
             <CardBody className="space-y-3">
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
-                  Title / headline <span className="font-normal">(optional)</span>
+                  Title / headline{" "}
+                  <span className="font-normal">(optional)</span>
                 </label>
                 <Input
                   value={title}
@@ -633,8 +641,8 @@ function App() {
                   placeholder="e.g. Acquisition of XYZ by ABC Partners"
                 />
                 <p className="mt-1 text-[11px] text-slate-500">
-                  Helpful for press releases and LinkedIn posts, but not required for all
-                  outputs.
+                  Helpful for press releases and LinkedIn posts, but not
+                  required for all outputs.
                 </p>
               </div>
 
@@ -912,8 +920,8 @@ function App() {
                       ))}
                     </select>
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Mini models are fast and cheap; full models are better
-                      for nuance and complex drafting.
+                      Mini models are fast and cheap; full models are better for
+                      nuance and complex drafting.
                     </p>
                   </div>
                   <div>
@@ -950,8 +958,8 @@ function App() {
                       }
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Technical upper bound on model output length (not the
-                      same as words).
+                      Technical upper bound on model output length (not the same
+                      as words).
                     </p>
                   </div>
                 </div>
@@ -993,6 +1001,37 @@ function App() {
                 </div>
               </div>
 
+              {/* Version type toggle */}
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Version type
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: "complete", label: "Complete (internal)" },
+                    { id: "public", label: "Public-facing" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setVersionType(opt.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                        versionType === opt.id
+                          ? "bg-black text-white border-black"
+                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Complete versions follow the full internal brief. Public
+                  versions lean toward publicly safe, high-level wording while
+                  still following the writing guidelines.
+                </p>
+              </div>
+
               <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-3 items-end">
                 <div>
                   <label className="text-xs font-medium text-slate-700 mb-1 block">
@@ -1026,38 +1065,35 @@ function App() {
 
           {/* Current draft */}
           <Card>
-  <CardHeader className="flex-col items-start gap-2">
-    <div className="flex items-center gap-2">
-      <div className="text-sm font-semibold">Draft output</div>
-      {currentVersion && (
-        <Pill tone={qualityTone(currentVersion.score)}>
-          Score (proto): {currentVersion.score ?? "–"}
-        </Pill>
-      )}
-    </div>
-    <div className="flex flex-wrap gap-1">
-      <Pill className="text-[10px]">
-        {getScenarioLabel(scenario)}
-      </Pill>
-      <Pill className="text-[10px]">
-        {primaryOutputLabel}
-      </Pill>
-      <Pill className="text-[10px]">
-        {getModelLabel(modelId)}
-      </Pill>
-      {maxWords && (
-        <Pill className="text-[10px]">
-          ≤ {maxWords} words
-        </Pill>
-      )}
-      <Pill className="text-[10px]">
-        Public search: {publicSearch ? "On" : "Off"}
-      </Pill>
-    </div>
-  </CardHeader>
-  {/* CardBody stays as you already have it */}
+            <CardHeader className="flex-col items-start gap-2">
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold">Draft output</div>
+                {currentVersion && (
+                  <Pill tone={qualityTone(currentVersion.score)}>
+                    Score (proto): {currentVersion.score ?? "–"}
+                  </Pill>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1">
+                <Pill className="text-[10px]">
+                  {getScenarioLabel(scenario)}
+                </Pill>
+                <Pill className="text-[10px]">{primaryOutputLabel}</Pill>
+                <Pill className="text-[10px]">
+                  {getModelLabel(modelId)}
+                </Pill>
+                <Pill className="text-[10px]">
+                  {getVersionTypeLabel(versionType)} version
+                </Pill>
+                {maxWords && (
+                  <Pill className="text-[10px]">≤ {maxWords} words</Pill>
+                )}
+                <Pill className="text-[10px]">
+                  Public search: {publicSearch ? "On" : "Off"}
+                </Pill>
+              </div>
+            </CardHeader>
 
-            
             <CardBody className="space-y-3">
               <TextArea
                 rows={18}
@@ -1167,22 +1203,21 @@ function App() {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">
-  <div className="text-xs font-medium truncate">
-    v{versionNumber} ·{" "}
-    <span className="capitalize">{outputLabel}</span>
-  </div>
-  <div className="flex items-center gap-2 shrink-0">
-  <Pill className="text-[10px]">
-    {wordCount} words
-  </Pill>
-  <Pill tone={qualityTone(v.score)} className="text-[10px]">
-  Score (proto): {v.score != null ? v.score : "–"}
-</Pill>
-
-</div>
-
-
-</div>
+                        <div className="text-xs font-medium truncate">
+                          v{versionNumber} ·{" "}
+                          <span className="capitalize">{outputLabel}</span> ·{" "}
+                          {getVersionTypeLabel(v.versionType || "complete")}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Pill className="text-[10px]">
+                            {wordCount} words
+                          </Pill>
+                          <Pill tone={qualityTone(v.score)} className="text-[10px]">
+                            Score (proto):{" "}
+                            {v.score != null ? v.score : "–"}
+                          </Pill>
+                        </div>
+                      </div>
 
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-col">
