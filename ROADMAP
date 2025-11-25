@@ -1,0 +1,217 @@
+# Content Engine – Product Roadmap
+_Last updated: YYYY-MM-DD_
+
+This roadmap outlines the planned evolution of the Content Engine from the current MVP toward a production-grade, enterprise-deployable platform. It integrates all architecture, UX, feature, and future-capability discussions to date.
+
+---
+
+# 1. 🎯 Vision & Objectives
+
+The Content Engine enables users to:
+- Upload or provide sources (documents, pasted text, URLs)
+- Generate structured investment-grade written outputs
+- Apply defined style guides and scenario rules
+- Produce public-facing vs complete/internal versions
+- Iterate via rewrite instructions
+- Track version history with metadata and scoring
+- Provide transparency through source auditability and statement reliability
+
+Future goals:
+- Real public-domain retrieval
+- Internal knowledge-base ingestion
+- Document similarity checks
+- Multi-client style guide switching
+- Enterprise-grade privacy, access control, and SSO
+- Automated templated Word/PPT outputs
+
+---
+
+# 2. ⭐ Completed (MVP Foundations)
+
+### 2.1 Core Features
+- Upload & parse text, files, and URLs
+- Scenario-based prompt templates
+- Complete vs Public-facing drafting
+- Inline style guide compliance
+- Version generation and rewrite
+- Token, temperature, model selection
+
+### 2.2 UI/UX
+- Full UI overhaul (2025)
+- Cleaner layout and spacing
+- Collapsible advanced settings
+- Color-coded metadata pills
+- Consistent controls + button hierarchy
+- Sources table (user-provided)
+
+### 2.3 Reliability & Debugging
+- CORS overhaul & correct headers
+- Backend restructuring and cleanup
+- Removal of circular imports
+- Safe JSON parsing
+- Stable scoring engine
+- Error toasts with safe truncation
+
+---
+
+# 3. 🛠 In Progress (Actively Being Implemented)
+
+### 3.1 Statement Reliability (Beta)
+- New backend endpoint `/api/analyse-statements`
+- Break draft into atomic statements
+- Reliability scoring (0–100%)
+- Classification:
+  - Source-based factual
+  - Plausible factual
+  - Interpretive/subjective
+  - Speculative/forward-looking
+- Flags for risks (e.g., “not supported by source”)
+- UI table under Draft card
+
+### 3.2 Style Guide Consolidation
+- One location only: `DEFAULT_STYLE_GUIDE`
+- Rules for:
+  - Numbers (“one”–“eleven”, ranges, units)
+  - No em-dashes
+  - Institutional tone
+  - Currency handling
+  - Paragraph structure
+- Removal of duplicated rules from prompts
+
+### 3.3 Source Snapshot Per Version
+- Every generated/rewrite version stores:
+  - File names, size
+  - URLs
+  - Text-length metrics
+- Displayed in Sources table
+
+---
+
+# 4. 🧩 Next Up (Short-Term Roadmap)
+
+### 4.1 Full Public-Source Retrieval (Real Web Context)
+(Currently, public search = “allow model knowledge”. Next version = real retrieval.)
+
+#### Backend
+- `/api/public-search` endpoint
+- Connect to a real web search service (Google Custom Search, Bing Search, Tavily, Perplexity, etc.)
+- Extract canonical URLs, titles, snippets
+- Provide structured `publicSources` list
+- Prevent hallucinated URLs
+
+#### Frontend
+- Merge `userProvidedSources` + `publicSources`
+- Expanded Sources table:
+  - File / URL / Text / Public Web Source
+- Optional: relevance ranking
+
+---
+
+### 4.2 Rewrite Consistency Improvements
+- Allow version-type switching mid-version
+- Preview changes before committing rewrite
+- Rewrite-specific word limit override (optional)
+
+---
+
+### 4.3 Source Management UX
+- “Remove source” (X button) for uploaded files & URLs
+- “Preview source” inspector pane
+- Show count of total uploaded sources
+- Confirmation dialogs before removing big files
+
+---
+
+### 4.4 Prompt Audit Mode (Light)
+- Show “effective prompt” for transparency
+- User toggle: display prompt or hide
+- Stripped of internal logic (safe mode)
+
+---
+
+# 5. 🧱 Medium-Term Roadmap (Beta → Full Product)
+
+### 5.1 Reliability Dashboard
+- Highlight low-reliability statements
+- Inline highlighting in draft text
+- Heatmap mode (color-coded reliability)
+- Suggested fixes (“Rewrite this section?”)
+
+### 5.2 Output Comparison Tools
+- Compare two versions:
+  - Diff view
+  - Highlighted additions & removals
+  - Score changes (clarity, tone, structure)
+
+### 5.3 Multi-Output Bundles
+- Generate several deliverables at once:
+  - Press release
+  - Portfolio commentary
+  - Investor email
+- Cross-coherence enforcement
+
+### 5.4 Templated Word/PPT Output
+- Word template engine (docx)
+- PPT slides with:
+  - Summary bullets
+  - Charts (later)
+- User-defined templates per client/team
+
+### 5.5 Role-Based Access Control (RBAC)
+- View-only roles
+- Editor roles
+- Admin roles
+- Audit logs (enterprise)
+
+---
+
+# 6. 🧠 Long-Term (Enterprise / v3+)
+
+### 6.1 Internal Knowledge Base Integration
+- Let users upload approved content to a private datastore
+- ChromaDB / Pinecone / pgvector / Azure Search
+- Retrieval-augmented generation (RAG) mode
+- “Approve this version for training” workflow
+- Optional: auto-tagging & metadata extraction
+
+### 6.2 Data Governance & Compliance
+- Automatic detection of sensitive content
+- Blocked phrases awareness
+- Client-specific redaction rules
+- Multi-region data residency (EU/US/APAC)
+
+### 6.3 Enterprise Integrations
+- SSO (Okta / Azure AD / Google)
+- Slack/Teams notifications (“Your draft is ready”)
+- Export to internal content systems
+- Integration with deal workflow tools (DealCloud, Salesforce, etc.)
+
+---
+
+# 7. 🧪 Experimental / Optional
+
+- Citation-level accuracy scoring
+- Boolean fact checking (“True / False / Needs evidence”)
+- Style drift detection against historical outputs
+- Sentiment analysis of tone
+- Auto-created outline before drafting
+
+---
+
+# 8. 📦 Release Versioning Framework
+
+### Version tags
+- `v1.x.x`  → early prototypes  
+- `v2.x.x`  → MVP stable  
+- `v3.x.x`  → Beta with auditability  
+- `v4.x.x`  → Enterprise-grade  
+
+### Recommended workflow
+1. Create a GitHub **release** after major feature sets  
+2. Tag using semantic versioning  
+3. Update `ROADMAP.md` + `CHANGELOG.md`  
+4. Push to Vercel  
+5. Keep main branch always deployable  
+
+
+
