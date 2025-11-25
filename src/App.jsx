@@ -375,7 +375,7 @@ function App() {
       }
 
       const now = new Date();
-      const newVersions = outputs.map((o, idx) => {
+            const newVersions = outputs.map((o, idx) => {
         const id = `${now.getTime()}-${idx}`;
         return {
           id,
@@ -384,12 +384,14 @@ function App() {
           title: title || "Untitled",
           scenario,
           versionType,
+          modelId, // store the model used
           outputType: o.outputType,
           text: o.text,
           score: o.score,
           metrics: o.metrics || {},
         };
       });
+
 
       setVersions((prev) => [...prev, ...newVersions]);
       const primary = newVersions[0];
@@ -400,13 +402,16 @@ function App() {
       setCanGenerate(false);
 
       showToast("Draft generated");
-    } catch (e) {
+        } catch (e) {
       console.error("Error generating", e);
-      showToast("Error generating draft");
+      const msg = e && e.message ? e.message : "Error generating draft";
+      // Show a helpful message but keep it short
+      showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
     } finally {
       setIsGenerating(false);
     }
   };
+
 
   const handleRewrite = async () => {
     if (!apiBaseUrl) {
@@ -464,30 +469,34 @@ function App() {
       const now = new Date();
       const id = `${now.getTime()}-rw`;
 
-      const newVersion = {
+            const newVersion = {
         id,
         versionNumber: existingMax + 1,
         createdAt: now.toISOString(),
         title: title || currentVersion?.title || "Untitled",
         scenario,
         versionType,
+        modelId, // store the model used
         outputType: baseOutputType,
         text: out.text,
         score: out.score,
         metrics: out.metrics || {},
       };
 
+
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(id);
       setDraftText(out.text);
       showToast("Rewrite completed");
-    } catch (e) {
+        } catch (e) {
       console.error("Error rewriting", e);
-      showToast("Error rewriting draft");
+      const msg = e && e.message ? e.message : "Error rewriting draft";
+      showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
     } finally {
       setIsRewriting(false);
     }
   };
+
 
   const handleSelectVersion = (id) => {
     setSelectedVersionId(id);
@@ -1202,6 +1211,10 @@ function App() {
                           <Pill className="text-[10px]">
                             {wordCount} words
                           </Pill>
+                          {/* Show the model used for this version */}
+                          <Pill className="text-[10px] hidden sm:inline-flex">
+                            {getModelLabel(v.modelId || modelId)}
+                          </Pill>
                           <Pill
                             tone={qualityTone(v.score)}
                             className="text-[10px]"
@@ -1210,6 +1223,7 @@ function App() {
                             {v.score != null ? v.score : "–"}
                           </Pill>
                         </div>
+
                       </div>
 
                       <div className="flex items-center justify-between gap-2">
