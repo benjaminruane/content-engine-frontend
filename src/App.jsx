@@ -435,47 +435,6 @@ function App() {
       return;
     }
 
-  const handleAnalyseStatements = async () => {
-    if (!currentVersion || !currentVersion.text) {
-      showToast("No draft to analyse");
-      return;
-    }
-
-    try {
-      setIsAnalysingStatements(true);
-      setStatementAnalysis(null);
-
-      const payload = {
-        text: currentVersion.text,
-        scenario,
-        versionType,
-      };
-
-      const data = await callBackend("/api/analyse-statements", payload);
-
-      if (!data || !Array.isArray(data.statements)) {
-        showToast("No statement analysis returned");
-        return;
-      }
-
-      setStatementAnalysis({
-        versionId: currentVersion.id,
-        statements: data.statements,
-      });
-    } catch (e) {
-      console.error("Error analysing statements", e);
-      const msg =
-        e && e.message
-          ? e.message
-          : "Error analysing statements";
-      showToast(
-        msg.length > 160 ? msg.slice(0, 157) + "..." : msg
-      );
-    } finally {
-      setIsAnalysingStatements(false);
-    }
-  };
-    
     const textPayload = draftText && draftText.trim();
     if (!textPayload) {
       showToast("Nothing to rewrite");
@@ -519,7 +478,6 @@ function App() {
 
       if (!out) {
         showToast("No rewrite returned from backend");
-        setIsRewriting(false);
         return;
       }
 
@@ -533,15 +491,14 @@ function App() {
         url: s.kind === "url" ? s.name : null,
       }));
 
-            const newVersion = {
-
+      const newVersion = {
         id,
         versionNumber: existingMax + 1,
         createdAt: now.toISOString(),
         title: title || currentVersion?.title || "Untitled",
         scenario,
         versionType,
-        modelId, // store the model used
+        modelId,
         outputType: baseOutputType,
         text: out.text,
         score: out.score,
@@ -549,12 +506,11 @@ function App() {
         sources: versionSources,
       };
 
-
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(id);
       setDraftText(out.text);
       showToast("Rewrite completed");
-        } catch (e) {
+    } catch (e) {
       console.error("Error rewriting", e);
       const msg = e && e.message ? e.message : "Error rewriting draft";
       showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
@@ -563,11 +519,49 @@ function App() {
     }
   };
 
+  const handleAnalyseStatements = async () => {
+    if (!currentVersion || !currentVersion.text) {
+      showToast("No draft to analyse");
+      return;
+    }
 
-const handleSelectVersion = (id) => {
-  setCurrentVersionId(id);
-  setStatementAnalysis(null);
-};
+    try {
+      setIsAnalysingStatements(true);
+      setStatementAnalysis(null);
+
+      const payload = {
+        text: currentVersion.text,
+        scenario,
+        versionType,
+      };
+
+      // NOTE: callBackend already prefixes apiBaseUrl, so no "/api" here
+      const data = await callBackend("analyse-statements", payload);
+
+      if (!data || !Array.isArray(data.statements)) {
+        showToast("No statement analysis returned");
+        return;
+      }
+
+      setStatementAnalysis({
+        versionId: currentVersion.id,
+        statements: data.statements,
+      });
+    } catch (e) {
+      console.error("Error analysing statements", e);
+      const msg =
+        e && e.message ? e.message : "Error analysing statements";
+      showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
+    } finally {
+      setIsAnalysingStatements(false);
+    }
+  };
+
+  const handleSelectVersion = (id) => {
+    setSelectedVersionId(id);
+    setStatementAnalysis(null);
+  };
+
 
   const handleDeleteVersion = (id) => {
     setVersions((prev) => {
