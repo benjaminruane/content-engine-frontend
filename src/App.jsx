@@ -794,14 +794,14 @@ function App() {
                               {meta}
                             </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSource(idx)}
-                            className="text-[10px] text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full px-2 py-0.5"
-                            aria-label={`Remove source ${s.name}`}
-                          >
-                            ×
-                          </button>
+<button
+  type="button"
+  onClick={() => handleRemoveSource(idx)}
+  className="text-[14px] font-bold text-red-500 hover:text-white hover:bg-red-600 rounded-full px-2 py-0.5 transition"
+  aria-label={`Remove source ${s.name}`}
+>
+  ×
+</button>
                         </li>
                       );
                     })}
