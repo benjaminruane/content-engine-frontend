@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
- 
+  
 function Button({ variant = "default", className = "", children, ...props }) {
   const base =
     "inline-flex items-center justify-center rounded-xl text-sm font-medium px-3 py-2 transition active:scale-[.98] focus:outline-none focus:ring-2 focus:ring-offset-1";
