@@ -373,7 +373,7 @@ function App() {
         maxWords: numericMaxWords,
       };
 
-      const data = await callBackend("generate", payload);
+            const data = await callBackend("generate", payload);
 
       const outputs = Array.isArray(data.outputs) ? data.outputs : [];
       if (!outputs.length) {
@@ -382,16 +382,38 @@ function App() {
         return;
       }
 
+      // New: public sources coming back from the backend (stub for now)
+      const publicSources =
+        Array.isArray(data.publicSources) ? data.publicSources : [];
+
       const now = new Date();
-      const versionSources = sources.map((s) => ({
+
+      // Uploaded / manual sources
+      const uploadedSources = sources.map((s) => ({
         name: s.name,
-        kind: s.kind,
+        kind: s.kind, // "file" | "url" | undefined -> treated as "text" later
         size: s.size ?? null,
         textLength: s.text ? s.text.length : 0,
-        url: s.kind === "url" ? s.url || s.name : null,
+        url: s.kind === "url" ? s.name : null,
       }));
 
+      // Public-domain sources (future: real web / knowledge-base retrieval)
+      const publicSourcesForVersion = publicSources.map((ps, idx) => ({
+        name: ps.title || ps.url || `Public source ${idx + 1}`,
+        kind: "public",
+        size: null,
+        textLength:
+          typeof ps.textLength === "number" ? ps.textLength : null,
+        url: ps.url || null,
+      }));
+
+      const versionSources = [
+        ...uploadedSources,
+        ...publicSourcesForVersion,
+      ];
+
       const newVersions = outputs.map((o, idx) => {
+
         const id = `${now.getTime()}-${idx}`;
         return {
           id,
