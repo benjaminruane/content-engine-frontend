@@ -276,6 +276,7 @@ function App() {
           text: data.text,
           size: null,
           kind: "url",
+          url: data.url || trimmed,
         },
       ]);
       setUrlInput("");
@@ -289,7 +290,7 @@ function App() {
   const handleRemoveSource = (indexToRemove) => {
     setSources((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
-  
+
   const toggleType = (id) => {
     setSelectedTypes((prev) => {
       if (prev.includes(id)) {
@@ -387,7 +388,7 @@ function App() {
         kind: s.kind,
         size: s.size ?? null,
         textLength: s.text ? s.text.length : 0,
-        url: s.kind === "url" ? s.name : null,
+        url: s.kind === "url" ? s.url || s.name : null,
       }));
 
       const newVersions = outputs.map((o, idx) => {
@@ -399,7 +400,7 @@ function App() {
           title: title || "Untitled",
           scenario,
           versionType,
-          modelId, // store the model used
+          modelId,
           outputType: o.outputType,
           text: o.text,
           score: o.score,
@@ -407,7 +408,6 @@ function App() {
           sources: versionSources,
         };
       });
-
 
       setVersions((prev) => [...prev, ...newVersions]);
       const primary = newVersions[0];
@@ -418,16 +418,14 @@ function App() {
       setCanGenerate(false);
 
       showToast("Draft generated");
-        } catch (e) {
+    } catch (e) {
       console.error("Error generating", e);
       const msg = e && e.message ? e.message : "Error generating draft";
-      // Show a helpful message but keep it short
       showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
     } finally {
       setIsGenerating(false);
     }
   };
-
 
   const handleRewrite = async () => {
     if (!apiBaseUrl) {
@@ -478,6 +476,7 @@ function App() {
 
       if (!out) {
         showToast("No rewrite returned from backend");
+        setIsRewriting(false);
         return;
       }
 
@@ -488,7 +487,7 @@ function App() {
         kind: s.kind,
         size: s.size ?? null,
         textLength: s.text ? s.text.length : 0,
-        url: s.kind === "url" ? s.name : null,
+        url: s.kind === "url" ? s.url || s.name : null,
       }));
 
       const newVersion = {
@@ -535,18 +534,23 @@ function App() {
         versionType,
       };
 
-      // NOTE: callBackend already prefixes apiBaseUrl, so no "/api" here
       const data = await callBackend("analyse-statements", payload);
 
-      if (!data || !Array.isArray(data.statements)) {
-        showToast("No statement analysis returned");
-        return;
-      }
+      const statements = Array.isArray(data?.statements)
+        ? data.statements
+        : [];
+      const summary =
+        data && typeof data.summary === "object" ? data.summary : null;
 
       setStatementAnalysis({
         versionId: currentVersion.id,
-        statements: data.statements,
+        statements,
+        summary,
       });
+
+      if (!statements.length) {
+        showToast("No clearly extractable statements found");
+      }
     } catch (e) {
       console.error("Error analysing statements", e);
       const msg =
@@ -561,7 +565,6 @@ function App() {
     setSelectedVersionId(id);
     setStatementAnalysis(null);
   };
-
 
   const handleDeleteVersion = (id) => {
     setVersions((prev) => {
@@ -768,7 +771,7 @@ function App() {
                       {sources.length > 1 ? "s" : ""}
                     </div>
                   </div>
-                                    <ul className="space-y-1 text-xs text-slate-700">
+                  <ul className="space-y-1 text-xs text-slate-700">
                     {sources.map((s, idx) => {
                       let meta = "";
                       if (s.kind === "file") {
@@ -789,19 +792,30 @@ function App() {
                           className="flex items-center justify-between gap-2"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="truncate">{s.name}</span>
+                            {s.kind === "url" && (s.url || s.name) ? (
+                              <a
+                                href={s.url || s.name}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="truncate text-sky-600 hover:underline"
+                              >
+                                {s.name}
+                              </a>
+                            ) : (
+                              <span className="truncate">{s.name}</span>
+                            )}
                             <span className="text-[10px] text-slate-500 shrink-0">
                               {meta}
                             </span>
                           </div>
-<button
-  type="button"
-  onClick={() => handleRemoveSource(idx)}
-  className="text-[14px] font-bold text-red-500 hover:text-white hover:bg-red-600 rounded-full px-2 py-0.5 transition"
-  aria-label={`Remove source ${s.name}`}
->
-  ×
-</button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSource(idx)}
+                            className="text-[14px] font-bold text-red-500 hover:text-white hover:bg-red-600 rounded-full px-2 py-0.5 transition"
+                            aria-label={`Remove source ${s.name}`}
+                          >
+                            ×
+                          </button>
                         </li>
                       );
                     })}
@@ -1081,23 +1095,22 @@ function App() {
                   Version type
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { id: "complete", label: "Complete (internal)" },
-                    { id: "public", label: "Public-facing" },
-                  ].map((opt) => (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setVersionType(opt.id)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
-                        versionType === opt.id
-                          ? "bg-black text-white border-black"
-                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+                  {[{ id: "complete", label: "Complete (internal)" }, { id: "public", label: "Public-facing" }].map(
+                    (opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setVersionType(opt.id)}
+                        className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                          versionType === opt.id
+                            ? "bg-black text-white border-black"
+                            : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  )}
                 </div>
                 <p className="mt-1 text-[11px] text-slate-500">
                   Complete versions follow the full internal brief. Public
@@ -1304,6 +1317,58 @@ function App() {
                   </Button>
                 </div>
 
+                {/* Summary strip */}
+                {statementAnalysis &&
+                  statementAnalysis.versionId === currentVersion?.id && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+                        <span>
+                          {statementAnalysis.summary?.totalStatements ??
+                            statementAnalysis.statements?.length ??
+                            0}{" "}
+                          statements analysed
+                        </span>
+                        {typeof statementAnalysis.summary?.lowReliabilityCount ===
+                          "number" &&
+                          statementAnalysis.summary.lowReliabilityCount > 0 && (
+                            <span>
+                              •{" "}
+                              {
+                                statementAnalysis.summary.lowReliabilityCount
+                              }{" "}
+                              flagged as low reliability
+                            </span>
+                          )}
+                      </div>
+                      {typeof statementAnalysis.summary
+                        ?.averageReliability === "number" && (
+                        <Pill
+                          tone={
+                            statementAnalysis.summary.reliabilityBand === "high"
+                              ? "success"
+                              : statementAnalysis.summary.reliabilityBand ===
+                                "medium"
+                              ? "warning"
+                              : statementAnalysis.summary.reliabilityBand ===
+                                "low"
+                              ? "danger"
+                              : "neutral"
+                          }
+                          className="text-[10px]"
+                        >
+                          Overall reliability:{" "}
+                          {Math.round(
+                            statementAnalysis.summary.averageReliability * 100
+                          )}
+                          %
+                          {statementAnalysis.summary.reliabilityBand &&
+                            ` (${statementAnalysis.summary.reliabilityBand})`}
+                        </Pill>
+                      )}
+                    </div>
+                  )}
+
+                {/* Table */}
                 {statementAnalysis &&
                   statementAnalysis.versionId === currentVersion?.id &&
                   Array.isArray(statementAnalysis.statements) &&
@@ -1327,32 +1392,58 @@ function App() {
                           </tr>
                         </thead>
                         <tbody>
-                          {statementAnalysis.statements.map((st, idx) => (
-                            <tr
-                              key={st.id ?? idx}
-                              className="border-t border-slate-200 align-top"
-                            >
-                              <td className="px-2 py-1 text-slate-500">
-                                {idx + 1}
-                              </td>
-                              <td className="px-2 py-1">
-                                {st.text}
-                              </td>
-                              <td className="px-2 py-1 text-slate-600">
-                                {typeof st.reliability === "number"
-                                  ? `${Math.round(st.reliability * 100)}%`
-                                  : "–"}
-                              </td>
-                              <td className="px-2 py-1 text-slate-600">
-                                {st.category || "–"}
-                              </td>
-                            </tr>
-                          ))}
+                          {statementAnalysis.statements.map((st, idx) => {
+                            const rel =
+                              typeof st.reliability === "number"
+                                ? st.reliability
+                                : null;
+                            const relPct =
+                              rel != null ? Math.round(rel * 100) : null;
+                            const isLow = rel != null && rel < 0.6;
+
+                            return (
+                              <tr
+                                key={st.id ?? idx}
+                                className={`border-t border-slate-200 align-top ${
+                                  isLow ? "bg-red-50/40" : ""
+                                }`}
+                              >
+                                <td className="px-2 py-1 text-slate-500 align-top">
+                                  {idx + 1}
+                                </td>
+                                <td className="px-2 py-1 align-top">
+                                  {st.text}
+                                </td>
+                                <td className="px-2 py-1 text-slate-600 align-top">
+                                  {relPct != null ? (
+                                    <span
+                                      className={
+                                        isLow
+                                          ? "text-red-600 font-medium"
+                                          : ""
+                                      }
+                                    >
+                                      {relPct}%{" "}
+                                      {isLow && (
+                                        <span className="ml-1">⚠</span>
+                                      )}
+                                    </span>
+                                  ) : (
+                                    "–"
+                                  )}
+                                </td>
+                                <td className="px-2 py-1 text-slate-600 align-top">
+                                  {st.category || "–"}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
                   )}
 
+                {/* No statements message */}
                 {statementAnalysis &&
                   statementAnalysis.versionId === currentVersion?.id &&
                   Array.isArray(statementAnalysis.statements) &&
@@ -1362,7 +1453,7 @@ function App() {
                     </p>
                   )}
               </div>
-              
+
               <div className="space-y-2 pt-1">
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
                   Rewrite instructions (optional)
@@ -1453,7 +1544,6 @@ function App() {
                           <Pill className="text-[10px]">
                             {wordCount} words
                           </Pill>
-                          {/* Show the model used for this version */}
                           <Pill className="text-[10px] hidden sm:inline-flex">
                             {getModelLabel(v.modelId || modelId)}
                           </Pill>
@@ -1465,7 +1555,6 @@ function App() {
                             {v.score != null ? v.score : "–"}
                           </Pill>
                         </div>
-
                       </div>
 
                       <div className="flex items-center justify-between gap-2">
