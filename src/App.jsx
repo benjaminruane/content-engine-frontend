@@ -379,7 +379,15 @@ function App() {
       }
 
       const now = new Date();
-            const newVersions = outputs.map((o, idx) => {
+      const versionSources = sources.map((s) => ({
+        name: s.name,
+        kind: s.kind,
+        size: s.size ?? null,
+        textLength: s.text ? s.text.length : 0,
+        url: s.kind === "url" ? s.name : null,
+      }));
+
+      const newVersions = outputs.map((o, idx) => {
         const id = `${now.getTime()}-${idx}`;
         return {
           id,
@@ -393,6 +401,7 @@ function App() {
           text: o.text,
           score: o.score,
           metrics: o.metrics || {},
+          sources: versionSources,
         };
       });
 
@@ -472,8 +481,16 @@ function App() {
 
       const now = new Date();
       const id = `${now.getTime()}-rw`;
+      const versionSources = sources.map((s) => ({
+        name: s.name,
+        kind: s.kind,
+        size: s.size ?? null,
+        textLength: s.text ? s.text.length : 0,
+        url: s.kind === "url" ? s.name : null,
+      }));
 
             const newVersion = {
+
         id,
         versionNumber: existingMax + 1,
         createdAt: now.toISOString(),
@@ -485,6 +502,7 @@ function App() {
         text: out.text,
         score: out.score,
         metrics: out.metrics || {},
+        sources: versionSources,
       };
 
 
@@ -1139,7 +1157,99 @@ function App() {
                     Download .txt
                   </Button>
                 </div>
+
+                <div className="flex-1 text-right text-[11px] text-slate-500">
+                  You can rewrite this draft using the current version type
+                  setting (Complete vs Public-facing).
+                </div>
               </div>
+
+              {/* Sources table for current version */}
+              {currentVersion && (currentVersion.sources || sources).length > 0 && (
+                <div className="border-t border-slate-200 pt-3 mt-2">
+                  <div className="text-xs font-semibold text-slate-700 mb-1">
+                    Sources for this version
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="px-2 py-1 text-left font-medium text-slate-600">
+                            Source
+                          </th>
+                          <th className="px-2 py-1 text-left font-medium text-slate-600">
+                            Type
+                          </th>
+                          <th className="px-2 py-1 text-left font-medium text-slate-600">
+                            Approx. length
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(currentVersion.sources || sources).map((s, idx) => {
+                          const kind = s.kind || "text";
+                          const isUrl = kind === "url";
+                          const url = s.url || (isUrl ? s.name : null);
+
+                          let lengthLabel = "";
+                          if (kind === "file" && s.size != null) {
+                            lengthLabel = `${Math.max(
+                              1,
+                              Math.round(s.size / 1024)
+                            )} KB`;
+                          } else if (s.text) {
+                            const len = s.text.length;
+                            const k = Math.max(1, Math.round(len / 1000));
+                            lengthLabel = `~${k}k chars`;
+                          } else if (typeof s.textLength === "number") {
+                            const k = Math.max(
+                              1,
+                              Math.round(s.textLength / 1000)
+                            );
+                            lengthLabel = `~${k}k chars`;
+                          } else {
+                            lengthLabel = "n/a";
+                          }
+
+                          return (
+                            <tr
+                              key={`${s.name || "src"}-${idx}`}
+                              className="border-t border-slate-200"
+                            >
+                              <td className="px-2 py-1 align-top">
+                                {isUrl && url ? (
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-sky-600 hover:underline break-all"
+                                  >
+                                    {s.name}
+                                  </a>
+                                ) : (
+                                  <span className="break-all">
+                                    {s.name || "(unnamed source)"}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-2 py-1 align-top text-slate-600">
+                                {kind === "file"
+                                  ? "File"
+                                  : kind === "url"
+                                  ? "URL"
+                                  : "Text"}
+                              </td>
+                              <td className="px-2 py-1 align-top text-slate-600">
+                                {lengthLabel}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2 pt-1">
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
