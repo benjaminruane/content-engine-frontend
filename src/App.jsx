@@ -1585,21 +1585,29 @@ function App() {
                           v{versionNumber} ·{" "}
                           <span className="capitalize">{outputLabel}</span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Pill className="text-[10px]">
-                            {wordCount} words
-                          </Pill>
-                          <Pill className="text-[10px] hidden sm:inline-flex">
-                            {getModelLabel(v.modelId || modelId)}
-                          </Pill>
-                          <Pill
-                            tone={qualityTone(v.score)}
-                            className="text-[10px]"
-                          >
-                            Score (proto):{" "}
-                            {v.score != null ? v.score : "–"}
-                          </Pill>
-                        </div>
+                          <div className="flex items-center gap-2 shrink-0">
+    <Pill className="text-[10px]">
+      {wordCount} words
+    </Pill>
+
+    {/* Version type: Complete vs Public-facing */}
+    <Pill className="text-[10px] capitalize">
+      {v.versionType === "public" ? "Public-facing" : "Complete"}
+    </Pill>
+
+    {/* Show the model used for this version */}
+    <Pill className="text-[10px] hidden sm:inline-flex">
+      {getModelLabel(v.modelId || modelId)}
+    </Pill>
+
+    <Pill
+      tone={qualityTone(v.score)}
+      className="text-[10px]"
+    >
+      Score (proto): {v.score != null ? v.score : "–"}
+    </Pill>
+  </div>
+
                       </div>
 
                       <div className="flex items-center justify-between gap-2">
