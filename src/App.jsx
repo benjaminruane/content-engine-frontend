@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
  
 function Button({ variant = "default", className = "", children, ...props }) {
   const base =
@@ -173,6 +173,13 @@ function App() {
 
   const [statementAnalysis, setStatementAnalysis] = useState(null);
   const [isAnalysingStatements, setIsAnalysingStatements] = useState(false);
+
+   // Whenever the selected version, scenario, or version type changes,
+  // clear any existing statement analysis (it may no longer be valid).
+  useEffect(() => {
+    setStatementAnalysis(null);
+  }, [selectedVersionId, scenario, versionType]);
+
 
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -484,11 +491,13 @@ function App() {
         notes: rewriteNotes,
         outputType: baseOutputType,
         scenario,
+        versionType, // important: complete vs public
         modelId,
         temperature,
         maxTokens,
         maxWords: numericMaxWords,
       };
+
 
       const data = await callBackend("rewrite", payload);
       const out =
@@ -583,10 +592,21 @@ function App() {
     }
   };
 
-  const handleSelectVersion = (id) => {
+    const handleSelectVersion = (id) => {
+    const v = versions.find((ver) => ver.id === id) || null;
+
     setSelectedVersionId(id);
+    setDraftText(v ? v.text : "");
+
+    // When you pick a version, reflect its version type in the controls
+    if (v && v.versionType) {
+      setVersionType(v.versionType);
+    }
+
+    // Any existing analysis is now stale
     setStatementAnalysis(null);
   };
+
 
   const handleDeleteVersion = (id) => {
     setVersions((prev) => {
