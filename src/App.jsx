@@ -171,6 +171,9 @@ function App() {
   const [versions, setVersions] = useState([]);
   const [selectedVersionId, setSelectedVersionId] = useState(null);
 
+  const [statementAnalysis, setStatementAnalysis] = useState(null);
+  const [isAnalysingStatements, setIsAnalysingStatements] = useState(false);
+
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
@@ -432,6 +435,47 @@ function App() {
       return;
     }
 
+  const handleAnalyseStatements = async () => {
+    if (!currentVersion || !currentVersion.text) {
+      showToast("No draft to analyse");
+      return;
+    }
+
+    try {
+      setIsAnalysingStatements(true);
+      setStatementAnalysis(null);
+
+      const payload = {
+        text: currentVersion.text,
+        scenario,
+        versionType,
+      };
+
+      const data = await callBackend("/api/analyse-statements", payload);
+
+      if (!data || !Array.isArray(data.statements)) {
+        showToast("No statement analysis returned");
+        return;
+      }
+
+      setStatementAnalysis({
+        versionId: currentVersion.id,
+        statements: data.statements,
+      });
+    } catch (e) {
+      console.error("Error analysing statements", e);
+      const msg =
+        e && e.message
+          ? e.message
+          : "Error analysing statements";
+      showToast(
+        msg.length > 160 ? msg.slice(0, 157) + "..." : msg
+      );
+    } finally {
+      setIsAnalysingStatements(false);
+    }
+  };
+    
     const textPayload = draftText && draftText.trim();
     if (!textPayload) {
       showToast("Nothing to rewrite");
@@ -520,11 +564,10 @@ function App() {
   };
 
 
-  const handleSelectVersion = (id) => {
-    setSelectedVersionId(id);
-    const v = versions.find((v) => v.id === id);
-    if (v) setDraftText(v.text);
-  };
+const handleSelectVersion = (id) => {
+  setCurrentVersionId(id);
+  setStatementAnalysis(null);
+};
 
   const handleDeleteVersion = (id) => {
     setVersions((prev) => {
@@ -1251,6 +1294,81 @@ function App() {
                 </div>
               )}
 
+              {/* Statement reliability analysis */}
+              <div className="border-t border-slate-200 pt-3 mt-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-semibold text-slate-700">
+                    Statement reliability (beta)
+                  </div>
+                  <Button
+                    variant="quiet"
+                    className="text-[11px]"
+                    onClick={handleAnalyseStatements}
+                    disabled={isAnalysingStatements}
+                  >
+                    {isAnalysingStatements ? "Analysing…" : "Analyse statements"}
+                  </Button>
+                </div>
+
+                {statementAnalysis &&
+                  statementAnalysis.versionId === currentVersion?.id &&
+                  Array.isArray(statementAnalysis.statements) &&
+                  statementAnalysis.statements.length > 0 && (
+                    <div className="overflow-x-auto max-h-56">
+                      <table className="min-w-full border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-8">
+                              #
+                            </th>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                              Statement
+                            </th>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-24">
+                              Reliability
+                            </th>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-32">
+                              Category
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {statementAnalysis.statements.map((st, idx) => (
+                            <tr
+                              key={st.id ?? idx}
+                              className="border-t border-slate-200 align-top"
+                            >
+                              <td className="px-2 py-1 text-slate-500">
+                                {idx + 1}
+                              </td>
+                              <td className="px-2 py-1">
+                                {st.text}
+                              </td>
+                              <td className="px-2 py-1 text-slate-600">
+                                {typeof st.reliability === "number"
+                                  ? `${Math.round(st.reliability * 100)}%`
+                                  : "–"}
+                              </td>
+                              <td className="px-2 py-1 text-slate-600">
+                                {st.category || "–"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                {statementAnalysis &&
+                  statementAnalysis.versionId === currentVersion?.id &&
+                  Array.isArray(statementAnalysis.statements) &&
+                  statementAnalysis.statements.length === 0 && (
+                    <p className="text-[11px] text-slate-500">
+                      No clearly extractable statements were found to analyse.
+                    </p>
+                  )}
+              </div>
+              
               <div className="space-y-2 pt-1">
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
                   Rewrite instructions (optional)
