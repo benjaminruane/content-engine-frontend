@@ -20,7 +20,7 @@ function Button({ variant = "default", className = "", children, ...props }) {
   const variantClass = isDisabled
     ? "bg-slate-200 border border-slate-300 text-slate-500 cursor-not-allowed opacity-80"
     : variants[variant] || variants.default;
-
+ 
   return (
     <button className={`${base} ${variantClass} ${className}`} {...props}>
       {children}
