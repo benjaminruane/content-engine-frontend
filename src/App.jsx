@@ -283,6 +283,10 @@ function App() {
     }
   };
 
+  const handleRemoveSource = (indexToRemove) => {
+    setSources((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+  
   const toggleType = (id) => {
     setSelectedTypes((prev) => {
       if (prev.includes(id)) {
@@ -709,7 +713,7 @@ function App() {
                       {sources.length > 1 ? "s" : ""}
                     </div>
                   </div>
-                  <ul className="space-y-1 text-xs text-slate-700">
+                                    <ul className="space-y-1 text-xs text-slate-700">
                     {sources.map((s, idx) => {
                       let meta = "";
                       if (s.kind === "file") {
@@ -723,15 +727,26 @@ function App() {
                       } else {
                         meta = "source";
                       }
+
                       return (
                         <li
                           key={`${s.name}-${idx}`}
                           className="flex items-center justify-between gap-2"
                         >
-                          <span className="truncate">{s.name}</span>
-                          <span className="text-[10px] text-slate-500">
-                            {meta}
-                          </span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="truncate">{s.name}</span>
+                            <span className="text-[10px] text-slate-500 shrink-0">
+                              {meta}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSource(idx)}
+                            className="text-[10px] text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full px-2 py-0.5"
+                            aria-label={`Remove source ${s.name}`}
+                          >
+                            ×
+                          </button>
                         </li>
                       );
                     })}
@@ -1130,6 +1145,10 @@ function App() {
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
                   Rewrite instructions (optional)
                 </label>
+                <p className="text-[11px] text-slate-500">
+                  This rewrite will use the current "{versionType}" setting in
+                  the controls above (Complete vs Public-facing).
+                </p>
                 <TextArea
                   rows={3}
                   value={rewriteNotes}
@@ -1137,6 +1156,7 @@ function App() {
                   placeholder="e.g. Shorten, make tone more neutral, add risk disclosure..."
                 />
               </div>
+
               <div className="flex justify-end gap-2 pt-1">
                 <Button
                   variant="default"
