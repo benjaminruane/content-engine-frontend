@@ -1258,9 +1258,9 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {(currentVersion.sources || sources).map((s, idx) => {
+                      {(currentVersion.sources || sources).map((s, idx) => {
                           const kind = s.kind || "text";
-                          const isUrl = kind === "url";
+                          const isUrl = kind === "url" || kind === "public";
                           const url = s.url || (isUrl ? s.name : null);
 
                           let lengthLabel = "";
@@ -1285,6 +1285,7 @@ function App() {
 
                           return (
                             <tr
+
                               key={`${s.name || "src"}-${idx}`}
                               className="border-t border-slate-200"
                             >
@@ -1309,6 +1310,8 @@ function App() {
                                   ? "File"
                                   : kind === "url"
                                   ? "URL"
+                                  : kind === "public"
+                                  ? "Public source"
                                   : "Text"}
                               </td>
                               <td className="px-2 py-1 align-top text-slate-600">
