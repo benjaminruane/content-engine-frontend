@@ -511,6 +511,7 @@ function App() {
         temperature,
         maxTokens,
         maxWords: numericMaxWords,
+        publicSearch, // honours the toggle for rewrites
       };
 
 
