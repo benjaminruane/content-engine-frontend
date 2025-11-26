@@ -1138,7 +1138,7 @@ function App() {
                   Version type
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {[{ id: "complete", label: "Complete (internal)" }, { id: "public", label: "Public-facing" }].map(
+                    {[{ id: "complete", label: "Complete" }, { id: "public", label: "Public" }].map(
                     (opt) => (
                       <button
                         key={opt.id}
@@ -1439,39 +1439,55 @@ function App() {
                           </tr>
                         </thead>
                         <tbody>
-                          {statementAnalysis.statements.map((st, idx) => {
+                                                    {statementAnalysis.statements.map((st, idx) => {
                             const rel =
                               typeof st.reliability === "number"
                                 ? st.reliability
                                 : null;
                             const relPct =
                               rel != null ? Math.round(rel * 100) : null;
-                            const isLow = rel != null && rel < 0.6;
+
+                            let relBand = null;
+                            if (relPct != null) {
+                              if (relPct >= 90) relBand = "high";
+                              else if (relPct >= 75) relBand = "medium";
+                              else relBand = "low";
+                            }
+
+                            const rowHighlight =
+                              relBand === "low"
+                                ? "bg-red-50/40"
+                                : relBand === "medium"
+                                ? "bg-amber-50/30"
+                                : "";
 
                             return (
                               <tr
                                 key={st.id ?? idx}
-                                className={`border-t border-slate-200 align-top ${
-                                  isLow ? "bg-red-50/40" : ""
-                                }`}
+                                className={`border-t border-slate-200 align-top ${rowHighlight}`}
                               >
+
                                 <td className="px-2 py-1 text-slate-500 align-top">
                                   {idx + 1}
                                 </td>
                                 <td className="px-2 py-1 align-top">
                                   {st.text}
                                 </td>
-                                <td className="px-2 py-1 text-slate-600 align-top">
+                                                                <td className="px-2 py-1 text-slate-600 align-top">
                                   {relPct != null ? (
                                     <span
                                       className={
-                                        isLow
+                                        relBand === "low"
                                           ? "text-red-600 font-medium"
+                                          : relBand === "medium"
+                                          ? "text-amber-700 font-medium"
+                                          : relBand === "high"
+                                          ? "text-emerald-700 font-medium"
                                           : ""
                                       }
                                     >
                                       {relPct}%{" "}
-                                      {isLow && (
+                                      {relBand === "low" && (
                                         <span className="ml-1">⚠</span>
                                       )}
                                     </span>
@@ -1482,6 +1498,13 @@ function App() {
                                 <td className="px-2 py-1 text-slate-600 align-top">
                                   {st.category || "–"}
                                 </td>
+                                <td className="px-2 py-1 text-slate-600 align-top">
+                                  {relBand === "high"
+                                    ? "–"
+                                    : st.implication ||
+                                      "Consider reviewing or softening this statement."}
+                                </td>
+
                               </tr>
                             );
                           })}
@@ -1591,9 +1614,9 @@ function App() {
                           <Pill className="text-[10px]">
                             {wordCount} words
                           </Pill>
-                          <Pill className="text-[10px] capitalize">
+                           <Pill className="text-[10px] capitalize">
                             {v.versionType === "public"
-                              ? "Public-facing"
+                              ? "Public"
                               : "Complete"}
                           </Pill>
                           <Pill
