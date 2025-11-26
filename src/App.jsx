@@ -148,6 +148,9 @@ function App() {
   const [notes, setNotes] = useState("");
   const [rawText, setRawText] = useState("");
 
+  const [instructionsApplied, setInstructionsApplied] = useState(false);
+  const [rewriteInstructionsApplied, setRewriteInstructionsApplied] = useState(false);
+
   const [scenario, setScenario] = useState("new_investment");
   const [selectedTypes, setSelectedTypes] = useState(["transaction_text"]);
   const [versionType, setVersionType] = useState("complete");
@@ -381,7 +384,10 @@ function App() {
         maxWords: numericMaxWords,
       };
 
-            const data = await callBackend("generate", payload);
+      const data = await callBackend("generate", payload);
+
+      // Mark instructions as applied after a successful generate call
+      setInstructionsApplied(true);
 
       const outputs = Array.isArray(data.outputs) ? data.outputs : [];
       if (!outputs.length) {
@@ -501,6 +507,10 @@ function App() {
 
 
       const data = await callBackend("rewrite", payload);
+
+      // Mark rewrite instructions as applied after a successful rewrite call
+      setRewriteInstructionsApplied(true);
+       
       const out =
         Array.isArray(data.outputs) && data.outputs[0]
           ? data.outputs[0]
@@ -780,17 +790,25 @@ function App() {
                 </p>
               </div>
 
-              <div>
+                            <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
                   Instructions / constraints
                 </label>
-                <TextArea
-                  rows={3}
+                <textarea
+                  className={
+                    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                    (instructionsApplied ? "text-slate-400" : "text-slate-800")
+                  }
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Key messages, must-include points, audience notes..."
+                  onChange={(e) => {
+                    setNotes(e.target.value);
+                    // User is editing -> treat as fresh instructions
+                    setInstructionsApplied(false);
+                  }}
+                  placeholder="Add instructions and constraints for this output..."
                 />
               </div>
+
             </CardBody>
           </Card>
 
@@ -1431,15 +1449,10 @@ function App() {
                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-64">
                              Implication
                            </th>
-                             
-<th className="px-2 py-1 text-left font-medium text-slate-600 w-64">
-  Implication
-</th>
-
                           </tr>
                         </thead>
                         <tbody>
-                                                    {statementAnalysis.statements.map((st, idx) => {
+                         {statementAnalysis.statements.map((st, idx) => {
                             const rel =
                               typeof st.reliability === "number"
                                 ? st.reliability
@@ -1473,7 +1486,7 @@ function App() {
                                 <td className="px-2 py-1 align-top">
                                   {st.text}
                                 </td>
-                                                                <td className="px-2 py-1 text-slate-600 align-top">
+                                 <td className="px-2 py-1 text-slate-600 align-top">
                                   {relPct != null ? (
                                     <span
                                       className={
@@ -1532,13 +1545,22 @@ function App() {
                   This rewrite will use the current "{versionType}" setting in
                   the controls above (Complete vs Public-facing).
                 </p>
-                <TextArea
-                  rows={3}
-                  value={rewriteNotes}
-                  onChange={(e) => setRewriteNotes(e.target.value)}
-                  placeholder="e.g. Shorten, make tone more neutral, add risk disclosure..."
-                />
-              </div>
+               
+               <textarea
+                 className={
+                   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                   (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
+                 }
+                 value={rewriteNotes}
+                 onChange={(e) => {
+                   setRewriteNotes(e.target.value);
+                   // As soon as the user types, this is a new set of instructions
+                   setRewriteInstructionsApplied(false);
+                 }}
+                 placeholder="Tell the AI how to revise this version..."
+               />
+
+
 
               <div className="flex justify-end gap-2 pt-1">
                 <Button
