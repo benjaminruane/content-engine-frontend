@@ -403,13 +403,14 @@ function App() {
       const now = new Date();
 
       // Uploaded / manual sources
-      const uploadedSources = sources.map((s) => ({
+       const uploadedSources = sources.map((s) => ({
         name: s.name,
         kind: s.kind, // "file" | "url" | undefined -> treated as "text" later
         size: s.size ?? null,
         textLength: s.text ? s.text.length : 0,
-        url: s.kind === "url" ? s.name : null,
+        url: s.kind === "url" ? s.url || s.name : null,
       }));
+
 
       // Public-domain sources (future: real web / knowledge-base retrieval)
       const publicSourcesForVersion = publicSources.map((ps, idx) => ({
@@ -662,7 +663,7 @@ function App() {
     showToast("Draft downloaded");
   };
 
-  const handleNewOutput = () => {
+    const handleNewOutput = () => {
     setTitle("");
     setNotes("");
     setRawText("");
@@ -682,8 +683,14 @@ function App() {
 
     setCanGenerate(true);
 
+    // Reset analysis and instruction state for a clean session
+    setStatementAnalysis(null);
+    setInstructionsApplied(false);
+    setRewriteInstructionsApplied(false);
+
     showToast("New output session started");
   };
+
 
   const sortedVersions = [...versions].sort((a, b) => {
     const av = a.versionNumber || 0;
