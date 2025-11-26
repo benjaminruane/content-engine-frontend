@@ -179,10 +179,11 @@ function App() {
 
    // Whenever the selected version, scenario, or version type changes,
   // clear any existing statement analysis (it may no longer be valid).
-  useEffect(() => {
+    useEffect(() => {
     setStatementAnalysis(null);
+    setQueryAnswer(null);
+    setQueryText("");
   }, [selectedVersionId, scenario, versionType]);
-
 
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -192,6 +193,10 @@ function App() {
 
   const [toast, setToast] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const [queryText, setQueryText] = useState("");
+  const [queryAnswer, setQueryAnswer] = useState(null);
+  const [isQuerying, setIsQuerying] = useState(false);
 
   const showToast = (message, duration = 2500) => {
     setToast(message);
@@ -561,6 +566,62 @@ function App() {
     }
   };
 
+  const handleAskQuery = async () => {
+    if (!apiBaseUrl) {
+      showToast("Set API base URL first");
+      return;
+    }
+
+    const question = queryText.trim();
+    if (!question) {
+      showToast("Enter a question first");
+      return;
+    }
+
+    const draft = currentVersion?.text || draftText;
+    if (!draft || !draft.trim()) {
+      showToast("No draft available to ask about");
+      return;
+    }
+
+    const sourcePayload = (currentVersion?.sources || sources).map((s) => ({
+      name: s.name || null,
+      kind: s.kind || "text",
+      url: s.url || null,
+      // send text if present; back-end will truncate as needed
+      text: s.text || null,
+    }));
+
+    setIsQuerying(true);
+    try {
+      const payload = {
+        question,
+        draftText: draft,
+        scenario,
+        versionType,
+        sources: sourcePayload,
+      };
+
+      const data = await callBackend("query", payload);
+
+      if (!data || !data.answer) {
+        showToast("No answer returned from backend");
+        setIsQuerying(false);
+        return;
+      }
+
+      setQueryAnswer(data.answer);
+      showToast("AI answered your question");
+    } catch (e) {
+      console.error("Error asking query", e);
+      const msg = e && e.message ? e.message : "Error answering question";
+      showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
+    } finally {
+      setIsQuerying(false);
+    }
+  };
+
+   
   const handleAnalyseStatements = async () => {
     if (!currentVersion || !currentVersion.text) {
       showToast("No draft to analyse");
@@ -1581,7 +1642,52 @@ function App() {
                   {isRewriting ? "Rewriting..." : "Rewrite draft"}
                 </Button>
               </div>
-             </div> 
+             </div>
+            {/* AI query box */}
+              <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-semibold text-slate-700">
+                    Ask a question about this draft or its sources
+                  </div>
+                  {queryAnswer && (
+                    <span className="text-[10px] text-slate-500">
+                      Latest answer shown below
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Example: “Is the revenue figure mentioned in paragraph three public
+                  information?” or “What exactly is meant by the leverage metric here?”
+                </p>
+
+                <TextArea
+                  rows={2}
+                  value={queryText}
+                  onChange={(e) => setQueryText(e.target.value)}
+                  placeholder="Type your question about this draft or its sources..."
+                />
+
+                <div className="flex justify-between items-center gap-2">
+                  <div className="text-[11px] text-slate-500">
+                    The AI will consider both the draft and the attached sources.
+                  </div>
+                  <Button
+                    variant="default"
+                    className="text-xs"
+                    onClick={handleAskQuery}
+                    disabled={isQuerying}
+                  >
+                    {isQuerying ? "Asking…" : "Ask AI"}
+                  </Button>
+                </div>
+
+                {queryAnswer && (
+                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                    <div className="font-medium mb-1">AI answer</div>
+                    <div className="whitespace-pre-wrap">{queryAnswer}</div>
+                  </div>
+                )}
+              </div>              
             </CardBody>
           </Card>
 
