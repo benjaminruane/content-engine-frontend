@@ -1578,6 +1578,7 @@ function App() {
                   {isRewriting ? "Rewriting..." : "Rewrite draft"}
                 </Button>
               </div>
+             </div> 
             </CardBody>
           </Card>
 
