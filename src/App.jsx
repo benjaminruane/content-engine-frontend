@@ -197,6 +197,8 @@ function App() {
   const [queryText, setQueryText] = useState("");
   const [queryAnswer, setQueryAnswer] = useState(null);
   const [isQuerying, setIsQuerying] = useState(false);
+  const [queryMeta, setQueryMeta] = useState(null);
+
 
   const showToast = (message, duration = 2500) => {
     setToast(message);
@@ -566,7 +568,7 @@ function App() {
     }
   };
 
-  const handleAskQuery = async () => {
+    const handleAskQuery = async () => {
     if (!apiBaseUrl) {
       showToast("Set API base URL first");
       return;
@@ -578,39 +580,71 @@ function App() {
       return;
     }
 
+    // Prefer the selected version text; fall back to the editable draftText
     const draft = currentVersion?.text || draftText;
     if (!draft || !draft.trim()) {
       showToast("No draft available to ask about");
       return;
     }
 
-    const sourcePayload = (currentVersion?.sources || sources).map((s) => ({
-      name: s.name || null,
-      kind: s.kind || "text",
-      url: s.url || null,
-      // send text if present; back-end will truncate as needed
-      text: s.text || null,
-    }));
+    // Build a single context string that the backend can use
+    const allSources = currentVersion?.sources || sources;
+
+    const contextParts = [];
+
+    // 1) Draft output
+    contextParts.push(`DRAFT OUTPUT:\n${draft.trim()}`);
+
+    // 2) Brief summary of sources (names/URLs only – no full text needed here)
+    if (Array.isArray(allSources) && allSources.length > 0) {
+      const sourceSummaries = allSources.map((s, idx) => {
+        const label = s.name || s.url || `Source ${idx + 1}`;
+        const kind = s.kind || "text";
+        const kindLabel =
+          kind === "file"
+            ? "File source"
+            : kind === "url"
+            ? "URL source"
+            : kind === "public"
+            ? "Public source"
+            : "Text source";
+        return `${idx + 1}. ${kindLabel}: ${label}`;
+      });
+
+      contextParts.push(`SOURCES:\n${sourceSummaries.join("\n")}`);
+    }
+
+    const context = contextParts.join("\n\n");
 
     setIsQuerying(true);
+    setQueryMeta(null);
+
     try {
       const payload = {
         question,
-        draftText: draft,
-        scenario,
-        versionType,
-        sources: sourcePayload,
+        context,      // 👈 THIS is what the new /api/query expects
+        model: modelId, // optional, but fine to pass through
       };
 
       const data = await callBackend("query", payload);
 
-      if (!data || !data.answer) {
+      if (!data || !data.ok || !data.answer) {
         showToast("No answer returned from backend");
         setIsQuerying(false);
         return;
       }
 
       setQueryAnswer(data.answer);
+
+      // Store metadata for debugging / later UI use
+      setQueryMeta({
+        webUsed: data.webUsed ?? null,
+        heuristicPrimary: data.heuristicPrimary ?? null,
+        confidence: data.confidence ?? null,
+        confidenceReason: data.confidenceReason ?? null,
+        effectiveQuestion: data.effectiveQuestion ?? null,
+      });
+
       showToast("AI answered your question");
     } catch (e) {
       console.error("Error asking query", e);
@@ -620,6 +654,7 @@ function App() {
       setIsQuerying(false);
     }
   };
+
 
    
   const handleAnalyseStatements = async () => {
@@ -1681,12 +1716,19 @@ function App() {
                   </Button>
                 </div>
 
-                {queryAnswer && (
+               {queryAnswer && (
                   <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
                     <div className="font-medium mb-1">AI answer</div>
                     <div className="whitespace-pre-wrap">{queryAnswer}</div>
+
+                    {queryMeta && (
+                      <pre className="mt-2 text-[10px] bg-white/60 border border-slate-200 rounded-lg p-2 overflow-x-auto">
+                        {JSON.stringify(queryMeta, null, 2)}
+                      </pre>
+                    )}
                   </div>
                 )}
+
               </div>              
             </CardBody>
           </Card>
