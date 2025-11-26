@@ -1423,11 +1423,19 @@ function App() {
                               Statement
                             </th>
                             <th className="px-2 py-1 text-left font-medium text-slate-600 w-24">
-                              Reliability
-                            </th>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-32">
-                              Category
-                            </th>
+                             Reliability
+                           </th>
+                           <th className="px-2 py-1 text-left font-medium text-slate-600 w-32">
+                             Category
+                           </th>
+                           <th className="px-2 py-1 text-left font-medium text-slate-600 w-64">
+                             Implication
+                           </th>
+                             
+<th className="px-2 py-1 text-left font-medium text-slate-600 w-64">
+  Implication
+</th>
+
                           </tr>
                         </thead>
                         <tbody>
