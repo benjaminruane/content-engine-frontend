@@ -187,7 +187,6 @@ function App() {
 
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
 
   const [rewriteNotes, setRewriteNotes] = useState("");
@@ -460,11 +459,7 @@ function App() {
       // After a successful generation, lock the Generate button
       setCanGenerate(false);
 
-      // Enter workspace mode (collapse inputs, show top control bar)
-      setHasGeneratedOnce(true);
-
       showToast("Draft generated");
-
     } catch (e) {
       console.error("Error generating", e);
       const msg = e && e.message ? e.message : "Error generating draft";
@@ -805,416 +800,390 @@ function App() {
             </Button>
           </div>
         </div>
-            </header>
+      </header>
 
-      {/* Compact top control bar (post-generate workspace mode) */}
-      {hasGeneratedOnce && (
-        <div className="mx-auto max-w-6xl px-4 pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="default"
-                className="text-xs"
-                onClick={() => showToast("Event editing panel coming soon")}
-              >
-                Edit event
-              </Button>
-              <Button
-                variant="default"
-                className="text-xs"
-                onClick={() => showToast("Sources editing panel coming soon")}
-              >
-                Edit sources
-              </Button>
+      {/* Main layout */}
+      <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]">
+        {/* Left column – inputs */}
+        <div className="space-y-4">
+          {/* Event & title */}
+          <Card>
+            <CardHeader className="items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Event & title</div>
+                <div className="text-xs text-slate-500">
+                  Define what happened and what you need written.
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Title / headline{" "}
+                  <span className="font-normal">(optional)</span>
+                </label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Acquisition of XYZ by ABC Partners"
+                />
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Helpful for press releases and LinkedIn posts, but not
+                  required for all outputs.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Event type
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {SCENARIOS.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setScenario(s.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                        scenario === s.id
+                          ? "bg-black text-white border-black"
+                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Used to adjust scenario-specific prompting and scoring.
+                </p>
+              </div>
+
+                            <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Instructions / constraints
+                </label>
+                <textarea
+                  className={
+                    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                    (instructionsApplied ? "text-slate-400" : "text-slate-800")
+                  }
+                  value={notes}
+                  onChange={(e) => {
+                    setNotes(e.target.value);
+                    // User is editing -> treat as fresh instructions
+                    setInstructionsApplied(false);
+                  }}
+                  placeholder="Add instructions and constraints for this output..."
+                />
+              </div>
+
+            </CardBody>
+          </Card>
+
+          {/* Sources */}
+          <Card>
+            <CardHeader className="items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold">Source material</div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              {/* Attached sources first */}
+              {sources.length > 0 && (
+                <div className="border border-slate-100 rounded-xl px-3 py-2 bg-slate-50">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-[11px] font-medium text-slate-600">
+                      Attached sources
+                    </div>
+                    <div className="text-[11px] text-slate-500">
+                      {sources.length} source
+                      {sources.length > 1 ? "s" : ""}
+                    </div>
+                  </div>
+                  <ul className="space-y-1 text-xs text-slate-700">
+                    {sources.map((s, idx) => {
+                      let meta = "";
+                      if (s.kind === "file") {
+                        meta = s.size
+                          ? `${Math.round(s.size / 1024)} KB`
+                          : "file";
+                      } else if (s.kind === "url") {
+                        const len = s.text ? s.text.length : 0;
+                        const k = Math.max(1, Math.round(len / 1000));
+                        meta = `URL · ~${k}k chars`;
+                      } else {
+                        meta = "source";
+                      }
+
+                      return (
+                        <li
+                          key={`${s.name}-${idx}`}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            {s.kind === "url" && (s.url || s.name) ? (
+                              <a
+                                href={s.url || s.name}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="truncate text-sky-600 hover:underline"
+                              >
+                                {s.name}
+                              </a>
+                            ) : (
+                              <span className="truncate">{s.name}</span>
+                            )}
+                            <span className="text-[10px] text-slate-500 shrink-0">
+                              {meta}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSource(idx)}
+                            className="text-[14px] font-bold text-red-500 hover:text-white hover:bg-red-600 rounded-full px-2 py-0.5 transition"
+                            aria-label={`Remove source ${s.name}`}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* Files */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-700">
+                    Files
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Upload investment memos, IM extracts, emails, board papers, or
+                  notes. Text files work best.
+                </p>
+                <div
+                  className="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 px-4 py-6 text-xs text-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-slate-400 hover:bg-slate-100"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onDrop={handleDropFiles}
+                >
+                  <div className="text-lg mb-1">📄</div>
+                  <div className="font-medium mb-0.5">
+                    Drop files here, or click to upload
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    We’ll extract text and treat each file as a separate source.
+                  </div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+              </div>
+
+              {/* URL */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  URL
+                </label>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Paste a link to a public article or announcement. The backend
+                  will fetch readable on-page text where possible.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="text-xs"
+                    placeholder="https://example.com/article"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                  />
+                  <Button
+                    variant="default"
+                    className="text-xs whitespace-nowrap"
+                    onClick={handleAddUrlSource}
+                  >
+                    Add URL
+                  </Button>
+                </div>
+              </div>
+
+              {/* Manual text */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Manual text
+                </label>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Paste or type any additional source material here – email
+                  chains, call notes, bullet points, internal commentary, etc.
+                </p>
+                <TextArea
+                  rows={3}
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                  placeholder="Paste IM extracts, memos, emails, notes..."
+                />
+              </div>
+
+              {/* Public domain search */}
+              <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-medium text-slate-700">
+                    Public domain search
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPublicSearch((v) => !v)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                      publicSearch ? "bg-black" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                        publicSearch ? "translate-x-5" : "translate-x-1"
+                      }`}
+                    />
+                    <span className="sr-only">
+                      Toggle public domain search
+                    </span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Optionally allow limited background context from public web
+                  sources. Currently a flag only – full search behaviour to be
+                  implemented later.
+                </p>
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Advanced settings */}
+          <Card>
+            <CardHeader className="items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Advanced settings</div>
+                <div className="text-xs text-slate-500">
+                  Connection details and model controls.
+                </div>
+              </div>
               <Button
                 variant="quiet"
                 className="text-xs"
-                onClick={() =>
-                  showToast("Advanced settings panel coming soon")
-                }
+                onClick={() => setShowAdvanced((v) => !v)}
               >
-                Advanced
+                {showAdvanced ? "Hide" : "Show"}
               </Button>
-              <Button
-                variant="primary"
-                className="text-xs"
-                onClick={handleNewOutput}
-              >
-                New output
-              </Button>
-            </div>
-            <div className="text-[11px] text-slate-500">
-              {currentVersion
-                ? `Viewing ${getScenarioLabel(scenario)} · ${getModelLabel(
-                    modelId
-                  )}`
-                : "No output selected"}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main layout */}
-      <main
-        className={
-          hasGeneratedOnce
-            ? "mx-auto max-w-6xl px-4 py-6"
-            : "mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]"
-        }
-      >
-
-                {/* Left column – inputs */}
-        {!hasGeneratedOnce && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader className="items-center justify-between">
-                <div className="flex flex-col gap-1">
-                  <div className="text-sm font-semibold">Event & title</div>
-                  <div className="text-xs text-slate-500">
-                    Define what happened and what you need written.
-                  </div>
-                </div>
-              </CardHeader>
+            </CardHeader>
+            {showAdvanced && (
               <CardBody className="space-y-3">
-                <div>
+                {/* API + connection */}
+                <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-700 mb-1 block">
-                    Title / headline{" "}
-                    <span className="font-normal">(optional)</span>
+                    Backend API base URL
                   </label>
-                  <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Acquisition of XYZ by ABC Partners"
-                  />
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    Helpful for press releases and LinkedIn posts, but not
-                    required for all outputs.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-slate-700 mb-1 block">
-                    Internal notes / context{" "}
-                    <span className="font-normal">(optional)</span>
-                  </label>
-                  <TextArea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Internal context, risk notes, relationship dynamics, sensitivities…"
-                    rows={3}
-                  />
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    Stays internal. This is never included verbatim in
-                    public-facing outputs.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-slate-700 mb-1 block">
-                    What happened?
-                  </label>
-                  <TextArea
-                    value={rawText}
-                    onChange={(e) => setRawText(e.target.value)}
-                    placeholder="Describe the transaction or event in your own words…"
-                    rows={4}
-                  />
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    Paste rough notes, emails, term sheets, or key bullet
-                    points. You can attach supporting documents below.
-                  </p>
-                </div>
-
-                {/* Scenario selection */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs font-medium text-slate-700">
-                      Scenario
-                    </div>
-                    <div className="text-[11px] text-slate-500">
-                      {getScenarioLabel(scenario)}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {SCENARIOS.map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setScenario(s.id)}
-                        className={`px-2.5 py-1 rounded-full text-[11px] border ${
-                          scenario === s.id
-                            ? "bg-black text-white border-black"
-                            : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
-                        }`}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    Used to adjust scenario-specific prompting and scoring.
-                  </p>
-                </div>
-
-                {/* Sources & uploads */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs font-medium text-slate-700">
-                      Sources
-                    </div>
-                    {sources.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleClearSources}
-                        className="text-[11px] text-slate-500 hover:text-slate-700"
-                      >
-                        Clear
-                      </button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      className="text-xs"
+                      value={apiBaseUrl}
+                      onChange={(e) => setApiBaseUrl(e.target.value)}
+                      placeholder="https://your-backend.vercel.app/api"
+                    />
+                    <Button
+                      variant="quiet"
+                      className="text-xs whitespace-nowrap"
+                      onClick={handleCheckConnection}
+                    >
+                      Check
+                    </Button>
+                    {connectionStatus === "ok" && (
+                      <Pill tone="success" className="text-[10px]">
+                        Connected
+                      </Pill>
+                    )}
+                    {connectionStatus === "error" && (
+                      <Pill tone="danger" className="text-[10px]">
+                        Error
+                      </Pill>
                     )}
                   </div>
-
-                  {sources.length > 0 && (
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="text-[11px] font-medium text-slate-600">
-                          Attached sources
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          {sources.length} source
-                          {sources.length > 1 ? "s" : ""}
-                        </div>
-                      </div>
-                      <ul className="space-y-1 text-xs text-slate-700">
-                        {sources.map((s, idx) => {
-                          let meta = "";
-                          if (s.kind === "file") {
-                            meta = s.size
-                              ? `${Math.round(s.size / 1024)} KB`
-                              : "file";
-                          } else if (s.kind === "url") {
-                            const len = s.text ? s.text.length : 0;
-                            const k = Math.max(1, Math.round(len / 1000));
-                            meta = `URL · ~${k}k chars`;
-                          } else {
-                            meta = "source";
-                          }
-
-                          return (
-                            <li
-                              key={`${s.name}-${idx}`}
-                              className="flex items-center justify-between gap-2"
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                {s.kind === "url" && (s.url || s.name) ? (
-                                  <a
-                                    href={s.url || s.name}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="truncate text-sky-600 hover:underline"
-                                  >
-                                    <span className="truncate">
-                                      {s.title || s.name}
-                                    </span>
-                                  </a>
-                                ) : (
-                                  <span className="truncate">
-                                    {s.title || s.name}
-                                  </span>
-                                )}
-                                <span className="text-[10px] text-slate-500">
-                                  {meta}
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveSource(idx)}
-                                className="text-[10px] text-slate-400 hover:text-red-500"
-                              >
-                                Remove
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* File upload */}
-                  <div className="space-y-1">
-                    <p className="text-[11px] text-slate-500">
-                      You can attach PDFs, Word docs or text files with
-                      supporting details.
-                    </p>
-                    <div
-                      className="border-2 border-dashed border-slate-300 rounded-xl px-3 py-4 text-center cursor-pointer hover:border-slate-400 hover:bg-slate-100"
-                      onClick={() => fileInputRef.current?.click()}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onDrop={handleDropFiles}
-                    >
-                      <div className="text-lg mb-1">📄</div>
-                      <div className="font-medium mb-0.5">
-                        Drop files here, or click to upload
-                      </div>
-                      <div className="text-[11px] text-slate-500">
-                        We’ll extract text and treat each file as a separate
-                        source.
-                      </div>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => handleFiles(e.target.files)}
-                    />
-                  </div>
-
-                  {/* URL */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700 mb-1 block">
-                      URL
-                    </label>
-                    <p className="text-[11px] text-slate-500 mb-1">
-                      Paste a link to a public article or announcement. The
-                      backend will fetch readable on-page text where possible.
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        className="text-xs"
-                        placeholder="https://example.com/article"
-                        value={urlInput}
-                        onChange={(e) => setUrlInput(e.target.value)}
-                      />
-                      <Button
-                        variant="default"
-                        className="text-xs whitespace-nowrap"
-                        onClick={handleAddUrlSource}
-                      >
-                        Add URL
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Manual text */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700 mb-1 block">
-                      Additional source text
-                    </label>
-                    <TextArea
-                      rows={3}
-                      className="text-xs"
-                      value={manualSourceText}
-                      onChange={(e) => setManualSourceText(e.target.value)}
-                      placeholder="Paste any other relevant text that should inform the output…"
-                    />
-                    <div className="flex justify-between items-center">
-                      <span className="text-[11px] text-slate-500">
-                        This will be treated as another internal source.
-                      </span>
-                      <Button
-                        variant="default"
-                        className="text-[11px]"
-                        onClick={handleAddManualSource}
-                        disabled={!manualSourceText.trim()}
-                      >
-                        Add as source
-                      </Button>
-                    </div>
-                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Change this when you deploy a new backend or test a
+                    different environment.
+                  </p>
                 </div>
 
-                {/* Advanced settings */}
-                <div className="border-t border-slate-200 pt-3 mt-1">
-                  <button
-                    type="button"
-                    className="flex items-center justify-between w-full text-xs text-slate-600 hover:text-slate-800"
-                    onClick={() => setShowAdvanced((prev) => !prev)}
-                  >
-                    <span className="font-medium">Advanced settings</span>
-                    <span className="text-[11px] text-slate-500">
-                      {showAdvanced ? "Hide" : "Show"}
-                    </span>
-                  </button>
-
-                  {showAdvanced && (
-                    <CardBody className="mt-2 space-y-2 bg-slate-50 rounded-xl border border-slate-200">
-                      <div className="text-[11px] text-slate-500 mb-1">
-                        Model, creativity and token limits. Defaults are fine
-                        for most use cases.
-                      </div>
-                      <div className="space-y-2">
-                        <div>
-                          <div className="text-[11px] font-medium text-slate-700 mb-1">
-                            Model
-                          </div>
-                          <select
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px]"
-                            value={modelId}
-                            onChange={(e) => setModelId(e.target.value)}
-                          >
-                            {MODEL_OPTIONS.map((m) => (
-                              <option key={m.id} value={m.id}>
-                                {m.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <div className="text-[11px] font-medium text-slate-700 mb-1">
-                              Temp
-                            </div>
-                            <Input
-                              type="number"
-                              step="0.05"
-                              min="0"
-                              max="1"
-                              className="text-[11px]"
-                              value={temperature}
-                              onChange={(e) =>
-                                setTemperature(
-                                  parseFloat(e.target.value) || 0
-                                )
-                              }
-                            />
-                            <p className="text-[11px] text-slate-500 mt-1">
-                              0.0 = strict and deterministic. Higher values are
-                              more creative. Typical range: 0.1–0.4.
-                            </p>
-                          </div>
-                          <div>
-                            <div className="text-[11px] font-medium text-slate-700 mb-1">
-                              Max tokens
-                            </div>
-                            <Input
-                              type="number"
-                              min="256"
-                              className="text-[11px]"
-                              value={maxTokens}
-                              onChange={(e) =>
-                                setMaxTokens(
-                                  parseInt(e.target.value, 10) || 512
-                                )
-                              }
-                            />
-                            <p className="text-[11px] text-slate-500 mt-1">
-                              Technical upper bound on model output length (not
-                              the same as words).
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardBody>
-                  )}
+                {/* Model controls */}
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                      Model
+                    </div>
+                    <select
+                      className="w-full rounded-xl border border-slate-300 px-2 py-1.5 text-[11px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black bg-white"
+                      value={modelId}
+                      onChange={(e) => setModelId(e.target.value)}
+                    >
+                      {MODEL_OPTIONS.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Mini models are fast and cheap; full models are better
+                      for nuance and complex drafting.
+                    </p>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                      Temp
+                    </div>
+                    <Input
+                      type="number"
+                      step="0.05"
+                      min="0"
+                      max="1"
+                      className="text-[11px]"
+                      value={temperature}
+                      onChange={(e) =>
+                        setTemperature(parseFloat(e.target.value) || 0)
+                      }
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      0.0 = strict and deterministic. Higher values are more
+                      creative. Typical range: 0.1–0.4.
+                    </p>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                      Max tokens
+                    </div>
+                    <Input
+                      type="number"
+                      min="256"
+                      className="text-[11px]"
+                      value={maxTokens}
+                      onChange={(e) =>
+                        setMaxTokens(parseInt(e.target.value, 10) || 512)
+                      }
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Technical upper bound on model output length (not the
+                      same as words).
+                    </p>
+                  </div>
                 </div>
               </CardBody>
-            </Card>
-          </div>
-        )}
-
+            )}
+          </Card>
+        </div>
 
         {/* Right column – outputs & versions */}
         <div className="space-y-4">
