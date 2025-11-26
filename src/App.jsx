@@ -1289,7 +1289,7 @@ function App() {
                     Sources for this version
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="min-w-full border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                    <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
                       <thead className="bg-slate-50">
                         <tr>
                           <th className="px-2 py-1 text-left font-medium text-slate-600">
@@ -1438,26 +1438,29 @@ function App() {
                   Array.isArray(statementAnalysis.statements) &&
                   statementAnalysis.statements.length > 0 && (
                     <div className="overflow-x-auto max-h-56">
-                      <table className="min-w-full border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                      <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
                         <thead className="bg-slate-50">
                           <tr>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-8">
-                              #
-                            </th>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-8">#</th>
+                        
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[60%]">
                               Statement
                             </th>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-24">
-                             Reliability
-                           </th>
-                           <th className="px-2 py-1 text-left font-medium text-slate-600 w-32">
-                             Category
-                           </th>
-                           <th className="px-2 py-1 text-left font-medium text-slate-600 w-64">
-                             Implication
-                           </th>
+                        
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[10%]">
+                              Reliability
+                            </th>
+                        
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[15%]">
+                              Category
+                            </th>
+                        
+                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[20%]">
+                              Implication
+                            </th>
                           </tr>
                         </thead>
+
                         <tbody>
                          {statementAnalysis.statements.map((st, idx) => {
                             const rel =
