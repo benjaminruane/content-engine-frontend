@@ -276,16 +276,17 @@ function App() {
         return;
       }
 
-      setSources((prev) => [
+            setSources((prev) => [
         ...prev,
         {
-          name: trimmed,
+          name: data.title?.trim() || trimmed,
           text: data.text,
           size: null,
           kind: "url",
           url: data.url || trimmed,
         },
       ]);
+
       setUrlInput("");
       showToast("URL source added");
     } catch (e) {
@@ -1273,35 +1274,27 @@ function App() {
                             Type
                           </th>
                           <th className="px-2 py-1 text-left font-medium text-slate-600">
-                            Approx. length
-                          </th>
+                          Used portion
+                        </th>
                         </tr>
                       </thead>
                       <tbody>
-                      {(currentVersion.sources || sources).map((s, idx) => {
+                        {(currentVersion.sources || sources).map((s, idx) => {
                           const kind = s.kind || "text";
                           const isUrl = kind === "url" || kind === "public";
                           const url = s.url || (isUrl ? s.name : null);
 
-                          let lengthLabel = "";
-                          if (kind === "file" && s.size != null) {
-                            lengthLabel = `${Math.max(
-                              1,
-                              Math.round(s.size / 1024)
-                            )} KB`;
-                          } else if (s.text) {
-                            const len = s.text.length;
-                            const k = Math.max(1, Math.round(len / 1000));
-                            lengthLabel = `~${k}k chars`;
-                          } else if (typeof s.textLength === "number") {
-                            const k = Math.max(
-                              1,
-                              Math.round(s.textLength / 1000)
-                            );
-                            lengthLabel = `~${k}k chars`;
+                          let usageLabel = "";
+                          if (kind === "file") {
+                            usageLabel = "entire document";
+                          } else if (kind === "url") {
+                            usageLabel = "extracted article text";
+                          } else if (kind === "public") {
+                            usageLabel = "public web context";
                           } else {
-                            lengthLabel = "n/a";
+                            usageLabel = "manual text input";
                           }
+
 
                           return (
                             <tr
@@ -1334,9 +1327,10 @@ function App() {
                                   ? "Public source"
                                   : "Text"}
                               </td>
-                              <td className="px-2 py-1 align-top text-slate-600">
-                                {lengthLabel}
+                               <td className="px-2 py-1 align-top text-slate-600">
+                                {usageLabel}
                               </td>
+
                             </tr>
                           );
                         })}
