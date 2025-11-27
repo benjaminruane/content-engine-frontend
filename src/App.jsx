@@ -1,7 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import { formatNumber } from "./utils/format";
 const MAX_MODEL_INPUT_CHARS = 60000; // hard guardrail for model-facing text
-   
+
+function CharCounter({ value, max = MAX_MODEL_INPUT_CHARS }) {
+  if (!value || value.length === 0) return null;
+
+  const len = value.length;
+
+  let tone = "text-slate-400";
+  if (len > max * 0.9) tone = "text-red-500";         // >90%
+  else if (len > max * 0.75) tone = "text-amber-600"; // >75%
+
+  return (
+    <div className={`text-[10px] text-right mt-0.5 ${tone}`}>
+      {len.toLocaleString()} / {max.toLocaleString()} chars
+    </div>
+  );
+}
+
 function Button({ variant = "default", className = "", children, ...props }) {
 
   const base =
@@ -1174,12 +1190,14 @@ function App() {
                   Paste or type any additional source material here – email
                   chains, call notes, bullet points, internal commentary, etc.
                 </p>
-                <TextArea
-                  rows={3}
-                  value={rawText}
-                  onChange={(e) => setRawText(e.target.value)}
-                  placeholder="Paste IM extracts, memos, emails, notes..."
-                />
+               <TextArea
+                 rows={3}
+                 value={rawText}
+                 onChange={(e) => setRawText(e.target.value)}
+                 placeholder="Paste IM extracts, memos, emails, notes..."
+               />
+               <CharCounter value={rawText} />
+
               </div>
 
               {/* Public domain search */}
@@ -1464,11 +1482,12 @@ function App() {
 
             <CardBody className="space-y-3">
               <TextArea
-                rows={18}
-                value={draftText}
-                onChange={(e) => setDraftText(e.target.value)}
-                placeholder="Generated draft will appear here. You can edit before rewriting."
-              />
+              rows={18}
+              value={draftText}
+              onChange={(e) => setDraftText(e.target.value)}
+              placeholder="Generated draft will appear here. You can edit before rewriting."
+            />
+            <CharCounter value={draftText} />
 
                <div className="mt-1 text-right text-[11px] text-slate-500">
                  Word count: {formatNumber(draftWordCount)}
@@ -1781,25 +1800,17 @@ function App() {
                 </p>
 
                 <textarea
-                  className={
-                    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
-                    (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
-                  }
-                  value={rewriteNotes}
-                  onChange={(e) => {
-                    setRewriteNotes(e.target.value);
-                    // As soon as the user types, this is a new set of instructions
-                    setRewriteInstructionsApplied(false);
-                  }}
-                  placeholder="Tell the AI how to revise this version..."
-                  onKeyDown={(e) =>
-                    handleEnterKey(
-                      e,
-                      handleRewrite,
-                      isRewriting || versions.length === 0
-                    )
-                  }
-                />
+                 className={ ... }
+                 value={rewriteNotes}
+                 onChange={(e) => {
+                   setRewriteNotes(e.target.value);
+                   setRewriteInstructionsApplied(false);
+                 }}
+                 placeholder="Tell the AI how to revise this version..."
+                 onKeyDown={ ... }
+               />
+               <CharCounter value={rewriteNotes} />
+
 
                 <div className="flex justify-end gap-2 pt-1">
                   <Button
@@ -1832,20 +1843,16 @@ function App() {
 
 
                 <TextArea
-                  rows={2}
-                  value={queryText}
-                  onChange={(e) => setQueryText(e.target.value)}
-                  placeholder="Type your question about this draft or its sources..."
-                  disabled={isQuerying}
-                  className={
-                    isQuerying
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                      : ""
-                  }
-                  onKeyDown={(e) =>
-                    handleEnterKey(e, handleAskQuery, isQuerying)
-                  }
-                />
+                 rows={2}
+                 value={queryText}
+                 onChange={(e) => setQueryText(e.target.value)}
+                 placeholder="Type your question..."
+                 disabled={isQuerying}
+                 className={...}
+                 onKeyDown={...}
+               />
+               <CharCounter value={queryText} max={4000} />
+
 
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-[11px] leading-snug text-slate-500">
