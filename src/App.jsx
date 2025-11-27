@@ -1539,9 +1539,10 @@ function App() {
                            {/* Statement reliability analysis */}
               <div className="border-t border-slate-200 pt-3 mt-2">
                 <div className="mb-2 flex items-center justify-between">
-                  <div className="text-xs font-semibold text-slate-700">
+                  <div className="text-[11px] font-semibold tracking-tight text-slate-800">
                     Statement reliability (beta)
                   </div>
+
                   <Button
                     variant="quiet"
                     className="text-[11px]"
@@ -1724,9 +1725,10 @@ function App() {
 
               {/* Rewrite section */}
               <div className="space-y-2 pt-1">
-                <label className="mb-1 block text-xs font-medium text-slate-700">
-                  Rewrite instructions (optional)
-                </label>
+               <label className="mb-1 block text-[11px] font-semibold tracking-tight text-slate-800">
+                 Rewrite instructions (optional)
+               </label>
+
                 <p className="text-[11px] text-slate-500">
                   This rewrite will use the current "{versionType}" setting in
                   the controls above (Complete vs Public-facing).
@@ -1766,16 +1768,17 @@ function App() {
 
               {/* AI query box */}
               <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-semibold text-slate-700">
-                    Ask a question about this draft or its sources
-                  </div>
-                  {queryAnswer && (
-                    <span className="text-[10px] text-slate-500">
-                      Latest answer shown below
-                    </span>
-                  )}
-                </div>
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] font-semibold tracking-tight text-slate-800">
+                Ask a question about this draft or its sources
+              </div>
+              {queryAnswer && (
+                <span className="text-[10px] text-slate-500">
+                  Latest answer shown below
+                </span>
+              )}
+            </div>
+
                <p className="text-[11px] leading-snug text-slate-500">
                  Example: “Is the revenue figure mentioned in paragraph three public
                  information?” or “What exactly is meant by the leverage metric here?”
