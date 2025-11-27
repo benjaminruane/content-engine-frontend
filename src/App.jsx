@@ -869,19 +869,13 @@ function App() {
           </div>
         </div>
 
-        {/* Right: environment, version, primary action */}
+        {/* Right: environment and primary action */}
         <div className="hidden items-center gap-3 md:flex">
           {/* Environment pill */}
           <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
             <span className="whitespace-nowrap">Alpha</span>
           </span>
-
-          {/* Version pill */}
-          <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-3 py-1.5 text-xs font-mono text-blue-700">
-           v0.6.0-alpha
-         </span>
-
 
           {/* Primary action */}
           <Button
@@ -892,6 +886,7 @@ function App() {
             New output
           </Button>
         </div>
+
       </div>
     </header>
 
@@ -1807,19 +1802,27 @@ function App() {
                       <div className="font-medium whitespace-nowrap text-slate-800">
                         AI answer
                       </div>
-                      {queryMeta && queryMeta.confidence != null && (
-                        <div className="text-[10px] text-slate-500 sm:text-right">
-                          Confidence:{" "}
-                          <span className="font-semibold">
-                            {Math.round(queryMeta.confidence * 100)}%
-                          </span>
-                          {queryMeta.confidenceReason && (
-                            <span className="ml-1">
-                              – {queryMeta.confidenceReason}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                       
+                           {queryMeta && queryMeta.confidence != null && (
+                             <div className="text-[10px] text-slate-500 sm:text-right">
+                               <span className="mr-1 font-semibold">
+                                 {queryMeta.confidence >= 0.8
+                                   ? "High confidence"
+                                   : queryMeta.confidence >= 0.6
+                                   ? "Moderate confidence"
+                                   : "Low confidence"}
+                               </span>
+                               <span>
+                                 ({Math.round(queryMeta.confidence * 100)}%)
+                               </span>
+                               {queryMeta.confidenceReason && (
+                                 <span className="ml-1">
+                                   – {queryMeta.confidenceReason}
+                                 </span>
+                               )}
+                             </div>
+                           )}
+
                     </div>
                     <div className="whitespace-pre-wrap leading-snug">
                       {queryAnswer}
