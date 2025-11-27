@@ -194,16 +194,28 @@ function App() {
   const [toast, setToast] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const [queryText, setQueryText] = useState("");
+    const [queryText, setQueryText] = useState("");
   const [queryAnswer, setQueryAnswer] = useState(null);
   const [isQuerying, setIsQuerying] = useState(false);
   const [queryMeta, setQueryMeta] = useState(null);
 
+  // Trigger a given action when Enter is pressed (but allow Shift+Enter for new lines)
+  function handleEnterKey(event, action, isDisabled = false) {
+    if (isDisabled) return;
+
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      if (typeof action === "function") {
+        action();
+      }
+    }
+  }
 
   const showToast = (message, duration = 2500) => {
     setToast(message);
     setTimeout(() => setToast(null), duration);
   };
+
 
   const currentVersion =
     versions.find((v) => v.id === selectedVersionId) || null;
@@ -839,9 +851,10 @@ function App() {
           </span>
 
           {/* Version pill */}
-          <span className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 text-xs font-mono text-slate-50">
-            v0.6.0-alpha
-          </span>
+          <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-3 py-1.5 text-xs font-mono text-blue-700">
+           v0.6.0-alpha
+         </span>
+
 
           {/* Primary action */}
           <Button
@@ -1314,7 +1327,11 @@ function App() {
                     placeholder="e.g. 300"
                     value={maxWords}
                     onChange={(e) => setMaxWords(e.target.value)}
+                    onKeyDown={(e) =>
+                      handleEnterKey(e, handleGenerate, isGenerating || !canGenerate)
+                    }
                   />
+
                   <p className="text-[11px] text-slate-500 mt-1">
                     Soft guidance plus hard cap. The engine will aim to stay
                     within this length.
@@ -1683,9 +1700,14 @@ function App() {
                    setRewriteInstructionsApplied(false);
                  }}
                  placeholder="Tell the AI how to revise this version..."
+                 onKeyDown={(e) =>
+                   handleEnterKey(
+                     e,
+                     handleRewrite,
+                     isRewriting || versions.length === 0
+                   )
+                 }
                />
-
-
 
               <div className="flex justify-end gap-2 pt-1">
                 <Button
@@ -1719,6 +1741,9 @@ function App() {
                   value={queryText}
                   onChange={(e) => setQueryText(e.target.value)}
                   placeholder="Type your question about this draft or its sources..."
+                  onKeyDown={(e) =>
+                    handleEnterKey(e, handleAskQuery, isQuerying)
+                  }
                 />
 
                 <div className="flex justify-between items-center gap-2">
