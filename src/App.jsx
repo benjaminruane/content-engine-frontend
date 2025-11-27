@@ -60,12 +60,13 @@ function Card({ className = "", children }) {
 function CardHeader({ className = "", children }) {
   return (
     <div
-      className={`flex items-center gap-2.5 border-b border-slate-100 px-4 py-2.5 ${className}`}
+      className={`flex gap-2.5 border-b border-slate-100 px-4 py-2.5 ${className}`}
     >
       {children}
     </div>
   );
 }
+
 
 
 function CardBody({ className = "", children }) {
@@ -1453,7 +1454,7 @@ function App() {
 
           {/* Current draft */}
           <Card>
-            <CardHeader className="flex-col items-start gap-1.5">
+            <CardHeader className="flex flex-col items-start gap-1.5">
               <div className="flex items-center gap-2">
                 <div className="text-sm font-semibold tracking-tight text-slate-900">
                   Draft output
@@ -1467,7 +1468,7 @@ function App() {
                   </Pill>
                 )}
               </div>
-            
+          
               <div className="text-[11px] text-slate-500">
                 {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
                 {getModelLabel(modelId)} ·{" "}
