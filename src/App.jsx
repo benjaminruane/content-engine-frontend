@@ -194,10 +194,11 @@ function App() {
   const [toast, setToast] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-    const [queryText, setQueryText] = useState("");
+  const [queryText, setQueryText] = useState("");
   const [queryAnswer, setQueryAnswer] = useState(null);
   const [isQuerying, setIsQuerying] = useState(false);
   const [queryMeta, setQueryMeta] = useState(null);
+  const [queryHistory, setQueryHistory] = useState([]);
 
   // Trigger a given action when Enter is pressed (but allow Shift+Enter for new lines)
   function handleEnterKey(event, action, isDisabled = false) {
@@ -647,18 +648,33 @@ function App() {
         return;
       }
 
-      setQueryAnswer(data.answer);
+      const answer = data.answer;
+
+      // Store main answer
+      setQueryAnswer(answer);
 
       // Store metadata for debugging / later UI use
-      setQueryMeta({
+      const meta = {
         webUsed: data.webUsed ?? null,
         heuristicPrimary: data.heuristicPrimary ?? null,
         confidence: data.confidence ?? null,
         confidenceReason: data.confidenceReason ?? null,
         effectiveQuestion: data.effectiveQuestion ?? null,
-      });
+      };
+      setQueryMeta(meta);
+
+      // Add to in-session question history (latest first)
+      const historyEntry = {
+        id: Date.now(),
+        question,
+        answer,
+        createdAt: new Date().toISOString(),
+        meta,
+      };
+      setQueryHistory((prev) => [historyEntry, ...prev]);
 
       showToast("AI answered your question");
+
     } catch (e) {
       console.error("Error asking query", e);
       const msg = e && e.message ? e.message : "Error answering question";
@@ -797,9 +813,14 @@ function App() {
     setInstructionsApplied(false);
     setRewriteInstructionsApplied(false);
 
+    // Reset query state for this session
+    setQueryText("");
+    setQueryAnswer(null);
+    setQueryMeta(null);
+    setQueryHistory([]);
+
     showToast("New output session started");
   };
-
 
   const sortedVersions = [...versions].sort((a, b) => {
     const av = a.versionNumber || 0;
@@ -1766,27 +1787,73 @@ function App() {
                   </Button>
                 </div>
 
-               {queryAnswer && (
-  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
-    <div className="flex items-center justify-between gap-2 mb-1">
-      <div className="font-medium">AI answer</div>
-      {queryMeta && queryMeta.confidence != null && (
-        <div className="text-[10px] text-slate-500">
-          Confidence:{" "}
-          <span className="font-semibold">
-            {Math.round(queryMeta.confidence * 100)}%
-          </span>
-          {queryMeta.confidenceReason && (
-            <span className="ml-1">
-              – {queryMeta.confidenceReason}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-    <div className="whitespace-pre-wrap">{queryAnswer}</div>
-  </div>
-)}
+              {queryAnswer && (
+                <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <div className="font-medium whitespace-nowrap">AI answer</div>
+                    {queryMeta && queryMeta.confidence != null && (
+                      <div className="text-[10px] text-slate-500 text-right">
+                        Confidence:{" "}
+                        <span className="font-semibold">
+                          {Math.round(queryMeta.confidence * 100)}%
+                        </span>
+                        {queryMeta.confidenceReason && (
+                          <span className="ml-1">
+                            – {queryMeta.confidenceReason}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="whitespace-pre-wrap">{queryAnswer}</div>
+                </div>
+              )}
+
+              {queryHistory.length > 0 && (
+                <div className="mt-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[11px] text-slate-700">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <div className="font-medium whitespace-nowrap">
+                      Question history
+                    </div>
+                    <div className="text-[10px] text-slate-500">
+                      {queryHistory.length} question
+                      {queryHistory.length > 1 ? "s" : ""} this session
+                    </div>
+                  </div>
+                  <div className="max-h-40 space-y-1 overflow-auto pr-1">
+                    {queryHistory.map((item, idx) => (
+                      <button
+                        key={item.id ?? idx}
+                        type="button"
+                        onClick={() => {
+                          setQueryText(item.question);
+                          setQueryAnswer(item.answer);
+                          setQueryMeta(item.meta ?? null);
+                        }}
+                        className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-[11px] font-medium text-slate-800">
+                            {item.question}
+                          </span>
+                          {item.meta && item.meta.confidence != null && (
+                            <span className="text-[10px] text-slate-500">
+                              {Math.round(item.meta.confidence * 100)}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="truncate text-[10px] text-slate-500">
+                          {item.answer}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              </div>
+            </CardBody>
+
 
 
               </div>              
