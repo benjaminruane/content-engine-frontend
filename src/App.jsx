@@ -808,35 +808,53 @@ function App() {
       : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-xl bg-black text-white flex items-center justify-center text-xs font-semibold">
-              CE
-            </div>
-            <div>
-              <div className="text-sm font-semibold">
-                Content Engine – single workspace
-              </div>
-              <div className="text-xs text-slate-500">
-                Event-based prompts • Multi-output • Scored versions
-              </div>
-            </div>
+  <div className="min-h-screen bg-slate-50 text-slate-900">
+    {/* Header */}
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2.5">
+        {/* Left: product identity */}
+        <div className="flex items-center gap-3">
+          {/* CE monogram */}
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-900 text-xs font-semibold tracking-tight text-white">
+            CE
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <div className="text-xs text-slate-400">Brightline prototype</div>
-            <Button
-              variant="primary"
-              className="text-xs"
-              onClick={handleNewOutput}
-            >
-              New output
-            </Button>
+
+          {/* Title + workspace tagline */}
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold tracking-tight text-slate-900">
+              Content Engine
+            </span>
+            <span className="text-xs text-slate-500">
+              Single workspace · Event-based prompts · Scored versions
+            </span>
           </div>
         </div>
-      </header>
+
+        {/* Right: environment, version, primary action */}
+        <div className="hidden items-center gap-3 md:flex">
+          {/* Environment pill */}
+          <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+            <span className="whitespace-nowrap">Alpha</span>
+          </span>
+
+          {/* Version pill */}
+          <span className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 text-xs font-mono text-slate-50">
+            v0.6.0-alpha
+          </span>
+
+          {/* Primary action */}
+          <Button
+            variant="primary"
+            className="text-xs"
+            onClick={handleNewOutput}
+          >
+            New output
+          </Button>
+        </div>
+      </div>
+    </header>
+
 
       {/* Main layout */}
       <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]">
