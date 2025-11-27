@@ -1736,17 +1736,23 @@ function App() {
                   information?” or “What exactly is meant by the leverage metric here?”
                 </p>
 
-                <TextArea
+                 <TextArea
                   rows={2}
                   value={queryText}
                   onChange={(e) => setQueryText(e.target.value)}
                   placeholder="Type your question about this draft or its sources..."
+                  disabled={isQuerying}
+                  className={
+                    isQuerying
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : ""
+                  }
                   onKeyDown={(e) =>
                     handleEnterKey(e, handleAskQuery, isQuerying)
                   }
                 />
 
-                <div className="flex justify-between items-center gap-2">
+                 <div className="flex justify-between items-center gap-2">
                   <div className="text-[11px] text-slate-500">
                     The AI will consider both the draft and the attached sources.
                   </div>
