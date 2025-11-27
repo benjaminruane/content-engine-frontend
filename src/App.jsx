@@ -1575,31 +1575,32 @@ function App() {
                             </span>
                           )}
                       </div>
-                      {typeof statementAnalysis.summary
-                        ?.averageReliability === "number" && (
-                        <Pill
-                          tone={
-                            statementAnalysis.summary.reliabilityBand === "high"
-                              ? "success"
-                              : statementAnalysis.summary.reliabilityBand ===
-                                "medium"
-                              ? "warning"
-                              : statementAnalysis.summary.reliabilityBand ===
-                                "low"
-                              ? "danger"
-                              : "neutral"
-                          }
-                          className="text-[10px]"
-                        >
-                       Overall reliability:{" "}
-                       {formatNumber(
-                         Math.round(
-                           statementAnalysis.summary.averageReliability * 100
-                         )
-                       )}
-                       %
+                        {typeof statementAnalysis.summary?.averageReliability === "number" && (
+                          <Pill
+                            tone={
+                              statementAnalysis.summary.reliabilityBand === "high"
+                                ? "success"
+                                : statementAnalysis.summary.reliabilityBand === "medium"
+                                ? "warning"
+                                : statementAnalysis.summary.reliabilityBand === "low"
+                                ? "danger"
+                                : "neutral"
+                            }
+                            className="text-[10px]"
+                          >
+                            Overall reliability:{" "}
+                            {formatNumber(
+                              Math.round(
+                                statementAnalysis.summary.averageReliability * 100
+                              )
+                            )}
+                            %
+                            {statementAnalysis.summary.reliabilityBand && (
+                              <> ({statementAnalysis.summary.reliabilityBand})</>
+                            )}
+                          </Pill>
+                        )}
 
-                      )}
                     </div>
                   )}
 
@@ -1892,8 +1893,6 @@ function App() {
                       ))}
                     </div>
                   </div>
-                )}
-
                 )}
               </div>
             </CardBody>
