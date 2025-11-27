@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
+import { formatNumber } from "./utils/format";
    
 function Button({ variant = "default", className = "", children, ...props }) {
+
   const base =
     "inline-flex items-center justify-center rounded-xl text-sm font-medium px-3 py-2 transition active:scale-[.98] focus:outline-none focus:ring-2 focus:ring-offset-1";
 
@@ -992,17 +994,21 @@ function App() {
                   <ul className="space-y-1 text-xs text-slate-700">
                     {sources.map((s, idx) => {
                       let meta = "";
-                      if (s.kind === "file") {
-                        meta = s.size
-                          ? `${Math.round(s.size / 1024)} KB`
-                          : "file";
-                      } else if (s.kind === "url") {
-                        const len = s.text ? s.text.length : 0;
-                        const k = Math.max(1, Math.round(len / 1000));
-                        meta = `URL · ~${k}k chars`;
-                      } else {
-                        meta = "source";
-                      }
+                  if (s.kind === "file") {
+                    if (s.size) {
+                      const kb = Math.round(s.size / 1024);
+                      meta = `${formatNumber(kb)} KB`;
+                    } else {
+                      meta = "file";
+                    }
+                  } else if (s.kind === "url") {
+                    const len = s.text ? s.text.length : 0;
+                    const k = Math.max(1, Math.round(len / 1000));
+                    meta = `URL · ~${formatNumber(k)}k chars`;
+                  } else {
+                    meta = "source";
+                  }
+
 
                       return (
                         <li
@@ -1390,9 +1396,12 @@ function App() {
                 <Pill className="text-[10px] capitalize">
                   {versionType} version
                 </Pill>
-                {maxWords && (
-                  <Pill className="text-[10px]">≤ {maxWords} words</Pill>
-                )}
+               {maxWords && (
+                 <Pill className="text-[10px]">
+                   ≤ {formatNumber(maxWords)} words
+                 </Pill>
+               )}
+
                 <Pill className="text-[10px]">
                   Public search: {publicSearch ? "On" : "Off"}
                 </Pill>
@@ -1407,9 +1416,9 @@ function App() {
                 placeholder="Generated draft will appear here. You can edit before rewriting."
               />
 
-              <div className="text-[11px] text-slate-500 text-right mt-1">
-                Word count: {draftWordCount}
-              </div>
+               <div className="mt-1 text-right text-[11px] text-slate-500">
+                 Word count: {formatNumber(draftWordCount)}
+               </div>
 
               {/* Export options */}
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1574,14 +1583,14 @@ function App() {
                           }
                           className="text-[10px]"
                         >
-                          Overall reliability:{" "}
-                          {Math.round(
-                            statementAnalysis.summary.averageReliability * 100
-                          )}
-                          %
-                          {statementAnalysis.summary.reliabilityBand &&
-                            ` (${statementAnalysis.summary.reliabilityBand})`}
-                        </Pill>
+                       Overall reliability:{" "}
+                       {formatNumber(
+                         Math.round(
+                           statementAnalysis.summary.averageReliability * 100
+                         )
+                       )}
+                       %
+
                       )}
                     </div>
                   )}
@@ -1659,10 +1668,8 @@ function App() {
                                           : ""
                                       }
                                     >
-                                      {relPct}%{" "}
-                                      {relBand === "low" && (
-                                        <span className="ml-1">⚠</span>
-                                      )}
+                                      {formatNumber(relPct)}%{" "}
+                                      {relBand === "low" && <span className="ml-1">⚠</span>}
                                     </span>
                                   ) : (
                                     "–"
@@ -1812,9 +1819,10 @@ function App() {
                                    ? "Moderate confidence"
                                    : "Low confidence"}
                                </span>
-                               <span>
-                                 ({Math.round(queryMeta.confidence * 100)}%)
-                               </span>
+                              <span>
+                                ({formatNumber(Math.round(queryMeta.confidence * 100))}%)
+                              </span>
+
                                {queryMeta.confidenceReason && (
                                  <span className="ml-1">
                                    – {queryMeta.confidenceReason}
@@ -1857,11 +1865,16 @@ function App() {
                             <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
                               {item.question}
                             </span>
-                            {item.meta && item.meta.confidence != null && (
-                              <span className="shrink-0 text-[10px] text-slate-500">
-                                {Math.round(item.meta.confidence * 100)}%
-                              </span>
-                            )}
+                           {item.meta &&
+                             item.meta.confidence != null && (
+                               <span className="text-[10px] text-slate-500">
+                                 {formatNumber(
+                                   Math.round(item.meta.confidence * 100)
+                                 )}
+                                 %
+                               </span>
+                             )}
+
                           </div>
                           <div className="truncate text-[10px] text-slate-500">
                             {item.answer}
@@ -1937,9 +1950,10 @@ function App() {
                           <span className="capitalize">{outputLabel}</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <Pill className="text-[10px]">
-                            {wordCount} words
-                          </Pill>
+                           <Pill className="text-[10px]">
+                             {formatNumber(wordCount)} words
+                           </Pill>
+
                            <Pill className="text-[10px] capitalize">
                             {v.versionType === "public"
                               ? "Public"
