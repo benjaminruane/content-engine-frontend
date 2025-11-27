@@ -1467,7 +1467,7 @@ function App() {
                   </Pill>
                 )}
               </div>
-
+            
               <div className="text-[11px] text-slate-500">
                 {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
                 {getModelLabel(modelId)} ·{" "}
@@ -1477,8 +1477,6 @@ function App() {
                 {publicSearch ? "On" : "Off"}
               </div>
             </CardHeader>
-
-
 
             <CardBody className="space-y-3">
               <TextArea
@@ -1799,17 +1797,28 @@ function App() {
                   the controls above (Complete vs Public-facing).
                 </p>
 
-                <textarea
-                 className={ ... }
-                 value={rewriteNotes}
-                 onChange={(e) => {
-                   setRewriteNotes(e.target.value);
-                   setRewriteInstructionsApplied(false);
-                 }}
-                 placeholder="Tell the AI how to revise this version..."
-                 onKeyDown={ ... }
-               />
-               <CharCounter value={rewriteNotes} />
+               <textarea
+                className={
+                  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                  (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
+                }
+                value={rewriteNotes}
+                onChange={(e) => {
+                  setRewriteNotes(e.target.value);
+                  // As soon as the user types, this is a new set of instructions
+                  setRewriteInstructionsApplied(false);
+                }}
+                placeholder="Tell the AI how to revise this version..."
+                onKeyDown={(e) =>
+                  handleEnterKey(
+                    e,
+                    handleRewrite,
+                    isRewriting || versions.length === 0
+                  )
+                }
+              />
+              <CharCounter value={rewriteNotes} />
+
 
 
                 <div className="flex justify-end gap-2 pt-1">
@@ -1843,15 +1852,20 @@ function App() {
 
 
                 <TextArea
-                 rows={2}
-                 value={queryText}
-                 onChange={(e) => setQueryText(e.target.value)}
-                 placeholder="Type your question..."
-                 disabled={isQuerying}
-                 className={...}
-                 onKeyDown={...}
-               />
-               <CharCounter value={queryText} max={4000} />
+                  rows={2}
+                  value={queryText}
+                  onChange={(e) => setQueryText(e.target.value)}
+                  placeholder="Type your question about this draft or its sources..."
+                  disabled={isQuerying}
+                  className={
+                    isQuerying
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : ""
+                  }
+                  onKeyDown={(e) => handleEnterKey(e, handleAskQuery, isQuerying)}
+                />
+                <CharCounter value={queryText} max={4000} />
+
 
 
                 <div className="flex items-center justify-between gap-2">
