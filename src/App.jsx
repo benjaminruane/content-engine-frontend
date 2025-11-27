@@ -1518,9 +1518,9 @@ function App() {
                 </div>
               )}
 
-              {/* Statement reliability analysis */}
+                           {/* Statement reliability analysis */}
               <div className="border-t border-slate-200 pt-3 mt-2">
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <div className="text-xs font-semibold text-slate-700">
                     Statement reliability (beta)
                   </div>
@@ -1537,7 +1537,7 @@ function App() {
                 {/* Summary strip */}
                 {statementAnalysis &&
                   statementAnalysis.versionId === currentVersion?.id && (
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
                         <span>
                           {statementAnalysis.summary?.totalStatements ??
@@ -1590,32 +1590,29 @@ function App() {
                   statementAnalysis.versionId === currentVersion?.id &&
                   Array.isArray(statementAnalysis.statements) &&
                   statementAnalysis.statements.length > 0 && (
-                    <div className="overflow-x-auto max-h-56">
-                      <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                    <div className="max-h-56 overflow-x-auto">
+                      <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
                         <thead className="bg-slate-50">
                           <tr>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-8">#</th>
-                        
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[60%]">
+                            <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
+                              #
+                            </th>
+                            <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
                               Statement
                             </th>
-                        
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[10%]">
+                            <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
                               Reliability
                             </th>
-                        
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[15%]">
+                            <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
                               Category
                             </th>
-                        
-                            <th className="px-2 py-1 text-left font-medium text-slate-600 w-[20%]">
+                            <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
                               Implication
                             </th>
                           </tr>
                         </thead>
-
                         <tbody>
-                         {statementAnalysis.statements.map((st, idx) => {
+                          {statementAnalysis.statements.map((st, idx) => {
                             const rel =
                               typeof st.reliability === "number"
                                 ? st.reliability
@@ -1642,14 +1639,13 @@ function App() {
                                 key={st.id ?? idx}
                                 className={`border-t border-slate-200 align-top ${rowHighlight}`}
                               >
-
-                                <td className="px-2 py-1 text-slate-500 align-top">
+                                <td className="px-2 py-1 align-top text-slate-500">
                                   {idx + 1}
                                 </td>
                                 <td className="px-2 py-1 align-top">
                                   {st.text}
                                 </td>
-                                 <td className="px-2 py-1 text-slate-600 align-top">
+                                <td className="px-2 py-1 align-top text-slate-600">
                                   {relPct != null ? (
                                     <span
                                       className={
@@ -1671,16 +1667,15 @@ function App() {
                                     "–"
                                   )}
                                 </td>
-                                <td className="px-2 py-1 text-slate-600 align-top">
+                                <td className="px-2 py-1 align-top text-slate-600">
                                   {st.category || "–"}
                                 </td>
-                                <td className="px-2 py-1 text-slate-600 align-top">
+                                <td className="px-2 py-1 align-top text-slate-600">
                                   {relBand === "high"
                                     ? "–"
                                     : st.implication ||
                                       "Consider reviewing or softening this statement."}
                                 </td>
-
                               </tr>
                             );
                           })}
@@ -1689,58 +1684,70 @@ function App() {
                     </div>
                   )}
 
-                {/* No statements message */}
+                {/* No statements message – graceful fallback */}
                 {statementAnalysis &&
                   statementAnalysis.versionId === currentVersion?.id &&
                   Array.isArray(statementAnalysis.statements) &&
                   statementAnalysis.statements.length === 0 && (
-                    <p className="text-[11px] text-slate-500">
-                      No clearly extractable statements were found to analyse.
-                    </p>
+                    <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
+                      <div className="mb-0.5 font-medium">
+                        Analysis completed – no discrete statements found
+                      </div>
+                      <p>
+                        The AI couldn’t confidently break this draft into
+                        separate factual statements. This often happens when
+                        the text is highly narrative, very short, or light on
+                        explicit figures and claims. The draft itself is still
+                        valid – consider adding clearer factual sentences if
+                        you want statement-level checks.
+                      </p>
+                    </div>
                   )}
               </div>
 
+              {/* Rewrite section */}
               <div className="space-y-2 pt-1">
-                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                <label className="mb-1 block text-xs font-medium text-slate-700">
                   Rewrite instructions (optional)
                 </label>
                 <p className="text-[11px] text-slate-500">
                   This rewrite will use the current "{versionType}" setting in
                   the controls above (Complete vs Public-facing).
                 </p>
-               
-               <textarea
-                 className={
-                   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
-                   (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
-                 }
-                 value={rewriteNotes}
-                 onChange={(e) => {
-                   setRewriteNotes(e.target.value);
-                   // As soon as the user types, this is a new set of instructions
-                   setRewriteInstructionsApplied(false);
-                 }}
-                 placeholder="Tell the AI how to revise this version..."
-                 onKeyDown={(e) =>
-                   handleEnterKey(
-                     e,
-                     handleRewrite,
-                     isRewriting || versions.length === 0
-                   )
-                 }
-               />
 
-              <div className="flex justify-end gap-2 pt-1">
-                <Button
-                  variant="default"
-                  onClick={handleRewrite}
-                  disabled={isRewriting || versions.length === 0}
-                >
-                  {isRewriting ? "Rewriting..." : "Rewrite draft"}
-                </Button>
+                <textarea
+                  className={
+                    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                    (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
+                  }
+                  value={rewriteNotes}
+                  onChange={(e) => {
+                    setRewriteNotes(e.target.value);
+                    // As soon as the user types, this is a new set of instructions
+                    setRewriteInstructionsApplied(false);
+                  }}
+                  placeholder="Tell the AI how to revise this version..."
+                  onKeyDown={(e) =>
+                    handleEnterKey(
+                      e,
+                      handleRewrite,
+                      isRewriting || versions.length === 0
+                    )
+                  }
+                />
+
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button
+                    variant="default"
+                    onClick={handleRewrite}
+                    disabled={isRewriting || versions.length === 0}
+                  >
+                    {isRewriting ? "Rewriting..." : "Rewrite draft"}
+                  </Button>
+                </div>
               </div>
-             </div>
-            {/* AI query box */}
+
+              {/* AI query box */}
               <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-semibold text-slate-700">
@@ -1753,11 +1760,12 @@ function App() {
                   )}
                 </div>
                 <p className="text-[11px] text-slate-500">
-                  Example: “Is the revenue figure mentioned in paragraph three public
-                  information?” or “What exactly is meant by the leverage metric here?”
+                  Example: “Is the revenue figure mentioned in paragraph three
+                  public information?” or “What exactly is meant by the leverage
+                  metric here?”
                 </p>
 
-                 <TextArea
+                <TextArea
                   rows={2}
                   value={queryText}
                   onChange={(e) => setQueryText(e.target.value)}
@@ -1773,7 +1781,7 @@ function App() {
                   }
                 />
 
-                 <div className="flex justify-between items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
                   <div className="text-[11px] text-slate-500">
                     The AI will consider both the draft and the attached sources.
                   </div>
@@ -1787,78 +1795,73 @@ function App() {
                   </Button>
                 </div>
 
-              {queryAnswer && (
-                <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <div className="font-medium whitespace-nowrap">AI answer</div>
-                    {queryMeta && queryMeta.confidence != null && (
-                      <div className="text-[10px] text-slate-500 text-right">
-                        Confidence:{" "}
-                        <span className="font-semibold">
-                          {Math.round(queryMeta.confidence * 100)}%
-                        </span>
-                        {queryMeta.confidenceReason && (
-                          <span className="ml-1">
-                            – {queryMeta.confidenceReason}
+                {queryAnswer && (
+                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <div className="font-medium whitespace-nowrap">AI answer</div>
+                      {queryMeta && queryMeta.confidence != null && (
+                        <div className="text-right text-[10px] text-slate-500">
+                          Confidence:{" "}
+                          <span className="font-semibold">
+                            {Math.round(queryMeta.confidence * 100)}%
                           </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="whitespace-pre-wrap">{queryAnswer}</div>
-                </div>
-              )}
-
-              {queryHistory.length > 0 && (
-                <div className="mt-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[11px] text-slate-700">
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <div className="font-medium whitespace-nowrap">
-                      Question history
-                    </div>
-                    <div className="text-[10px] text-slate-500">
-                      {queryHistory.length} question
-                      {queryHistory.length > 1 ? "s" : ""} this session
-                    </div>
-                  </div>
-                  <div className="max-h-40 space-y-1 overflow-auto pr-1">
-                    {queryHistory.map((item, idx) => (
-                      <button
-                        key={item.id ?? idx}
-                        type="button"
-                        onClick={() => {
-                          setQueryText(item.question);
-                          setQueryAnswer(item.answer);
-                          setQueryMeta(item.meta ?? null);
-                        }}
-                        className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-[11px] font-medium text-slate-800">
-                            {item.question}
-                          </span>
-                          {item.meta && item.meta.confidence != null && (
-                            <span className="text-[10px] text-slate-500">
-                              {Math.round(item.meta.confidence * 100)}%
+                          {queryMeta.confidenceReason && (
+                            <span className="ml-1">
+                              – {queryMeta.confidenceReason}
                             </span>
                           )}
                         </div>
-                        <div className="truncate text-[10px] text-slate-500">
-                          {item.answer}
-                        </div>
-                      </button>
-                    ))}
+                      )}
+                    </div>
+                    <div className="whitespace-pre-wrap">{queryAnswer}</div>
                   </div>
-                </div>
-              )}
+                )}
 
+                {queryHistory.length > 0 && (
+                  <div className="mt-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[11px] text-slate-700">
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <div className="font-medium whitespace-nowrap">
+                        Question history
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {queryHistory.length} question
+                        {queryHistory.length > 1 ? "s" : ""} this session
+                      </div>
+                    </div>
+                    <div className="max-h-40 space-y-1 overflow-auto pr-1">
+                      {queryHistory.map((item, idx) => (
+                        <button
+                          key={item.id ?? idx}
+                          type="button"
+                          onClick={() => {
+                            setQueryText(item.question);
+                            setQueryAnswer(item.answer);
+                            setQueryMeta(item.meta ?? null);
+                          }}
+                          className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-[11px] font-medium text-slate-800">
+                              {item.question}
+                            </span>
+                            {item.meta && item.meta.confidence != null && (
+                              <span className="text-[10px] text-slate-500">
+                                {Math.round(item.meta.confidence * 100)}%
+                              </span>
+                            )}
+                          </div>
+                          <div className="truncate text-[10px] text-slate-500">
+                            {item.answer}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardBody>
-
-
-
-              </div>              
-            </CardBody>
           </Card>
+
 
           {/* Versions timeline */}
           <Card>
