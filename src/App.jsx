@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { formatNumber } from "./utils/format";
+const MAX_MODEL_INPUT_CHARS = 60000; // hard guardrail for model-facing text
    
 function Button({ variant = "default", className = "", children, ...props }) {
 
@@ -75,19 +76,23 @@ function TextArea({ className = "", ...props }) {
 
 function Pill({ children, tone = "neutral", className = "" }) {
   const tones = {
-    neutral: "bg-slate-100 text-slate-700",
-    success: "bg-emerald-50 text-emerald-700",
-    warning: "bg-amber-50 text-amber-700",
-    danger: "bg-red-50 text-red-700",
+    neutral: "border border-slate-200 bg-slate-50 text-slate-700",
+    success: "border border-emerald-200 bg-emerald-50 text-emerald-800",
+    warning: "border border-amber-200 bg-amber-50 text-amber-800",
+    danger: "border border-red-200 bg-red-50 text-red-800",
+    info: "border border-sky-200 bg-sky-50 text-sky-800",
   };
+
+  const base =
+    "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium leading-snug";
+
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]} ${className}`}
-    >
+    <span className={`${base} ${tones[tone] || tones.neutral} ${className}`}>
       {children}
     </span>
   );
 }
+
 
 function qualityTone(score) {
   if (score == null) return "neutral";
@@ -375,11 +380,24 @@ function App() {
       showToast("Set API base URL first");
       return;
     }
-    const textPayload = combinedText();
+
+    const textPayloadRaw = combinedText();
+    const textPayload = textPayloadRaw ? textPayloadRaw.trim() : "";
+
     if (!textPayload) {
       showToast("Add some source text, file or URL first");
       return;
     }
+
+    if (textPayload.length > MAX_MODEL_INPUT_CHARS) {
+      showToast(
+        `Combined source text is too long (${formatNumber(
+          textPayload.length
+        )} characters). Try trimming or splitting into two sessions.`
+      );
+      return;
+    }
+
     if (!selectedTypes.length) {
       showToast("Select at least one output type");
       return;
@@ -399,10 +417,10 @@ function App() {
 
     setIsGenerating(true);
     try {
-      const payload = {
+       const payload = {
         title,
         notes,
-        text: textPayload,
+        text: textPayload,   // <- keep this as textPayload
         selectedTypes,
         scenario,
         versionType,
@@ -412,6 +430,7 @@ function App() {
         publicSearch,
         maxWords: numericMaxWords,
       };
+
 
       const data = await callBackend("generate", payload);
 
@@ -493,17 +512,29 @@ function App() {
     }
   };
 
-  const handleRewrite = async () => {
+    const handleRewrite = async () => {
     if (!apiBaseUrl) {
       showToast("Set API base URL first");
       return;
     }
 
-    const textPayload = draftText && draftText.trim();
+    const textPayloadRaw = draftText || "";
+    const textPayload = textPayloadRaw.trim();
+
     if (!textPayload) {
       showToast("Nothing to rewrite");
       return;
     }
+
+    if (textPayload.length > MAX_MODEL_INPUT_CHARS) {
+      showToast(
+        `This draft is too long to rewrite in one pass (${formatNumber(
+          textPayload.length
+        )} characters). Try trimming it or creating a second session.`
+      );
+      return;
+    }
+
 
     const numericMaxWords =
       maxWords && !Number.isNaN(parseInt(maxWords, 10))
@@ -528,13 +559,14 @@ function App() {
         notes: rewriteNotes,
         outputType: baseOutputType,
         scenario,
-        versionType, // important: complete vs public
+        versionType,
         modelId,
         temperature,
         maxTokens,
         maxWords: numericMaxWords,
-        publicSearch, // honours the toggle for rewrites
+        publicSearch,
       };
+
 
 
       const data = await callBackend("rewrite", payload);
@@ -637,7 +669,11 @@ function App() {
       contextParts.push(`SOURCES:\n${sourceSummaries.join("\n")}`);
     }
 
-    const context = contextParts.join("\n\n");
+        const fullContext = contextParts.join("\n\n");
+    const context =
+      fullContext.length > MAX_MODEL_INPUT_CHARS
+        ? fullContext.slice(0, MAX_MODEL_INPUT_CHARS)
+        : fullContext;
 
     setIsQuerying(true);
     setQueryMeta(null);
@@ -645,9 +681,10 @@ function App() {
     try {
       const payload = {
         question,
-        context,      // 👈 THIS is what the new /api/query expects
-        model: modelId, // optional, but fine to pass through
+        context,      // 👈 trimmed / capped context
+        model: modelId,
       };
+
 
       const data = await callBackend("query", payload);
 
@@ -695,9 +732,25 @@ function App() {
 
 
    
-  const handleAnalyseStatements = async () => {
+    const handleAnalyseStatements = async () => {
     if (!currentVersion || !currentVersion.text) {
       showToast("No draft to analyse");
+      return;
+    }
+
+    const textForAnalysis = currentVersion.text.trim();
+
+    if (!textForAnalysis) {
+      showToast("No draft to analyse");
+      return;
+    }
+
+    if (textForAnalysis.length > MAX_MODEL_INPUT_CHARS) {
+      showToast(
+        `This draft is too long for statement analysis in one pass (${formatNumber(
+          textForAnalysis.length
+        )} characters). Try analysing a shorter or more focused version.`
+      );
       return;
     }
 
@@ -706,12 +759,13 @@ function App() {
       setStatementAnalysis(null);
 
       const payload = {
-        text: currentVersion.text,
+        text: textForAnalysis,
         scenario,
         versionType,
       };
 
       const data = await callBackend("analyse-statements", payload);
+
 
       const statements = Array.isArray(data?.statements)
         ? data.statements
@@ -1381,39 +1435,31 @@ function App() {
 
           {/* Current draft */}
           <Card>
- <CardHeader className="flex-col items-start gap-2.5">
-  <div className="flex items-center gap-2">
-    <div className="text-sm font-semibold tracking-tight">
-      Draft output
-    </div>
-    {currentVersion && (
-      <Pill
-        tone={qualityTone(currentVersion.score)}
-        className="text-[10px]"
-      >
-        Score (proto): {currentVersion.score ?? "–"}
-      </Pill>
-    )}
-  </div>
-  <div className="flex flex-wrap gap-1.5">
-    <Pill className="text-[10px]">
-      {getScenarioLabel(scenario)}
-    </Pill>
-    <Pill className="text-[10px]">{primaryOutputLabel}</Pill>
-    <Pill className="text-[10px]">{getModelLabel(modelId)}</Pill>
-    <Pill className="text-[10px] capitalize">
-      {versionType} version
-    </Pill>
-    {maxWords && (
-      <Pill className="text-[10px]">
-        ≤ {formatNumber(maxWords)} words
-      </Pill>
-    )}
-    <Pill className="text-[10px]">
-      Public search: {publicSearch ? "On" : "Off"}
-    </Pill>
-  </div>
-</CardHeader>
+            <CardHeader className="flex-col items-start gap-1.5">
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold tracking-tight text-slate-900">
+                  Draft output
+                </div>
+                {currentVersion && (
+                  <Pill
+                    tone={qualityTone(currentVersion.score)}
+                    className="text-[10px]"
+                  >
+                    Score (proto): {currentVersion.score ?? "–"}
+                  </Pill>
+                )}
+              </div>
+
+              <div className="text-[11px] text-slate-500">
+                {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
+                {getModelLabel(modelId)} ·{" "}
+                {versionType === "public" ? "Public version" : "Complete version"}
+                {maxWords && ` · ≤ ${formatNumber(maxWords)} words`}
+                {" · Public search: "}
+                {publicSearch ? "On" : "Off"}
+              </div>
+            </CardHeader>
+
 
 
             <CardBody className="space-y-3">
