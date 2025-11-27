@@ -43,12 +43,13 @@ function Card({ className = "", children }) {
 function CardHeader({ className = "", children }) {
   return (
     <div
-      className={`px-4 py-3 border-b border-slate-100 flex gap-2 ${className}`}
+      className={`flex items-center gap-2.5 border-b border-slate-100 px-4 py-2.5 ${className}`}
     >
       {children}
     </div>
   );
 }
+
 
 function CardBody({ className = "", children }) {
   return <div className={`px-4 py-3 ${className}`}>{children}</div>;
@@ -894,7 +895,7 @@ function App() {
 
 
       {/* Main layout */}
-      <main className="mx-auto max-w-6xl px-4 py-6 grid gap-4 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-4 py-5 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]">
         {/* Left column – inputs */}
         <div className="space-y-4">
           {/* Event & title */}
@@ -1380,33 +1381,40 @@ function App() {
 
           {/* Current draft */}
           <Card>
-            <CardHeader className="flex-col items-start gap-2">
-              <div className="flex items-center gap-2">
-                <div className="text-sm font-semibold">Draft output</div>
-                {currentVersion && (
-                  <Pill tone={qualityTone(currentVersion.score)}>
-                    Score (proto): {currentVersion.score ?? "–"}
-                  </Pill>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                <Pill className="text-[10px]">{getScenarioLabel(scenario)}</Pill>
-                <Pill className="text-[10px]">{primaryOutputLabel}</Pill>
-                <Pill className="text-[10px]">{getModelLabel(modelId)}</Pill>
-                <Pill className="text-[10px] capitalize">
-                  {versionType} version
-                </Pill>
-               {maxWords && (
-                 <Pill className="text-[10px]">
-                   ≤ {formatNumber(maxWords)} words
-                 </Pill>
-               )}
+ <CardHeader className="flex-col items-start gap-2.5">
+  <div className="flex items-center gap-2">
+    <div className="text-sm font-semibold tracking-tight">
+      Draft output
+    </div>
+    {currentVersion && (
+      <Pill
+        tone={qualityTone(currentVersion.score)}
+        className="text-[10px]"
+      >
+        Score (proto): {currentVersion.score ?? "–"}
+      </Pill>
+    )}
+  </div>
+  <div className="flex flex-wrap gap-1.5">
+    <Pill className="text-[10px]">
+      {getScenarioLabel(scenario)}
+    </Pill>
+    <Pill className="text-[10px]">{primaryOutputLabel}</Pill>
+    <Pill className="text-[10px]">{getModelLabel(modelId)}</Pill>
+    <Pill className="text-[10px] capitalize">
+      {versionType} version
+    </Pill>
+    {maxWords && (
+      <Pill className="text-[10px]">
+        ≤ {formatNumber(maxWords)} words
+      </Pill>
+    )}
+    <Pill className="text-[10px]">
+      Public search: {publicSearch ? "On" : "Off"}
+    </Pill>
+  </div>
+</CardHeader>
 
-                <Pill className="text-[10px]">
-                  Public search: {publicSearch ? "On" : "Off"}
-                </Pill>
-              </div>
-            </CardHeader>
 
             <CardBody className="space-y-3">
               <TextArea
@@ -1767,11 +1775,11 @@ function App() {
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500">
-                  Example: “Is the revenue figure mentioned in paragraph three
-                  public information?” or “What exactly is meant by the leverage
-                  metric here?”
-                </p>
+               <p className="text-[11px] leading-snug text-slate-500">
+                 Example: “Is the revenue figure mentioned in paragraph three public
+                 information?” or “What exactly is meant by the leverage metric here?”
+               </p>
+
 
                 <TextArea
                   rows={2}
@@ -1790,9 +1798,10 @@ function App() {
                 />
 
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-[11px] text-slate-500">
+                  <div className="text-[11px] leading-snug text-slate-500">
                     The AI will consider both the draft and the attached sources.
                   </div>
+
                   <Button
                     variant="default"
                     className="text-xs"
@@ -1944,30 +1953,27 @@ function App() {
                           : "border-slate-200 hover:bg-slate-50"
                       }`}
                     >
-                                            <div className="flex items-center justify-between gap-2 mb-1">
-                        <div className="text-xs font-medium truncate">
-                          v{versionNumber} ·{" "}
-                          <span className="capitalize">{outputLabel}</span>
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <div className="truncate text-[11px] font-semibold tracking-tight">
+                            v{versionNumber} ·{" "}
+                            <span className="capitalize">{outputLabel}</span>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <Pill className="text-[10px]">
+                              {formatNumber(wordCount)} words
+                            </Pill>
+                            <Pill className="text-[10px] capitalize">
+                              {v.versionType === "public" ? "Public" : "Complete"}
+                            </Pill>
+                            <Pill
+                              tone={qualityTone(v.score)}
+                              className="text-[10px]"
+                            >
+                              Score (proto): {v.score != null ? v.score : "–"}
+                            </Pill>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                           <Pill className="text-[10px]">
-                             {formatNumber(wordCount)} words
-                           </Pill>
 
-                           <Pill className="text-[10px] capitalize">
-                            {v.versionType === "public"
-                              ? "Public"
-                              : "Complete"}
-                          </Pill>
-                          <Pill
-                            tone={qualityTone(v.score)}
-                            className="text-[10px]"
-                          >
-                            Score (proto):{" "}
-                            {v.score != null ? v.score : "–"}
-                          </Pill>
-                        </div>
-                      </div>
 
 
                       <div className="flex items-center justify-between gap-2">
