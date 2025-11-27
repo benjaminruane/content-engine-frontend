@@ -185,6 +185,12 @@ function App() {
     setQueryText("");
   }, [selectedVersionId, scenario, versionType]);
 
+  // On initial load, make sure we start at the top of the page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
@@ -1795,12 +1801,14 @@ function App() {
                   </Button>
                 </div>
 
-                {queryAnswer && (
+                                {queryAnswer && (
                   <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
-                    <div className="mb-1 flex items-center justify-between gap-2">
-                      <div className="font-medium whitespace-nowrap">AI answer</div>
+                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="font-medium whitespace-nowrap text-slate-800">
+                        AI answer
+                      </div>
                       {queryMeta && queryMeta.confidence != null && (
-                        <div className="text-right text-[10px] text-slate-500">
+                        <div className="text-[10px] text-slate-500 sm:text-right">
                           Confidence:{" "}
                           <span className="font-semibold">
                             {Math.round(queryMeta.confidence * 100)}%
@@ -1813,13 +1821,15 @@ function App() {
                         </div>
                       )}
                     </div>
-                    <div className="whitespace-pre-wrap">{queryAnswer}</div>
+                    <div className="whitespace-pre-wrap leading-snug">
+                      {queryAnswer}
+                    </div>
                   </div>
                 )}
 
                 {queryHistory.length > 0 && (
                   <div className="mt-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[11px] text-slate-700">
-                    <div className="mb-1 flex items-center justify-between gap-2">
+                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <div className="font-medium whitespace-nowrap">
                         Question history
                       </div>
@@ -1841,11 +1851,11 @@ function App() {
                           className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="truncate text-[11px] font-medium text-slate-800">
+                            <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
                               {item.question}
                             </span>
                             {item.meta && item.meta.confidence != null && (
-                              <span className="text-[10px] text-slate-500">
+                              <span className="shrink-0 text-[10px] text-slate-500">
                                 {Math.round(item.meta.confidence * 100)}%
                               </span>
                             )}
@@ -1857,6 +1867,8 @@ function App() {
                       ))}
                     </div>
                   </div>
+                )}
+
                 )}
               </div>
             </CardBody>
