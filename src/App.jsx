@@ -1616,28 +1616,28 @@ function App() {
                 </div>
               )}
 
-                           {/* Statement reliability analysis */}
+              {/* Statement reliability analysis */}
               <div className="border-t border-slate-200 pt-3 mt-2">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="text-[11px] font-semibold tracking-tight text-slate-800">
                     Statement reliability (beta)
                   </div>
-
-                    <Button
-                      variant="quiet"
-                      className="text-[11px]"
-                      onClick={handleAnalyseStatements}
-                      disabled={isAnalysingStatements}
-                    >
-                      {isAnalysingStatements
-                        ? "Analysing…"
-                        : statementAnalysis &&
-                          statementAnalysis.versionId === currentVersion?.id
-                        ? "Re-run analysis"
-                        : "Analyse statements"}
-                    </Button>
+              
+                  <Button
+                    variant="quiet"
+                    className="text-[11px]"
+                    onClick={handleAnalyseStatements}
+                    disabled={isAnalysingStatements}
+                  >
+                    {isAnalysingStatements
+                      ? "Analysing…"
+                      : statementAnalysis &&
+                        statementAnalysis.versionId === currentVersion?.id
+                      ? "Re-run analysis"
+                      : "Analyse statements"}
+                  </Button>
                 </div>
-
+              
                 {/* Summary strip */}
                 {statementAnalysis &&
                   statementAnalysis.versionId === currentVersion?.id && (
@@ -1653,170 +1653,162 @@ function App() {
                           "number" &&
                           statementAnalysis.summary.lowReliabilityCount > 0 && (
                             <span>
-                              •{" "}
-                              {
-                                statementAnalysis.summary.lowReliabilityCount
-                              }{" "}
-                              flagged as low reliability
+                              • {statementAnalysis.summary.lowReliabilityCount} flagged
+                              as low reliability
                             </span>
                           )}
                       </div>
-                        {typeof statementAnalysis.summary?.averageReliability === "number" && (
-                          <Pill
-                            tone={
-                              statementAnalysis.summary.reliabilityBand === "high"
-                                ? "success"
-                                : statementAnalysis.summary.reliabilityBand === "medium"
-                                ? "warning"
-                                : statementAnalysis.summary.reliabilityBand === "low"
-                                ? "danger"
-                                : "neutral"
-                            }
-                            className="text-[10px]"
-                          >
-                            Overall reliability:{" "}
-                            {formatNumber(
-                              Math.round(
-                                statementAnalysis.summary.averageReliability * 100
-                              )
-                            )}
-                            %
-                            {statementAnalysis.summary.reliabilityBand && (
-                              <> ({statementAnalysis.summary.reliabilityBand})</>
-                            )}
-                          </Pill>
-                        )}
-
+                      {typeof statementAnalysis.summary?.averageReliability ===
+                        "number" && (
+                        <Pill
+                          tone={
+                            statementAnalysis.summary.reliabilityBand === "high"
+                              ? "success"
+                              : statementAnalysis.summary.reliabilityBand === "medium"
+                              ? "warning"
+                              : statementAnalysis.summary.reliabilityBand === "low"
+                              ? "danger"
+                              : "neutral"
+                          }
+                          className="text-[10px]"
+                        >
+                          Overall reliability:{" "}
+                          {formatNumber(
+                            Math.round(
+                              statementAnalysis.summary.averageReliability * 100
+                            )
+                          )}
+                          %
+                          {statementAnalysis.summary.reliabilityBand && (
+                            <> ({statementAnalysis.summary.reliabilityBand})</>
+                          )}
+                        </Pill>
+                      )}
                     </div>
                   )}
-
-                {/* Table */}
-                  {statementAnalysis &&
-                    statementAnalysis.versionId === currentVersion?.id &&
-                    Array.isArray(statementAnalysis.statements) &&
-                    statementAnalysis.statements.length > 0 && (() => {
-                      const totalStatements = statementAnalysis.statements.length;
-                      const visibleStatements = showAllStatements
-                        ? statementAnalysis.statements
-                        : statementAnalysis.statements.slice(0, 5);
-                  
-                      return (
-                        <div className="max-h-56 overflow-x-auto">
-                          <div className="mb-1 flex items-center justify-between text-[11px] text-slate-600">
-                            <span>
-                              Showing {visibleStatements.length} of {totalStatements} statements
-                            </span>
-                            {totalStatements > 5 && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setShowAllStatements((prev) => !prev)
-                                }
-                                className="text-sky-700 hover:underline"
-                              >
-                                {showAllStatements ? "Show first 5" : "Show all"}
-                              </button>
-                            )}
-                          </div>
-                  
-                          <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
-                            <thead className="bg-slate-50">
-                              <tr>
-                                <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
-                                  #
-                                </th>
-                                <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
-                                  Statement
-                                </th>
-                                <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
-                                  Reliability
-                                </th>
-                                <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
-                                  Category
-                                </th>
-                                <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
-                                  Implication
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {visibleStatements.map((st, idx) => {
-                                const rel =
-                                  typeof st.reliability === "number"
-                                    ? st.reliability
-                                    : null;
-                                const relPct =
-                                  rel != null ? Math.round(rel * 100) : null;
-                  
-                                let relBand = null;
-                                if (relPct != null) {
-                                  if (relPct >= 90) relBand = "high";
-                                  else if (relPct >= 75) relBand = "medium";
-                                  else relBand = "low";
-                                }
-                  
-                                const rowHighlight =
-                                  relBand === "low"
-                                    ? "bg-red-50/40"
-                                    : relBand === "medium"
-                                    ? "bg-amber-50/30"
-                                    : "";
-                  
-                                return (
-                                  <tr
-                                    key={st.id ?? idx}
-                                    className={`border-t border-slate-200 align-top ${rowHighlight}`}
-                                  >
-                                    <td className="px-2 py-1 align-top text-slate-500">
-                                      {idx + 1}
-                                    </td>
-                                    <td className="px-2 py-1 align-top">
-                                      {st.text}
-                                    </td>
-                                    <td className="px-2 py-1 align-top text-slate-600">
-                                      {relPct != null ? (
-                                        <span
-                                          className={
-                                            relBand === "low"
-                                              ? "text-red-600 font-medium"
-                                              : relBand === "medium"
-                                              ? "text-amber-700 font-medium"
-                                              : relBand === "high"
-                                              ? "text-emerald-700 font-medium"
-                                              : ""
-                                          }
-                                        >
-                                          {formatNumber(relPct)}%{" "}
-                                          {relBand === "low" && (
-                                            <span className="ml-1">⚠</span>
-                                          )}
-                                        </span>
-                                      ) : (
-                                        "–"
-                                      )}
-                                    </td>
-                                    <td className="px-2 py-1 align-top text-slate-600">
-                                      {st.category || "–"}
-                                    </td>
-                                    <td className="px-2 py-1 align-top text-slate-600">
-                                      {relBand === "high"
-                                        ? "–"
-                                        : st.implication ||
-                                          "Consider reviewing or softening this statement."}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      );
-                    })()}
-
+              
+                {/* Table with preview / expand */}
+                {statementAnalysis &&
+                  statementAnalysis.versionId === currentVersion?.id &&
+                  Array.isArray(statementAnalysis.statements) &&
+                  statementAnalysis.statements.length > 0 && (
+                    <div className="max-h-56 overflow-x-auto">
+                      <div className="mb-1 flex items-center justify-between text-[11px] text-slate-600">
+                        <span>
+                          Showing{" "}
+                          {showAllStatements
+                            ? statementAnalysis.statements.length
+                            : Math.min(5, statementAnalysis.statements.length)}{" "}
+                          of {statementAnalysis.statements.length} statements
+                        </span>
+                        {statementAnalysis.statements.length > 5 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowAllStatements((prev) => !prev)
+                            }
+                            className="text-sky-700 hover:underline"
+                          >
+                            {showAllStatements ? "Show first 5" : "Show all"}
+                          </button>
+                        )}
+                      </div>
+              
+                      <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
+                              #
+                            </th>
+                            <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
+                              Statement
+                            </th>
+                            <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
+                              Reliability
+                            </th>
+                            <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
+                              Category
+                            </th>
+                            <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
+                              Implication
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {statementAnalysis.statements
+                            .filter((_, idx) => showAllStatements || idx < 5)
+                            .map((st, idx) => {
+                              const rel =
+                                typeof st.reliability === "number"
+                                  ? st.reliability
+                                  : null;
+                              const relPct =
+                                rel != null ? Math.round(rel * 100) : null;
+              
+                              let relBand = null;
+                              if (relPct != null) {
+                                if (relPct >= 90) relBand = "high";
+                                else if (relPct >= 75) relBand = "medium";
+                                else relBand = "low";
+                              }
+              
+                              const rowHighlight =
+                                relBand === "low"
+                                  ? "bg-red-50/40"
+                                  : relBand === "medium"
+                                  ? "bg-amber-50/30"
+                                  : "";
+              
+                              return (
+                                <tr
+                                  key={st.id ?? idx}
+                                  className={`border-t border-slate-200 align-top ${rowHighlight}`}
+                                >
+                                  <td className="px-2 py-1 align-top text-slate-500">
+                                    {idx + 1}
+                                  </td>
+                                  <td className="px-2 py-1 align-top">
+                                    {st.text}
+                                  </td>
+                                  <td className="px-2 py-1 align-top text-slate-600">
+                                    {relPct != null ? (
+                                      <span
+                                        className={
+                                          relBand === "low"
+                                            ? "text-red-600 font-medium"
+                                            : relBand === "medium"
+                                            ? "text-amber-700 font-medium"
+                                            : relBand === "high"
+                                            ? "text-emerald-700 font-medium"
+                                            : ""
+                                        }
+                                      >
+                                        {formatNumber(relPct)}%{" "}
+                                        {relBand === "low" && (
+                                          <span className="ml-1">⚠</span>
+                                        )}
+                                      </span>
+                                    ) : (
+                                      "–"
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-1 align-top text-slate-600">
+                                    {st.category || "–"}
+                                  </td>
+                                  <td className="px-2 py-1 align-top text-slate-600">
+                                    {relBand === "high"
+                                      ? "–"
+                                      : st.implication ||
+                                        "Consider reviewing or softening this statement."}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
                       </table>
                     </div>
                   )}
-
+              
                 {/* No statements message – graceful fallback */}
                 {statementAnalysis &&
                   statementAnalysis.versionId === currentVersion?.id &&
@@ -1827,16 +1819,16 @@ function App() {
                         Analysis completed – no discrete statements found
                       </div>
                       <p>
-                        The AI couldn’t confidently break this draft into
-                        separate factual statements. This often happens when
-                        the text is highly narrative, very short, or light on
-                        explicit figures and claims. The draft itself is still
-                        valid – consider adding clearer factual sentences if
-                        you want statement-level checks.
+                        The AI couldn’t confidently break this draft into separate
+                        factual statements. This often happens when the text is highly
+                        narrative, very short, or light on explicit figures and claims.
+                        The draft itself is still valid – consider adding clearer factual
+                        sentences if you want statement-level checks.
                       </p>
                     </div>
                   )}
               </div>
+
 
               {/* Rewrite section */}
               <div className="space-y-2 pt-1">
