@@ -556,7 +556,6 @@ function App() {
       ];
 
       const newVersions = outputs.map((o, idx) => {
-
         const id = `${now.getTime()}-${idx}`;
         return {
           id,
@@ -573,16 +572,20 @@ function App() {
           sources: versionSources,
         };
       });
-
+      
       setVersions((prev) => [...prev, ...newVersions]);
       const primary = newVersions[0];
       setSelectedVersionId(primary.id);
       setDraftText(primary.text);
-
+      
       // After a successful generation, lock the Generate button
       setCanGenerate(false);
-
+      
       showToast("Draft generated");
+      
+      // 🔍 Automatically run statement analysis on the primary version
+      await runStatementAnalysis(primary.text, primary.id);
+
     } catch (e) {
       console.error("Error generating", e);
       const msg = e && e.message ? e.message : "Error generating draft";
@@ -689,11 +692,15 @@ function App() {
         metrics: out.metrics || {},
         sources: versionSources,
       };
-
+      
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(id);
       setDraftText(out.text);
       showToast("Rewrite completed");
+      
+      // 🔍 Automatically re-run statement analysis on the rewritten version
+      await runStatementAnalysis(out.text, id);
+
     } catch (e) {
       console.error("Error rewriting", e);
       const msg = e && e.message ? e.message : "Error rewriting draft";
