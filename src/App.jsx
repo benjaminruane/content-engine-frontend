@@ -201,14 +201,17 @@ function App() {
 
   const [statementAnalysis, setStatementAnalysis] = useState(null);
   const [isAnalysingStatements, setIsAnalysingStatements] = useState(false);
+  const [showAllStatements, setShowAllStatements] = useState(false);
 
    // Whenever the selected version, scenario, or version type changes,
   // clear any existing statement analysis (it may no longer be valid).
     useEffect(() => {
-    setStatementAnalysis(null);
-    setQueryAnswer(null);
-    setQueryText("");
-  }, [selectedVersionId, scenario, versionType]);
+      setStatementAnalysis(null);
+      setShowAllStatements(false);
+      setQueryAnswer(null);
+      setQueryText("");
+    }, [selectedVersionId, scenario, versionType]);
+
 
   // On initial load, make sure we start at the top of the page
   useEffect(() => {
@@ -391,6 +394,66 @@ function App() {
     }
     return res.json();
   };
+
+  const runStatementAnalysis = async (textForAnalysis, versionId) => {
+  if (!apiBaseUrl) {
+    showToast("Set API base URL first");
+    return;
+  }
+
+  const trimmed = (textForAnalysis || "").trim();
+
+  if (!trimmed) {
+    showToast("No draft to analyse");
+    return;
+  }
+
+  if (trimmed.length > MAX_MODEL_INPUT_CHARS) {
+    showToast(
+      `This draft is too long for statement analysis in one pass (${formatNumber(
+        trimmed.length
+      )} characters). Try analysing a shorter or more focused version.`
+    );
+    return;
+  }
+
+  try {
+    setIsAnalysingStatements(true);
+    setStatementAnalysis(null);
+    setShowAllStatements(false);
+
+    const payload = {
+      text: trimmed,
+      scenario,
+      versionType,
+    };
+
+    const data = await callBackend("analyse-statements", payload);
+
+    const statements = Array.isArray(data?.statements)
+      ? data.statements
+      : [];
+    const summary =
+      data && typeof data.summary === "object" ? data.summary : null;
+
+    setStatementAnalysis({
+      versionId,
+      statements,
+      summary,
+    });
+
+    if (!statements.length) {
+      showToast("Analysis completed – no discrete statements found");
+    }
+  } catch (e) {
+    console.error("Error analysing statements", e);
+    const msg =
+      e && e.message ? e.message : "Error analysing statements";
+    showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
+  } finally {
+    setIsAnalysingStatements(false);
+  }
+};
 
   const handleGenerate = async () => {
     if (!apiBaseUrl) {
@@ -749,65 +812,15 @@ function App() {
 
 
    
-    const handleAnalyseStatements = async () => {
-    if (!currentVersion || !currentVersion.text) {
-      showToast("No draft to analyse");
-      return;
-    }
-
-    const textForAnalysis = currentVersion.text.trim();
-
-    if (!textForAnalysis) {
-      showToast("No draft to analyse");
-      return;
-    }
-
-    if (textForAnalysis.length > MAX_MODEL_INPUT_CHARS) {
-      showToast(
-        `This draft is too long for statement analysis in one pass (${formatNumber(
-          textForAnalysis.length
-        )} characters). Try analysing a shorter or more focused version.`
-      );
-      return;
-    }
-
-    try {
-      setIsAnalysingStatements(true);
-      setStatementAnalysis(null);
-
-      const payload = {
-        text: textForAnalysis,
-        scenario,
-        versionType,
+      const handleAnalyseStatements = async () => {
+        if (!currentVersion || !currentVersion.text) {
+          showToast("No draft to analyse");
+          return;
+        }
+      
+        await runStatementAnalysis(currentVersion.text, currentVersion.id);
       };
 
-      const data = await callBackend("analyse-statements", payload);
-
-
-      const statements = Array.isArray(data?.statements)
-        ? data.statements
-        : [];
-      const summary =
-        data && typeof data.summary === "object" ? data.summary : null;
-
-      setStatementAnalysis({
-        versionId: currentVersion.id,
-        statements,
-        summary,
-      });
-
-      if (!statements.length) {
-        showToast("No clearly extractable statements found");
-      }
-    } catch (e) {
-      console.error("Error analysing statements", e);
-      const msg =
-        e && e.message ? e.message : "Error analysing statements";
-      showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
-    } finally {
-      setIsAnalysingStatements(false);
-    }
-  };
 
     const handleSelectVersion = (id) => {
     const v = versions.find((ver) => ver.id === id) || null;
@@ -822,6 +835,7 @@ function App() {
 
     // Any existing analysis is now stale
     setStatementAnalysis(null);
+    setShowAllStatements(false);
   };
 
 
@@ -889,9 +903,11 @@ function App() {
     setCanGenerate(true);
 
     // Reset analysis and instruction state for a clean session
-    setStatementAnalysis(null);
-    setInstructionsApplied(false);
-    setRewriteInstructionsApplied(false);
+      setStatementAnalysis(null);
+      setShowAllStatements(false);
+      setInstructionsApplied(false);
+      setRewriteInstructionsApplied(false);
+
 
     // Reset query state for this session
     setQueryText("");
@@ -1607,14 +1623,19 @@ function App() {
                     Statement reliability (beta)
                   </div>
 
-                  <Button
-                    variant="quiet"
-                    className="text-[11px]"
-                    onClick={handleAnalyseStatements}
-                    disabled={isAnalysingStatements}
-                  >
-                    {isAnalysingStatements ? "Analysing…" : "Analyse statements"}
-                  </Button>
+                    <Button
+                      variant="quiet"
+                      className="text-[11px]"
+                      onClick={handleAnalyseStatements}
+                      disabled={isAnalysingStatements}
+                    >
+                      {isAnalysingStatements
+                        ? "Analysing…"
+                        : statementAnalysis &&
+                          statementAnalysis.versionId === currentVersion?.id
+                        ? "Re-run analysis"
+                        : "Analyse statements"}
+                    </Button>
                 </div>
 
                 {/* Summary strip */}
@@ -1670,98 +1691,128 @@ function App() {
                   )}
 
                 {/* Table */}
-                {statementAnalysis &&
-                  statementAnalysis.versionId === currentVersion?.id &&
-                  Array.isArray(statementAnalysis.statements) &&
-                  statementAnalysis.statements.length > 0 && (
-                    <div className="max-h-56 overflow-x-auto">
-                      <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
-                        <thead className="bg-slate-50">
-                          <tr>
-                            <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
-                              #
-                            </th>
-                            <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
-                              Statement
-                            </th>
-                            <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
-                              Reliability
-                            </th>
-                            <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
-                              Category
-                            </th>
-                            <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
-                              Implication
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {statementAnalysis.statements.map((st, idx) => {
-                            const rel =
-                              typeof st.reliability === "number"
-                                ? st.reliability
-                                : null;
-                            const relPct =
-                              rel != null ? Math.round(rel * 100) : null;
-
-                            let relBand = null;
-                            if (relPct != null) {
-                              if (relPct >= 90) relBand = "high";
-                              else if (relPct >= 75) relBand = "medium";
-                              else relBand = "low";
-                            }
-
-                            const rowHighlight =
-                              relBand === "low"
-                                ? "bg-red-50/40"
-                                : relBand === "medium"
-                                ? "bg-amber-50/30"
-                                : "";
-
-                            return (
-                              <tr
-                                key={st.id ?? idx}
-                                className={`border-t border-slate-200 align-top ${rowHighlight}`}
+                  {statementAnalysis &&
+                    statementAnalysis.versionId === currentVersion?.id &&
+                    Array.isArray(statementAnalysis.statements) &&
+                    statementAnalysis.statements.length > 0 && (() => {
+                      const totalStatements = statementAnalysis.statements.length;
+                      const visibleStatements = showAllStatements
+                        ? statementAnalysis.statements
+                        : statementAnalysis.statements.slice(0, 5);
+                  
+                      return (
+                        <div className="max-h-56 overflow-x-auto">
+                          <div className="mb-1 flex items-center justify-between text-[11px] text-slate-600">
+                            <span>
+                              Showing {visibleStatements.length} of {totalStatements} statements
+                            </span>
+                            {totalStatements > 5 && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowAllStatements((prev) => !prev)
+                                }
+                                className="text-sky-700 hover:underline"
                               >
-                                <td className="px-2 py-1 align-top text-slate-500">
-                                  {idx + 1}
-                                </td>
-                                <td className="px-2 py-1 align-top">
-                                  {st.text}
-                                </td>
-                                <td className="px-2 py-1 align-top text-slate-600">
-                                  {relPct != null ? (
-                                    <span
-                                      className={
-                                        relBand === "low"
-                                          ? "text-red-600 font-medium"
-                                          : relBand === "medium"
-                                          ? "text-amber-700 font-medium"
-                                          : relBand === "high"
-                                          ? "text-emerald-700 font-medium"
-                                          : ""
-                                      }
-                                    >
-                                      {formatNumber(relPct)}%{" "}
-                                      {relBand === "low" && <span className="ml-1">⚠</span>}
-                                    </span>
-                                  ) : (
-                                    "–"
-                                  )}
-                                </td>
-                                <td className="px-2 py-1 align-top text-slate-600">
-                                  {st.category || "–"}
-                                </td>
-                                <td className="px-2 py-1 align-top text-slate-600">
-                                  {relBand === "high"
-                                    ? "–"
-                                    : st.implication ||
-                                      "Consider reviewing or softening this statement."}
-                                </td>
+                                {showAllStatements ? "Show first 5" : "Show all"}
+                              </button>
+                            )}
+                          </div>
+                  
+                          <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
+                            <thead className="bg-slate-50">
+                              <tr>
+                                <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
+                                  #
+                                </th>
+                                <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Statement
+                                </th>
+                                <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Reliability
+                                </th>
+                                <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Category
+                                </th>
+                                <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Implication
+                                </th>
                               </tr>
-                            );
-                          })}
-                        </tbody>
+                            </thead>
+                            <tbody>
+                              {visibleStatements.map((st, idx) => {
+                                const rel =
+                                  typeof st.reliability === "number"
+                                    ? st.reliability
+                                    : null;
+                                const relPct =
+                                  rel != null ? Math.round(rel * 100) : null;
+                  
+                                let relBand = null;
+                                if (relPct != null) {
+                                  if (relPct >= 90) relBand = "high";
+                                  else if (relPct >= 75) relBand = "medium";
+                                  else relBand = "low";
+                                }
+                  
+                                const rowHighlight =
+                                  relBand === "low"
+                                    ? "bg-red-50/40"
+                                    : relBand === "medium"
+                                    ? "bg-amber-50/30"
+                                    : "";
+                  
+                                return (
+                                  <tr
+                                    key={st.id ?? idx}
+                                    className={`border-t border-slate-200 align-top ${rowHighlight}`}
+                                  >
+                                    <td className="px-2 py-1 align-top text-slate-500">
+                                      {idx + 1}
+                                    </td>
+                                    <td className="px-2 py-1 align-top">
+                                      {st.text}
+                                    </td>
+                                    <td className="px-2 py-1 align-top text-slate-600">
+                                      {relPct != null ? (
+                                        <span
+                                          className={
+                                            relBand === "low"
+                                              ? "text-red-600 font-medium"
+                                              : relBand === "medium"
+                                              ? "text-amber-700 font-medium"
+                                              : relBand === "high"
+                                              ? "text-emerald-700 font-medium"
+                                              : ""
+                                          }
+                                        >
+                                          {formatNumber(relPct)}%{" "}
+                                          {relBand === "low" && (
+                                            <span className="ml-1">⚠</span>
+                                          )}
+                                        </span>
+                                      ) : (
+                                        "–"
+                                      )}
+                                    </td>
+                                    <td className="px-2 py-1 align-top text-slate-600">
+                                      {st.category || "–"}
+                                    </td>
+                                    <td className="px-2 py-1 align-top text-slate-600">
+                                      {relBand === "high"
+                                        ? "–"
+                                        : st.implication ||
+                                          "Consider reviewing or softening this statement."}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })()}
+
                       </table>
                     </div>
                   )}
