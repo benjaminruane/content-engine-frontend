@@ -1535,89 +1535,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Sources table for current version */}
-              {currentVersion && (currentVersion.sources || sources).length > 0 && (
-                <div className="border-t border-slate-200 pt-3 mt-2">
-                  <div className="text-xs font-semibold text-slate-700 mb-1">
-                    Sources for this version
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
-                      <thead className="bg-slate-50">
-                        <tr>
-                          <th className="px-2 py-1 text-left font-medium text-slate-600">
-                            Source
-                          </th>
-                          <th className="px-2 py-1 text-left font-medium text-slate-600">
-                            Type
-                          </th>
-                          <th className="px-2 py-1 text-left font-medium text-slate-600">
-                          Used portion
-                        </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(currentVersion.sources || sources).map((s, idx) => {
-                          const kind = s.kind || "text";
-                          const isUrl = kind === "url" || kind === "public";
-                          const url = s.url || (isUrl ? s.name : null);
-
-                          let usageLabel = "";
-                          if (kind === "file") {
-                            usageLabel = "entire document";
-                          } else if (kind === "url") {
-                            usageLabel = "extracted article text";
-                          } else if (kind === "public") {
-                            usageLabel = "public web context";
-                          } else {
-                            usageLabel = "manual text input";
-                          }
-
-
-                          return (
-                            <tr
-
-                              key={`${s.name || "src"}-${idx}`}
-                              className="border-t border-slate-200"
-                            >
-                              <td className="px-2 py-1 align-top">
-                                {isUrl && url ? (
-                                  <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-sky-600 hover:underline break-all"
-                                  >
-                                    {s.name}
-                                  </a>
-                                ) : (
-                                  <span className="break-all">
-                                    {s.name || "(unnamed source)"}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-2 py-1 align-top text-slate-600">
-                                {kind === "file"
-                                  ? "File"
-                                  : kind === "url"
-                                  ? "URL"
-                                  : kind === "public"
-                                  ? "Public source"
-                                  : "Text"}
-                              </td>
-                               <td className="px-2 py-1 align-top text-slate-600">
-                                {usageLabel}
-                              </td>
-
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
           {/* Statement reliability analysis */}
           <div className="border-t border-slate-200 pt-3 mt-2">
             <div className="mb-2 flex items-center justify-between">
@@ -1937,57 +1854,96 @@ function App() {
                     </div>
                   </div>
                 )}
-
-                {queryHistory.length > 0 && (
-                  <div className="mt-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[11px] text-slate-700">
-                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="font-medium whitespace-nowrap">
-                        Question history
-                      </div>
-                      <div className="text-[10px] text-slate-500">
-                        {queryHistory.length} question
-                        {queryHistory.length > 1 ? "s" : ""} this session
-                      </div>
-                    </div>
-                    <div className="max-h-40 space-y-1 overflow-auto pr-1">
-                      {queryHistory.map((item, idx) => (
-                        <button
-                          key={item.id ?? idx}
-                          type="button"
-                          onClick={() => {
-                            setQueryText(item.question);
-                            setQueryAnswer(item.answer);
-                            setQueryMeta(item.meta ?? null);
-                          }}
-                          className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
-                              {item.question}
-                            </span>
-                           {item.meta &&
-                             item.meta.confidence != null && (
-                               <span className="text-[10px] text-slate-500">
-                                 {formatNumber(
-                                   Math.round(item.meta.confidence * 100)
-                                 )}
-                                 %
-                               </span>
-                             )}
-
-                          </div>
-                          <div className="truncate text-[10px] text-slate-500">
-                            {item.answer}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </CardBody>
           </Card>
 
+          {/* Sources for selected version */}
+          {currentVersion && (currentVersion.sources || sources).length > 0 && (
+            <Card>
+              <CardHeader className="items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <div className="text-sm font-semibold">Sources for this version</div>
+                  <div className="text-xs text-slate-500">
+                    Files, URLs and public sources feeding the selected draft.
+                  </div>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-2 py-1 text-left font-medium text-slate-600">
+                          Source
+                        </th>
+                        <th className="px-2 py-1 text-left font-medium text-slate-600">
+                          Type
+                        </th>
+                        <th className="px-2 py-1 text-left font-medium text-slate-600">
+                          Used portion
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(currentVersion.sources || sources).map((s, idx) => {
+                        const kind = s.kind || "text";
+                        const isUrl = kind === "url" || kind === "public";
+                        const url = s.url || (isUrl ? s.name : null);
+
+                        let usageLabel = "";
+                        if (kind === "file") {
+                          usageLabel = "entire document";
+                        } else if (kind === "url") {
+                          usageLabel = "extracted article text";
+                        } else if (kind === "public") {
+                          usageLabel = "public web context";
+                        } else {
+                          usageLabel = "manual text input";
+                        }
+
+                        return (
+                          <tr
+                            key={`${s.name || "src"}-${idx}`}
+                            className="border-t border-slate-200"
+                          >
+                            <td className="px-2 py-1 align-top">
+                              {isUrl && url ? (
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-sky-600 hover:underline break-all"
+                                >
+                                  {s.name}
+                                </a>
+                              ) : (
+                                <span className="break-all">
+                                  {s.name || "(unnamed source)"}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-2 py-1 align-top text-slate-600">
+                              {kind === "file"
+                                ? "File"
+                                : kind === "url"
+                                ? "URL"
+                                : kind === "public"
+                                ? "Public source"
+                                : "Text"}
+                            </td>
+                            <td className="px-2 py-1 align-top text-slate-600">
+                              {usageLabel}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardBody>
+            </Card>
+          )}
 
           {/* Versions timeline */}
           <Card>
@@ -2097,6 +2053,58 @@ function App() {
               })}
             </CardBody>
           </Card>
+
+          {/* Question history */}
+          {queryHistory.length > 0 && (
+            <Card>
+              <CardHeader className="items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <div className="text-sm font-semibold">Question history</div>
+                  <div className="text-xs text-slate-500">
+                    Quick access to recent questions and answers for this session.
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  {queryHistory.length} question
+                  {queryHistory.length > 1 ? "s" : ""} this session
+                </div>
+              </CardHeader>
+              <CardBody className="pt-2">
+                <div className="max-h-40 space-y-1 overflow-auto pr-1">
+                  {queryHistory.map((item, idx) => (
+                    <button
+                      key={item.id ?? idx}
+                      type="button"
+                      onClick={() => {
+                        setQueryText(item.question);
+                        setQueryAnswer(item.answer);
+                        setQueryMeta(item.meta ?? null);
+                      }}
+                      className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
+                          {item.question}
+                        </span>
+                        {item.meta && item.meta.confidence != null && (
+                          <span className="text-[10px] text-slate-500">
+                            {formatNumber(Math.round(item.meta.confidence * 100))}%
+                          </span>
+                        )}
+                      </div>
+                      <div className="truncate text-[10px] text-slate-500">
+                        {item.answer}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </CardBody>
+            </Card>
+          )}
+
+
+
+          
         </div>
       </main>
 
