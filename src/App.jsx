@@ -185,6 +185,7 @@ function App() {
   const [maxTokens, setMaxTokens] = useState(2048);
 
   const [publicSearch, setPublicSearch] = useState(false);
+  const [inputsCollapsed, setInputsCollapsed] = useState(false);
 
   const [maxWords, setMaxWords] = useState("");
 
@@ -1260,6 +1261,264 @@ function App() {
                       }`}
                     />
                     <span className="sr-only">
+                      Toggle public do      {/* Main layout */}
+      <main className="mx-auto max-w-6xl px-4 py-5 flex flex-col gap-5 md:flex-row">
+        {/* Left column – inputs */}
+        <div
+          className={`space-y-4 transition-all duration-200 ${
+            inputsCollapsed
+              ? "hidden md:block md:w-0 md:opacity-0 md:pointer-events-none"
+              : "w-full md:w-[52%]"
+          }`}
+        >
+          {/* Event & title */}
+          <Card>
+            <CardHeader className="items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Event & title</div>
+                <div className="text-xs text-slate-500">
+                  Define what happened and what you need written.
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Title / headline{" "}
+                  <span className="font-normal">(optional)</span>
+                </label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Acquisition of XYZ by ABC Partners"
+                />
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Helpful for press releases and LinkedIn posts, but not
+                  required for all outputs.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Event type
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {SCENARIOS.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setScenario(s.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                        scenario === s.id
+                          ? "bg-black text-white border-black"
+                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Used to adjust scenario-specific prompting and scoring.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Instructions / constraints
+                </label>
+                <textarea
+                  className={
+                    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                    (instructionsApplied ? "text-slate-400" : "text-slate-800")
+                  }
+                  value={notes}
+                  onChange={(e) => {
+                    setNotes(e.target.value);
+                    // User is editing -> treat as fresh instructions
+                    setInstructionsApplied(false);
+                  }}
+                  placeholder="Add instructions and constraints for this output..."
+                />
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Sources */}
+          <Card>
+            <CardHeader className="items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold">Source material</div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-3">
+              {/* Attached sources first */}
+              {sources.length > 0 && (
+                <div className="border border-slate-100 rounded-xl px-3 py-2 bg-slate-50">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-[11px] font-medium text-slate-600">
+                      Attached sources
+                    </div>
+                    <div className="text-[11px] text-slate-500">
+                      {sources.length} source
+                      {sources.length > 1 ? "s" : ""}
+                    </div>
+                  </div>
+                  <ul className="space-y-1 text-xs text-slate-700">
+                    {sources.map((s, idx) => {
+                      let meta = "";
+                      if (s.kind === "file") {
+                        if (s.size) {
+                          const kb = Math.round(s.size / 1024);
+                          meta = `${formatNumber(kb)} KB`;
+                        } else {
+                          meta = "file";
+                        }
+                      } else if (s.kind === "url") {
+                        const len = s.text ? s.text.length : 0;
+                        const k = Math.max(1, Math.round(len / 1000));
+                        meta = `URL · ~${formatNumber(k)}k chars`;
+                      } else {
+                        meta = "source";
+                      }
+
+                      return (
+                        <li
+                          key={`${s.name}-${idx}`}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            {s.kind === "url" && (s.url || s.name) ? (
+                              <a
+                                href={s.url || s.name}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="truncate text-sky-600 hover:underline"
+                              >
+                                {s.name}
+                              </a>
+                            ) : (
+                              <span className="truncate">{s.name}</span>
+                            )}
+                            <span className="text-[10px] text-slate-500 shrink-0">
+                              {meta}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSource(idx)}
+                            className="text-[14px] font-bold text-red-500 hover:text-white hover:bg-red-600 rounded-full px-2 py-0.5 transition"
+                            aria-label={`Remove source ${s.name}`}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* Files */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-slate-700">
+                    Files
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Upload investment memos, IM extracts, emails, board papers, or
+                  notes. Text files work best.
+                </p>
+                <div
+                  className="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 px-4 py-6 text-xs text-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-slate-400 hover:bg-slate-100"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onDrop={handleDropFiles}
+                >
+                  <div className="text-lg mb-1">📄</div>
+                  <div className="font-medium mb-0.5">
+                    Drop files here, or click to upload
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    We’ll extract text and treat each file as a separate source.
+                  </div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+              </div>
+
+              {/* URL */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  URL
+                </label>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Paste a link to a public article or announcement. The backend
+                  will fetch readable on-page text where possible.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="text-xs"
+                    placeholder="https://example.com/article"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                  />
+                  <Button
+                    variant="default"
+                    className="text-xs whitespace-nowrap"
+                    onClick={handleAddUrlSource}
+                  >
+                    Add URL
+                  </Button>
+                </div>
+              </div>
+
+              {/* Manual text */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                  Manual text
+                </label>
+                <p className="text-[11px] text-slate-500 mb-1">
+                  Paste or type any additional source material here – email
+                  chains, call notes, bullet points, internal commentary, etc.
+                </p>
+                <TextArea
+                  rows={3}
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                  placeholder="Paste IM extracts, memos, emails, notes..."
+                />
+                <CharCounter value={rawText} />
+              </div>
+
+              {/* Public domain search */}
+              <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-medium text-slate-700">
+                    Public domain search
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPublicSearch((v) => !v)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                      publicSearch ? "bg-black" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                        publicSearch ? "translate-x-5" : "translate-x-1"
+                      }`}
+                    />
+                    <span className="sr-only">
                       Toggle public domain search
                     </span>
                   </button>
@@ -1393,10 +1652,31 @@ function App() {
             )}
           </Card>
         </div>
-        )}
+
+        {/* Collapse rail between columns (desktop only) */}
+        <div className="hidden md:flex flex-col items-stretch">
+          <button
+            type="button"
+            onClick={() => setInputsCollapsed((v) => !v)}
+            className="group relative flex h-full items-center justify-center px-1"
+          >
+            <span className="sr-only">
+              {inputsCollapsed ? "Show inputs" : "Hide inputs"}
+            </span>
+            <div className="flex h-24 w-7 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm group-hover:bg-slate-50">
+              <span className="text-[10px] text-slate-500 rotate-90">
+                {inputsCollapsed ? "Show inputs" : "Hide inputs"}
+              </span>
+            </div>
+          </button>
+        </div>
 
         {/* Right column – outputs & versions */}
-        <div className="space-y-4">
+        <div
+          className={`space-y-4 flex-1 transition-all duration-200 ${
+            inputsCollapsed ? "md:w-full" : "md:w-[48%]"
+          }`}
+        >
           {/* Output types */}
           <Card>
             <CardHeader className="items-center justify-between">
@@ -1427,7 +1707,7 @@ function App() {
                   ))}
                 </div>
               </div>
-        
+
               {/* Version type toggle */}
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
@@ -1457,7 +1737,7 @@ function App() {
                   while still following the writing guidelines.
                 </p>
               </div>
-        
+
               <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-3 items-end">
                 <div>
                   <label className="text-xs font-medium text-slate-700 mb-1 block">
@@ -1474,7 +1754,7 @@ function App() {
                       handleEnterKey(e, handleGenerate, isGenerating || !canGenerate)
                     }
                   />
-        
+
                   <p className="text-[11px] text-slate-500 mt-1">
                     Soft guidance plus hard cap. The engine will aim to stay
                     within this length.
@@ -1492,469 +1772,231 @@ function App() {
               </div>
             </CardBody>
           </Card>
-        
-          {/* Draft + right-hand stack */}
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)]">
-            {/* Left: Draft output + analysis + rewrite + Ask AI */}
-            <Card>
-              <CardHeader className="flex flex-col items-start gap-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="text-sm font-semibold tracking-tight text-slate-900">
-                    Draft output
-                  </div>
-                  {currentVersion && (
-                    <Pill
-                      tone={qualityTone(currentVersion.score)}
-                      className="text-[10px]"
-                    >
-                      Score (proto): {currentVersion.score ?? "–"}
-                    </Pill>
-                  )}
+
+          {/* Current draft */}
+          <Card>
+            <CardHeader className="flex flex-col items-start gap-1.5">
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold tracking-tight text-slate-900">
+                  Draft output
                 </div>
-        
-                <div className="text-[11px] text-slate-500">
-                  {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
-                  {getModelLabel(modelId)} ·{" "}
-                  {versionType === "public" ? "Public version" : "Complete version"}
-                  {maxWords && ` · ≤ ${formatNumber(maxWords)} words`}
-                  {" · Public search: "}
-                  {publicSearch ? "On" : "Off"}
+                {currentVersion && (
+                  <Pill
+                    tone={qualityTone(currentVersion.score)}
+                    className="text-[10px]"
+                  >
+                    Score (proto): {currentVersion.score ?? "–"}
+                  </Pill>
+                )}
+              </div>
+
+              <div className="text-[11px] text-slate-500">
+                {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
+                {getModelLabel(modelId)} ·{" "}
+                {versionType === "public" ? "Public version" : "Complete version"}
+                {maxWords && ` · ≤ ${formatNumber(maxWords)} words`}
+                {" · Public search: "}
+                {publicSearch ? "On" : "Off"}
+              </div>
+            </CardHeader>
+
+            <CardBody className="space-y-3">
+              <TextArea
+                rows={18}
+                value={draftText}
+                onChange={(e) => setDraftText(e.target.value)}
+                placeholder="Generated draft will appear here. You can edit before rewriting."
+              />
+              <CharCounter value={draftText} />
+
+              <div className="mt-1 text-right text-[11px] text-slate-500">
+                Word count: {formatNumber(draftWordCount)}
+              </div>
+
+              {/* Export options */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="default"
+                    className="text-xs"
+                    onClick={handleCopyDraft}
+                  >
+                    Copy draft
+                  </Button>
+                  <Button
+                    variant="quiet"
+                    className="text-xs"
+                    onClick={handleDownloadDraft}
+                  >
+                    Download .txt
+                  </Button>
                 </div>
-              </CardHeader>
-        
-              <CardBody className="space-y-3">
-                <TextArea
-                  rows={18}
-                  value={draftText}
-                  onChange={(e) => setDraftText(e.target.value)}
-                  placeholder="Generated draft will appear here. You can edit before rewriting."
-                />
-                <CharCounter value={draftText} />
-        
-                <div className="mt-1 text-right text-[11px] text-slate-500">
-                  Word count: {formatNumber(draftWordCount)}
+
+                <div className="flex-1 text-right text-[11px] text-slate-500">
+                  You can rewrite this draft using the current version type
+                  setting (Complete vs Public-facing).
                 </div>
-        
-                {/* Export options */}
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex gap-2">
-                    <Button
-                      variant="default"
-                      className="text-xs"
-                      onClick={handleCopyDraft}
-                    >
-                      Copy draft
-                    </Button>
-                    <Button
-                      variant="quiet"
-                      className="text-xs"
-                      onClick={handleDownloadDraft}
-                    >
-                      Download .txt
-                    </Button>
+              </div>
+
+              {/* Statement reliability analysis */}
+              <div className="border-t border-slate-200 pt-3 mt-2">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-[11px] font-semibold tracking-tight text-slate-800">
+                    Statement reliability (beta)
                   </div>
-        
-                  <div className="flex-1 text-right text-[11px] text-slate-500">
-                    You can rewrite this draft using the current version type
-                    setting (Complete vs Public-facing).
-                  </div>
+
+                  <Button
+                    variant="quiet"
+                    className="text-[11px]"
+                    onClick={handleAnalyseStatements}
+                    disabled={isAnalysingStatements}
+                  >
+                    {isAnalysingStatements
+                      ? "Analysing…"
+                      : statementAnalysis &&
+                        statementAnalysis.versionId === currentVersion?.id
+                      ? "Re-run analysis"
+                      : "Analyse statements"}
+                  </Button>
                 </div>
-        
-                {/* Statement reliability analysis */}
-                <div className="border-t border-slate-200 pt-3 mt-2">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="text-[11px] font-semibold tracking-tight text-slate-800">
-                      Statement reliability (beta)
-                    </div>
-        
-                    <Button
-                      variant="quiet"
-                      className="text-[11px]"
-                      onClick={handleAnalyseStatements}
-                      disabled={isAnalysingStatements}
-                    >
-                      {isAnalysingStatements
-                        ? "Analysing…"
-                        : statementAnalysis &&
-                          statementAnalysis.versionId === currentVersion?.id
-                        ? "Re-run analysis"
-                        : "Analyse statements"}
-                    </Button>
-                  </div>
-        
-                  {/* Summary strip */}
-                  {statementAnalysis &&
-                    statementAnalysis.versionId === currentVersion?.id && (
-                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
-                          <span>
-                            {statementAnalysis.summary?.totalStatements ??
-                              statementAnalysis.statements?.length ??
-                              0}{" "}
-                            statements analysed
-                          </span>
-                          {typeof statementAnalysis.summary?.lowReliabilityCount ===
-                            "number" &&
-                            statementAnalysis.summary.lowReliabilityCount > 0 && (
-                              <span>
-                                • {statementAnalysis.summary.lowReliabilityCount} flagged
-                                as low reliability
-                              </span>
-                            )}
-                        </div>
-                        {typeof statementAnalysis.summary?.averageReliability ===
-                          "number" && (
-                          <Pill
-                            tone={
-                              statementAnalysis.summary.reliabilityBand === "high"
-                                ? "success"
-                                : statementAnalysis.summary.reliabilityBand === "medium"
-                                ? "warning"
-                                : statementAnalysis.summary.reliabilityBand === "low"
-                                ? "danger"
-                                : "neutral"
-                            }
-                            className="text-[10px]"
-                          >
-                            Overall reliability:{" "}
-                            {formatNumber(
-                              Math.round(
-                                statementAnalysis.summary.averageReliability * 100
-                              )
-                            )}
-                            %
-                            {statementAnalysis.summary.reliabilityBand && (
-                              <> ({statementAnalysis.summary.reliabilityBand})</>
-                            )}
-                          </Pill>
-                        )}
-                      </div>
-                    )}
-        
-                  {/* Scrollable table */}
-                  {statementAnalysis &&
-                    statementAnalysis.versionId === currentVersion?.id &&
-                    Array.isArray(statementAnalysis.statements) &&
-                    statementAnalysis.statements.length > 0 && (
-                      <div className="max-h-64 overflow-y-auto overflow-x-auto">
-                        <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
-                          <thead className="bg-slate-50">
-                            <tr>
-                              <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
-                                #
-                              </th>
-                              <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
-                                Statement
-                              </th>
-                              <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
-                                Reliability
-                              </th>
-                              <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
-                                Category
-                              </th>
-                              <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
-                                Implication
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {statementAnalysis.statements.map((st, idx) => {
-                              const rel =
-                                typeof st.reliability === "number" ? st.reliability : null;
-                              const relPct =
-                                rel != null ? Math.round(rel * 100) : null;
-        
-                              let relBand = null;
-                              if (relPct != null) {
-                                if (relPct >= 90) relBand = "high";
-                                else if (relPct >= 75) relBand = "medium";
-                                else relBand = "low";
-                              }
-        
-                              const rowHighlight =
-                                relBand === "low"
-                                  ? "bg-red-50/40"
-                                  : relBand === "medium"
-                                  ? "bg-amber-50/30"
-                                  : "";
-        
-                              return (
-                                <tr
-                                  key={st.id ?? idx}
-                                  className={`border-t border-slate-200 align-top ${rowHighlight}`}
-                                >
-                                  <td className="px-2 py-1 align-top text-slate-500">
-                                    {idx + 1}
-                                  </td>
-                                  <td className="px-2 py-1 align-top">
-                                    {st.text}
-                                  </td>
-                                  <td className="px-2 py-1 align-top text-slate-600">
-                                    {relPct != null ? (
-                                      <span
-                                        className={
-                                          relBand === "low"
-                                            ? "text-red-600 font-medium"
-                                            : relBand === "medium"
-                                            ? "text-amber-700 font-medium"
-                                            : relBand === "high"
-                                            ? "text-emerald-700 font-medium"
-                                            : ""
-                                        }
-                                      >
-                                        {formatNumber(relPct)}%{" "}
-                                        {relBand === "low" && (
-                                          <span className="ml-1">⚠</span>
-                                        )}
-                                      </span>
-                                    ) : (
-                                      "–"
-                                    )}
-                                  </td>
-                                  <td className="px-2 py-1 align-top text-slate-600">
-                                    {st.category || "–"}
-                                  </td>
-                                  <td className="px-2 py-1 align-top text-slate-600">
-                                    {relBand === "high"
-                                      ? "–"
-                                      : st.implication ||
-                                        "Consider reviewing or softening this statement."}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-        
-                  {/* No statements message – graceful fallback */}
-                  {statementAnalysis &&
-                    statementAnalysis.versionId === currentVersion?.id &&
-                    Array.isArray(statementAnalysis.statements) &&
-                    statementAnalysis.statements.length === 0 && (
-                      <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
-                        <div className="mb-0.5 font-medium">
-                          Analysis completed – no discrete statements found
-                        </div>
-                        <p>
-                          The AI couldn’t confidently break this draft into separate
-                          factual statements. This often happens when the text is highly
-                          narrative, very short, or light on explicit figures and claims.
-                          The draft itself is still valid – consider adding clearer factual
-                          sentences if you want statement-level checks.
-                        </p>
-                      </div>
-                    )}
-                </div>
-        
-                {/* Rewrite section */}
-                <div className="space-y-2 pt-1">
-                  <label className="mb-1 block text-[11px] font-semibold tracking-tight text-slate-800">
-                    Rewrite instructions (optional)
-                  </label>
-        
-                  <p className="text-[11px] text-slate-500">
-                    This rewrite will use the current "{versionType}" setting in
-                    the controls above (Complete vs Public-facing).
-                  </p>
-        
-                  <textarea
-                    className={
-                      "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
-                      (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
-                    }
-                    value={rewriteNotes}
-                    onChange={(e) => {
-                      setRewriteNotes(e.target.value);
-                      // As soon as the user types, this is a new set of instructions
-                      setRewriteInstructionsApplied(false);
-                    }}
-                    placeholder="Tell the AI how to revise this version..."
-                    onKeyDown={(e) =>
-                      handleEnterKey(
-                        e,
-                        handleRewrite,
-                        isRewriting || versions.length === 0
-                      )
-                    }
-                  />
-                  <CharCounter value={rewriteNotes} />
-        
-                  <div className="flex justify-end gap-2 pt-1">
-                    <Button
-                      variant="default"
-                      onClick={handleRewrite}
-                      disabled={isRewriting || versions.length === 0}
-                    >
-                      {isRewriting ? "Rewriting..." : "Rewrite draft"}
-                    </Button>
-                  </div>
-                </div>
-        
-                {/* AI query box */}
-                <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="text-[11px] font-semibold tracking-tight text-slate-800">
-                      Ask a question about this draft or its sources
-                    </div>
-                    {queryAnswer && (
-                      <span className="text-[10px] text-slate-500">
-                        Latest answer shown below
-                      </span>
-                    )}
-                  </div>
-        
-                  <p className="text-[11px] leading-snug text-slate-500">
-                    Example: “Is the revenue figure mentioned in paragraph three public
-                    information?” or “What exactly is meant by the leverage metric here?”
-                  </p>
-        
-                  <TextArea
-                    rows={2}
-                    value={queryText}
-                    onChange={(e) => setQueryText(e.target.value)}
-                    placeholder="Type your question about this draft or its sources..."
-                    disabled={isQuerying}
-                    className={
-                      isQuerying
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                        : ""
-                    }
-                    onKeyDown={(e) => handleEnterKey(e, handleAskQuery, isQuerying)}
-                  />
-                  <CharCounter value={queryText} max={4000} />
-        
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="text-[11px] leading-snug text-slate-500">
-                      The AI will consider both the draft and the attached sources.
-                    </div>
-        
-                    <Button
-                      variant="default"
-                      className="text-xs"
-                      onClick={handleAskQuery}
-                      disabled={isQuerying}
-                    >
-                      {isQuerying ? "Asking…" : "Ask AI"}
-                    </Button>
-                  </div>
-        
-                  {queryAnswer && (
-                    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
-                      <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="font-medium whitespace-nowrap text-slate-800">
-                          AI answer
-                        </div>
-        
-                        {queryMeta && queryMeta.confidence != null && (
-                          <div className="text-[10px] text-slate-500 sm:text-right">
-                            <span className="mr-1 font-semibold">
-                              {queryMeta.confidence >= 0.8
-                                ? "High confidence"
-                                : queryMeta.confidence >= 0.6
-                                ? "Moderate confidence"
-                                : "Low confidence"}
-                            </span>
+
+                {/* Summary strip */}
+                {statementAnalysis &&
+                  statementAnalysis.versionId === currentVersion?.id && (
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+                        <span>
+                          {statementAnalysis.summary?.totalStatements ??
+                            statementAnalysis.statements?.length ??
+                            0}{" "}
+                          statements analysed
+                        </span>
+                        {typeof statementAnalysis.summary?.lowReliabilityCount ===
+                          "number" &&
+                          statementAnalysis.summary.lowReliabilityCount > 0 && (
                             <span>
-                              ({formatNumber(Math.round(queryMeta.confidence * 100))}%)
+                              • {statementAnalysis.summary.lowReliabilityCount} flagged
+                              as low reliability
                             </span>
-        
-                            {queryMeta.confidenceReason && (
-                              <span className="ml-1">
-                                – {queryMeta.confidenceReason}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                          )}
                       </div>
-                      <div className="whitespace-pre-wrap leading-snug">
-                        {queryAnswer}
-                      </div>
+                      {typeof statementAnalysis.summary?.averageReliability ===
+                        "number" && (
+                        <Pill
+                          tone={
+                            statementAnalysis.summary.reliabilityBand === "high"
+                              ? "success"
+                              : statementAnalysis.summary.reliabilityBand === "medium"
+                              ? "warning"
+                              : statementAnalysis.summary.reliabilityBand === "low"
+                              ? "danger"
+                              : "neutral"
+                          }
+                          className="text-[10px]"
+                        >
+                          Overall reliability:{" "}
+                          {formatNumber(
+                            Math.round(
+                              statementAnalysis.summary.averageReliability * 100
+                            )
+                          )}
+                          %
+                          {statementAnalysis.summary.reliabilityBand && (
+                            <> ({statementAnalysis.summary.reliabilityBand})</>
+                          )}
+                        </Pill>
+                      )}
                     </div>
                   )}
-                </div>
-              </CardBody>
-            </Card>
-        
-            {/* Right: sources for version, versions timeline, question history */}
-            <div className="space-y-4">
-              {/* Sources for selected version */}
-              {currentVersion && (currentVersion.sources || sources).length > 0 && (
-                <Card>
-                  <CardHeader className="items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-sm font-semibold">Sources for this version</div>
-                      <div className="text-xs text-slate-500">
-                        Files, URLs and public sources feeding the selected draft.
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardBody className="max-h-48 overflow-y-auto">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+
+                {/* Scrollable table */}
+                {statementAnalysis &&
+                  statementAnalysis.versionId === currentVersion?.id &&
+                  Array.isArray(statementAnalysis.statements) &&
+                  statementAnalysis.statements.length > 0 && (
+                    <div className="max-h-64 overflow-y-auto overflow-x-auto">
+                      <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
                         <thead className="bg-slate-50">
                           <tr>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600">
-                              Source
+                            <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
+                              #
                             </th>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600">
-                              Type
+                            <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
+                              Statement
                             </th>
-                            <th className="px-2 py-1 text-left font-medium text-slate-600">
-                              Used portion
+                            <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
+                              Reliability
+                            </th>
+                            <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
+                              Category
+                            </th>
+                            <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
+                              Implication
                             </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {(currentVersion.sources || sources).map((s, idx) => {
-                            const kind = s.kind || "text";
-                            const isUrl = kind === "url" || kind === "public";
-                            const url = s.url || (isUrl ? s.name : null);
-        
-                            let usageLabel = "";
-                            if (kind === "file") {
-                              usageLabel = "entire document";
-                            } else if (kind === "url") {
-                              usageLabel = "extracted article text";
-                            } else if (kind === "public") {
-                              usageLabel = "public web context";
-                            } else {
-                              usageLabel = "manual text input";
+                          {statementAnalysis.statements.map((st, idx) => {
+                            const rel =
+                              typeof st.reliability === "number" ? st.reliability : null;
+                            const relPct =
+                              rel != null ? Math.round(rel * 100) : null;
+
+                            let relBand = null;
+                            if (relPct != null) {
+                              if (relPct >= 90) relBand = "high";
+                              else if (relPct >= 75) relBand = "medium";
+                              else relBand = "low";
                             }
-        
+
+                            const rowHighlight =
+                              relBand === "low"
+                                ? "bg-red-50/40"
+                                : relBand === "medium"
+                                ? "bg-amber-50/30"
+                                : "";
+
                             return (
                               <tr
-                                key={`${s.name || "src"}-${idx}`}
-                                className="border-t border-slate-200"
+                                key={st.id ?? idx}
+                                className={`border-t border-slate-200 align-top ${rowHighlight}`}
                               >
+                                <td className="px-2 py-1 align-top text-slate-500">
+                                  {idx + 1}
+                                </td>
                                 <td className="px-2 py-1 align-top">
-                                  {isUrl && url ? (
-                                    <a
-                                      href={url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-sky-600 hover:underline break-all"
+                                  {st.text}
+                                </td>
+                                <td className="px-2 py-1 align-top text-slate-600">
+                                  {relPct != null ? (
+                                    <span
+                                      className={
+                                        relBand === "low"
+                                          ? "text-red-600 font-medium"
+                                          : relBand === "medium"
+                                          ? "text-amber-700 font-medium"
+                                          : relBand === "high"
+                                          ? "text-emerald-700 font-medium"
+                                          : ""
+                                      }
                                     >
-                                      {s.name}
-                                    </a>
-                                  ) : (
-                                    <span className="break-all">
-                                      {s.name || "(unnamed source)"}
+                                      {formatNumber(relPct)}%{" "}
+                                      {relBand === "low" && (
+                                        <span className="ml-1">⚠</span>
+                                      )}
                                     </span>
+                                  ) : (
+                                    "–"
                                   )}
                                 </td>
                                 <td className="px-2 py-1 align-top text-slate-600">
-                                  {kind === "file"
-                                    ? "File"
-                                    : kind === "url"
-                                    ? "URL"
-                                    : kind === "public"
-                                    ? "Public source"
-                                    : "Text"}
+                                  {st.category || "–"}
                                 </td>
                                 <td className="px-2 py-1 align-top text-slate-600">
-                                  {usageLabel}
+                                  {relBand === "high"
+                                    ? "–"
+                                    : st.implication ||
+                                      "Consider reviewing or softening this statement."}
                                 </td>
                               </tr>
                             );
@@ -1962,169 +2004,401 @@ function App() {
                         </tbody>
                       </table>
                     </div>
-                  </CardBody>
-                </Card>
-              )}
-        
-              {/* Versions timeline */}
-              <Card>
-                <CardHeader className="items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm font-semibold">Versions</div>
-                    <div className="text-xs text-slate-500">
-                      {sortedVersions.length === 0
-                        ? "No versions yet"
-                        : `${sortedVersions.length} version${
-                            sortedVersions.length > 1 ? "s" : ""
-                          }`}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardBody className="space-y-2 max-h-[260px] overflow-auto">
-                  {sortedVersions.length === 0 && (
-                    <div className="text-xs text-slate-500">
-                      Generate a draft to start building a version history.
+                  )}
+
+                {/* No statements message – graceful fallback */}
+                {statementAnalysis &&
+                  statementAnalysis.versionId === currentVersion?.id &&
+                  Array.isArray(statementAnalysis.statements) &&
+                  statementAnalysis.statements.length === 0 && (
+                    <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
+                      <div className="mb-0.5 font-medium">
+                        Analysis completed – no discrete statements found
+                      </div>
+                      <p>
+                        The AI couldn’t confidently break this draft into separate
+                        factual statements. This often happens when the text is highly
+                        narrative, very short, or light on explicit figures and claims.
+                        The draft itself is still valid – consider adding clearer factual
+                        sentences if you want statement-level checks.
+                      </p>
                     </div>
                   )}
-                  {sortedVersions.map((v, idx) => {
-                    const dt = new Date(v.createdAt);
-                    const outputLabel = v.outputType
-                      ? v.outputType.replace("_", " ")
-                      : "output";
-                    const versionNumber = v.versionNumber || idx + 1;
-                    const isSelected = v.id === selectedVersionId;
-                    const wordCount =
-                      v.text && v.text.trim().length > 0
-                        ? v.text.trim().split(/\s+/).filter(Boolean).length
-                        : 0;
-        
-                    return (
-                      <div key={v.id} className="flex items-stretch gap-2">
-                        {/* Timeline column */}
-                        <div className="flex flex-col items-center pt-1">
-                          <div
-                            className={`h-2.5 w-2.5 rounded-full ${
-                              isSelected ? "bg-black" : "bg-slate-300"
-                            }`}
-                          />
-                          {idx < sortedVersions.length - 1 && (
-                            <div className="flex-1 w-px bg-slate-200 mt-1" />
+              </div>
+
+              {/* Rewrite section */}
+              <div className="space-y-2 pt-1">
+                <label className="mb-1 block text-[11px] font-semibold tracking-tight text-slate-800">
+                  Rewrite instructions (optional)
+                </label>
+
+                <p className="text-[11px] text-slate-500">
+                  This rewrite will use the current "{versionType}" setting in
+                  the controls above (Complete vs Public-facing).
+                </p>
+
+                <textarea
+                  className={
+                    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                    (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
+                  }
+                  value={rewriteNotes}
+                  onChange={(e) => {
+                    setRewriteNotes(e.target.value);
+                    // As soon as the user types, this is a new set of instructions
+                    setRewriteInstructionsApplied(false);
+                  }}
+                  placeholder="Tell the AI how to revise this version..."
+                  onKeyDown={(e) =>
+                    handleEnterKey(
+                      e,
+                      handleRewrite,
+                      isRewriting || versions.length === 0
+                    )
+                  }
+                />
+                <CharCounter value={rewriteNotes} />
+
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button
+                    variant="default"
+                    onClick={handleRewrite}
+                    disabled={isRewriting || versions.length === 0}
+                  >
+                    {isRewriting ? "Rewriting..." : "Rewrite draft"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* AI query box */}
+              <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-[11px] font-semibold tracking-tight text-slate-800">
+                    Ask a question about this draft or its sources
+                  </div>
+                  {queryAnswer && (
+                    <span className="text-[10px] text-slate-500">
+                      Latest answer shown below
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-[11px] leading-snug text-slate-500">
+                  Example: “Is the revenue figure mentioned in paragraph three public
+                  information?” or “What exactly is meant by the leverage metric here?”
+                </p>
+
+                <TextArea
+                  rows={2}
+                  value={queryText}
+                  onChange={(e) => setQueryText(e.target.value)}
+                  placeholder="Type your question about this draft or its sources..."
+                  disabled={isQuerying}
+                  className={
+                    isQuerying
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : ""
+                  }
+                  onKeyDown={(e) => handleEnterKey(e, handleAskQuery, isQuerying)}
+                />
+                <CharCounter value={queryText} max={4000} />
+
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-[11px] leading-snug text-slate-500">
+                    The AI will consider both the draft and the attached sources.
+                  </div>
+
+                  <Button
+                    variant="default"
+                    className="text-xs"
+                    onClick={handleAskQuery}
+                    disabled={isQuerying}
+                  >
+                    {isQuerying ? "Asking…" : "Ask AI"}
+                  </Button>
+                </div>
+
+                {queryAnswer && (
+                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="font-medium whitespace-nowrap text-slate-800">
+                        AI answer
+                      </div>
+
+                      {queryMeta && queryMeta.confidence != null && (
+                        <div className="text-[10px] text-slate-500 sm:text-right">
+                          <span className="mr-1 font-semibold">
+                            {queryMeta.confidence >= 0.8
+                              ? "High confidence"
+                              : queryMeta.confidence >= 0.6
+                              ? "Moderate confidence"
+                              : "Low confidence"}
+                          </span>
+                          <span>
+                            ({formatNumber(Math.round(queryMeta.confidence * 100))}%)
+                          </span>
+
+                          {queryMeta.confidenceReason && (
+                            <span className="ml-1">
+                              – {queryMeta.confidenceReason}
+                            </span>
                           )}
                         </div>
-                        {/* Card column */}
-                        <div
-                          className={`flex-1 rounded-xl border px-3 py-2 mb-1 ${
-                            isSelected
-                              ? "border-black bg-slate-50"
-                              : "border-slate-200 hover:bg-slate-50"
-                          }`}
-                        >
-                          <div className="mb-1 flex items-center justify-between gap-2">
-                            <div className="truncate text-[11px] font-semibold tracking-tight">
-                              v{versionNumber} ·{" "}
-                              <span className="capitalize">{outputLabel}</span>
-                            </div>
-                            <div className="flex shrink-0 items-center gap-1.5">
-                              <Pill className="text-[10px]">
-                                {formatNumber(wordCount)} words
-                              </Pill>
-                              <Pill className="text-[10px] capitalize">
-                                {v.versionType === "public" ? "Public" : "Complete"}
-                              </Pill>
-                              <Pill
-                                tone={qualityTone(v.score)}
-                                className="text-[10px]"
-                              >
-                                Score (proto): {v.score != null ? v.score : "–"}
-                              </Pill>
-                            </div>
-                          </div>
-        
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col">
-                              <span className="text-[11px] text-slate-500">
-                                {formatDateTime(dt)}
-                              </span>
-                              <span className="text-[11px] text-slate-700 truncate">
-                                {v.title}
-                              </span>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="quiet"
-                                className="text-[11px] px-2 py-1"
-                                onClick={() => handleSelectVersion(v.id)}
-                              >
-                                View
-                              </Button>
-                              <Button
-                                variant="quiet"
-                                className="text-[11px] px-2 py-1"
-                                onClick={() => handleDeleteVersion(v.id)}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
+                      )}
+                    </div>
+                    <div className="whitespace-pre-wrap leading-snug">
+                      {queryAnswer}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Sources for selected version */}
+          {currentVersion && (currentVersion.sources || sources).length > 0 && (
+            <Card>
+              <CardHeader className="items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <div className="text-sm font-semibold">Sources for this version</div>
+                  <div className="text-xs text-slate-500">
+                    Files, URLs and public sources feeding the selected draft.
+                  </div>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-2 py-1 text-left font-medium text-slate-600">
+                          Source
+                        </th>
+                        <th className="px-2 py-1 text-left font-medium text-slate-600">
+                          Type
+                        </th>
+                        <th className="px-2 py-1 text-left font-medium text-slate-600">
+                          Used portion
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(currentVersion.sources || sources).map((s, idx) => {
+                        const kind = s.kind || "text";
+                        const isUrl = kind === "url" || kind === "public";
+                        const url = s.url || (isUrl ? s.name : null);
+
+                        let usageLabel = "";
+                        if (kind === "file") {
+                          usageLabel = "entire document";
+                        } else if (kind === "url") {
+                          usageLabel = "extracted article text";
+                        } else if (kind === "public") {
+                          usageLabel = "public web context";
+                        } else {
+                          usageLabel = "manual text input";
+                        }
+
+                        return (
+                          <tr
+                            key={`${s.name || "src"}-${idx}`}
+                            className="border-t border-slate-200"
+                          >
+                            <td className="px-2 py-1 align-top">
+                              {isUrl && url ? (
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-sky-600 hover:underline break-all"
+                                >
+                                  {s.name}
+                                </a>
+                              ) : (
+                                <span className="break-all">
+                                  {s.name || "(unnamed source)"}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-2 py-1 align-top text-slate-600">
+                              {kind === "file"
+                                ? "File"
+                                : kind === "url"
+                                ? "URL"
+                                : kind === "public"
+                                ? "Public source"
+                                : "Text"}
+                            </td>
+                            <td className="px-2 py-1 align-top text-slate-600">
+                              {usageLabel}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardBody>
+            </Card>
+          )}
+
+          {/* Versions timeline */}
+          <Card>
+            <CardHeader className="items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold">Versions</div>
+                <div className="text-xs text-slate-500">
+                  {sortedVersions.length === 0
+                    ? "No versions yet"
+                    : `${sortedVersions.length} version${
+                        sortedVersions.length > 1 ? "s" : ""
+                      }`}
+                </div>
+              </div>
+            </CardHeader>
+            <CardBody className="space-y-2 max-h-[260px] overflow-auto">
+              {sortedVersions.length === 0 && (
+                <div className="text-xs text-slate-500">
+                  Generate a draft to start building a version history.
+                </div>
+              )}
+              {sortedVersions.map((v, idx) => {
+                const dt = new Date(v.createdAt);
+                const outputLabel = v.outputType
+                  ? v.outputType.replace("_", " ")
+                  : "output";
+                const versionNumber = v.versionNumber || idx + 1;
+                const isSelected = v.id === selectedVersionId;
+                const wordCount =
+                  v.text && v.text.trim().length > 0
+                    ? v.text.trim().split(/\s+/).filter(Boolean).length
+                    : 0;
+
+                return (
+                  <div key={v.id} className="flex items-stretch gap-2">
+                    {/* Timeline column */}
+                    <div className="flex flex-col items-center pt-1">
+                      <div
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          isSelected ? "bg-black" : "bg-slate-300"
+                        }`}
+                      />
+                      {idx < sortedVersions.length - 1 && (
+                        <div className="flex-1 w-px bg-slate-200 mt-1" />
+                      )}
+                    </div>
+                    {/* Card column */}
+                    <div
+                      className={`flex-1 rounded-xl border px-3 py-2 mb-1 ${
+                        isSelected
+                          ? "border-black bg-slate-50"
+                          : "border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <div className="truncate text-[11px] font-semibold tracking-tight">
+                          v{versionNumber} ·{" "}
+                          <span className="capitalize">{outputLabel}</span>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <Pill className="text-[10px]">
+                            {formatNumber(wordCount)} words
+                          </Pill>
+                          <Pill className="text-[10px] capitalize">
+                            {v.versionType === "public" ? "Public" : "Complete"}
+                          </Pill>
+                          <Pill
+                            tone={qualityTone(v.score)}
+                            className="text-[10px]"
+                          >
+                            Score (proto): {v.score != null ? v.score : "–"}
+                          </Pill>
                         </div>
                       </div>
-                    );
-                  })}
-                </CardBody>
-              </Card>
-        
-              {/* Question history */}
-              {queryHistory.length > 0 && (
-                <Card>
-                  <CardHeader className="items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-sm font-semibold">Question history</div>
-                      <div className="text-xs text-slate-500">
-                        Quick access to recent questions and answers for this session.
+
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] text-slate-500">
+                            {formatDateTime(dt)}
+                          </span>
+                          <span className="text-[11px] text-slate-700 truncate">
+                            {v.title}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="quiet"
+                            className="text-[11px] px-2 py-1"
+                            onClick={() => handleSelectVersion(v.id)}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            className="text-[11px] px-2 py-1"
+                            onClick={() => handleDeleteVersion(v.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-500">
-                      {queryHistory.length} question
-                      {queryHistory.length > 1 ? "s" : ""} this session
-                    </div>
-                  </CardHeader>
-                  <CardBody className="pt-2">
-                    <div className="max-h-40 space-y-1 overflow-auto pr-1">
-                      {queryHistory.map((item, idx) => (
-                        <button
-                          key={item.id ?? idx}
-                          type="button"
-                          onClick={() => {
-                            setQueryText(item.question);
-                            setQueryAnswer(item.answer);
-                            setQueryMeta(item.meta ?? null);
-                          }}
-                          className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
-                              {item.question}
-                            </span>
-                            {item.meta && item.meta.confidence != null && (
-                              <span className="text-[10px] text-slate-500">
-                                {formatNumber(Math.round(item.meta.confidence * 100))}%
-                              </span>
-                            )}
-                          </div>
-                          <div className="truncate text-[10px] text-slate-500">
-                            {item.answer}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </CardBody>
-                </Card>
-              )}
-            </div>
-          </div>
-        </div>
+                  </div>
+                );
+              })}
+            </CardBody>
+          </Card>
 
+          {/* Question history */}
+          {queryHistory.length > 0 && (
+            <Card>
+              <CardHeader className="items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <div className="text-sm font-semibold">Question history</div>
+                  <div className="text-xs text-slate-500">
+                    Quick access to recent questions and answers for this session.
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  {queryHistory.length} question
+                  {queryHistory.length > 1 ? "s" : ""} this session
+                </div>
+              </CardHeader>
+              <CardBody className="pt-2">
+                <div className="max-h-40 space-y-1 overflow-auto pr-1">
+                  {queryHistory.map((item, idx) => (
+                    <button
+                      key={item.id ?? idx}
+                      type="button"
+                      onClick={() => {
+                        setQueryText(item.question);
+                        setQueryAnswer(item.answer);
+                        setQueryMeta(item.meta ?? null);
+                      }}
+                      className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
+                          {item.question}
+                        </span>
+                        {item.meta && item.meta.confidence != null && (
+                          <span className="text-[10px] text-slate-500">
+                            {formatNumber(Math.round(item.meta.confidence * 100))}%
+                          </span>
+                        )}
+                      </div>
+                      <div className="truncate text-[10px] text-slate-500">
+                        {item.answer}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </CardBody>
+            </Card>
+          )}
+        </div>
       </main>
+
 
       {/* Toast */}
       {toast && (
