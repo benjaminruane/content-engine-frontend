@@ -5,7 +5,6 @@
 /* === Card height alignment helpers === */
 .align-row-1 { min-height: 320px; }   /* Event & Title  ↔ Output Types */
 .align-row-2 { min-height: 520px; }   /* Source Material ↔ Draft Output */
-.align-row-3 { min-height: 280px; }   /* Advanced Settings ↔ Versions */
 
 /* Your custom bits */
 *,
