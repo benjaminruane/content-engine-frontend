@@ -1625,37 +1625,36 @@ function App() {
 
               {/* Statement reliability analysis (collapsible) */}
               <div className="border-t border-slate-200 pt-3 mt-2">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="text-[11px] font-semibold tracking-tight text-slate-800">
-                  Statement reliability
-                </div>
+                <div className="mb-2 flex items-center gap-2">
+                  <div className="flex-1 text-[11px] font-semibold tracking-tight text-slate-800">
+                    Statement reliability
+                  </div>
               
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setStatementPanelCollapsed((v) => !v)}
-                    className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
-                  >
-                    {statementPanelCollapsed ? "Show panel" : "Hide panel"}
-                  </button>
+                  {!statementPanelCollapsed &&
+                    statementAnalysis &&
+                    statementAnalysis.versionId === currentVersion?.id && (
+                      <div className="flex-1 flex justify-center">
+                        <Button
+                          variant="quiet"
+                          className="text-[11px]"
+                          onClick={handleAnalyseStatements}
+                          disabled={isAnalysingStatements}
+                        >
+                          {isAnalysingStatements ? "Analysing…" : "Re-run analysis"}
+                        </Button>
+                      </div>
+                    )}
               
-                  {!statementPanelCollapsed && (
-                    <Button
-                      variant="quiet"
-                      className="text-[11px]"
-                      onClick={handleAnalyseStatements}
-                      disabled={isAnalysingStatements}
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setStatementPanelCollapsed((v) => !v)}
+                      className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
                     >
-                      {isAnalysingStatements
-                        ? "Analysing…"
-                        : statementAnalysis &&
-                          statementAnalysis.versionId === currentVersion?.id
-                        ? "Re-run analysis"
-                        : "Analyse statements"}
-                    </Button>
-                  )}
+                      {statementPanelCollapsed ? "Show panel" : "Hide panel"}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
 
                 {!statementPanelCollapsed && (
