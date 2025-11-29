@@ -996,7 +996,7 @@ function App() {
           }`}
         >
           {/* Event & title */}
-          <Card>
+          <Card className="align-row-1">
             <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
                 <div className="text-[13px] font-semibold tracking-tight text-slate-900">Event & title</div>
@@ -1256,7 +1256,7 @@ function App() {
           </Card>
 
           {/* Advanced settings */}
-          <Card>
+          <Card className="align-row-3">
             <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
                 <div className="text-[13px] font-semibold tracking-tight text-slate-900">Advanced settings</div>
@@ -1401,7 +1401,7 @@ function App() {
           }`}
         >
           {/* Output types */}
-          <Card>
+          <Card className="align-row-1">
             <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
                 <div className="text-[13px] font-semibold tracking-tight text-slate-900">Output types</div>
@@ -1502,7 +1502,7 @@ function App() {
           </Card>
 
           {/* Current draft */}
-          <Card>
+          <Card className="align-row-2">
             <CardHeader className="flex flex-col items-start gap-1.5">
               <div className="flex items-center gap-2">
                 <div className="text-[13px] font-semibold tracking-tight text-slate-900 tracking-tight text-slate-900">
@@ -1933,7 +1933,7 @@ function App() {
 
           {/* Sources for selected version */}
           {currentVersion && (currentVersion.sources || sources).length > 0 && (
-            <Card>
+            <Card className="align-row-2">
               <CardHeader className="items-center justify-between">
                 <div className="flex flex-col gap-1">
                   <div className="text-[13px] font-semibold tracking-tight text-slate-900">
@@ -2032,7 +2032,7 @@ function App() {
           )}
 
         {/* Versions timeline */}
-        <Card>
+        <Card className="align-row-3">
           <CardHeader className="items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="text-[13px] font-semibold tracking-tight text-slate-900">Versions</div>
