@@ -232,6 +232,8 @@ function App() {
   const [queryMeta, setQueryMeta] = useState(null);
   const [queryHistory, setQueryHistory] = useState([]);
 
+  const [inputsCollapsed, setInputsCollapsed] = useState(false);
+
   // Trigger a given action when Enter is pressed (but allow Shift+Enter for new lines)
   function handleEnterKey(event, action, isDisabled = false) {
     if (isDisabled) return;
@@ -917,6 +919,8 @@ function App() {
     setQueryMeta(null);
     setQueryHistory([]);
 
+    setInputsCollapsed(false);
+      
     showToast("New output session started");
   };
 
@@ -961,13 +965,23 @@ function App() {
           </div>
         </div>
 
-        {/* Right: environment and primary action */}
+        {/* Right: environment and primary actions */}
         <div className="hidden items-center gap-3 md:flex">
           {/* Environment pill */}
           <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
             <span className="whitespace-nowrap">Alpha</span>
           </span>
+
+          {/* Collapse / expand inputs – only useful once you have versions */}
+          <Button
+            variant="quiet"
+            className="text-xs"
+            onClick={() => setInputsCollapsed((v) => !v)}
+            disabled={versions.length === 0}
+          >
+            {inputsCollapsed ? "Show inputs" : "Collapse inputs"}
+          </Button>
 
           {/* Primary action */}
           <Button
@@ -979,14 +993,22 @@ function App() {
           </Button>
         </div>
 
+
       </div>
     </header>
 
 
       {/* Main layout */}
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-4 py-5 md:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)]">
+      <main
+        className={`mx-auto grid max-w-6xl grid-cols-1 gap-5 px-4 py-5 ${
+          inputsCollapsed
+            ? "md:grid-cols-1"
+            : "md:grid-cols-[minmax(0,1.35fr)_minmax(0,1.85fr)]"
+        }`}
+      >
         {/* Left column – inputs */}
-        <div className="space-y-4">
+        {!inputsCollapsed && (
+          <div className="space-y-4">
           {/* Event & title */}
           <Card>
             <CardHeader className="items-center justify-between">
@@ -1371,6 +1393,7 @@ function App() {
             )}
           </Card>
         </div>
+        )}
 
         {/* Right column – outputs & versions */}
         <div className="space-y-4">
