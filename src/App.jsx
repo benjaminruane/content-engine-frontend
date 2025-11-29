@@ -1360,7 +1360,7 @@ function App() {
         </div>
 
         {/* Collapse rail between columns (desktop only) */}
-        <div className="hidden md:flex flex-col items-center pt-4">
+        <div className="hidden md:flex flex-col items-center self-start mt-1">
           <button
             type="button"
             onClick={() => setInputsCollapsed((v) => !v)}
@@ -1369,14 +1369,14 @@ function App() {
             <span className="sr-only">
               {inputsCollapsed ? "Show inputs" : "Hide inputs"}
             </span>
-            <div className="flex h-24 w-7 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm group-hover:bg-slate-50">
-              <span className="text-[10px] text-slate-500 rotate-90">
-                {inputsCollapsed ? "Show inputs" : "Hide inputs"}
+            <div className="flex h-20 w-7 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm group-hover:bg-slate-50">
+              <span className="text-xs text-slate-500">
+                {inputsCollapsed ? ">>" : "<<"}
               </span>
             </div>
           </button>
         </div>
-
+        
         {/* Right column – outputs & versions */}
         <div
           className={`space-y-4 flex-1 transition-all duration-200 ${
