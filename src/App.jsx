@@ -956,10 +956,10 @@ function App() {
 
             {/* Title + workspace tagline */}
             <div className="flex flex-col">
-              <span className="text-sm font-semibold tracking-tight text-slate-900">
+              <span className="text-[13px] font-semibold tracking-tight text-slate-900 tracking-tight text-slate-900">
                 Content Engine
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-[11px] text-slate-500 leading-snug">
                 Single workspace · Event-based prompts · Scored versions
               </span>
             </div>
@@ -999,8 +999,8 @@ function App() {
           <Card>
             <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">Event & title</div>
-                <div className="text-xs text-slate-500">
+                <div className="text-[13px] font-semibold tracking-tight text-slate-900">Event & title</div>
+                <div className="text-[11px] text-slate-500 leading-snug">
                   Define what happened and what you need written.
                 </div>
               </div>
@@ -1071,7 +1071,7 @@ function App() {
           <Card>
             <CardHeader className="items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="text-sm font-semibold">Source material</div>
+                <div className="text-[13px] font-semibold tracking-tight text-slate-900">Source material</div>
               </div>
             </CardHeader>
             <CardBody className="space-y-3">
@@ -1082,7 +1082,7 @@ function App() {
                     <div className="text-[11px] font-medium text-slate-600">
                       Attached sources
                     </div>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-[11px] text-slate-500 leading-snug tracking-tight">
                       {sources.length} source
                       {sources.length > 1 ? "s" : ""}
                     </div>
@@ -1166,7 +1166,7 @@ function App() {
                   <div className="font-medium mb-0.5">
                     Drop files here, or click to upload
                   </div>
-                  <div className="text-[11px] text-slate-500">
+                  <div className="text-[11px] text-slate-500 leading-snug tracking-tight">
                     We’ll extract text and treat each file as a separate source.
                   </div>
                 </div>
@@ -1259,8 +1259,8 @@ function App() {
           <Card>
             <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">Advanced settings</div>
-                <div className="text-xs text-slate-500">
+                <div className="text-[13px] font-semibold tracking-tight text-slate-900">Advanced settings</div>
+                <div className="text-[11px] text-slate-500 leading-snug">
                   Connection details and model controls.
                 </div>
               </div>
@@ -1313,7 +1313,7 @@ function App() {
                 {/* Model controls */}
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
-                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                    <div className="text-[11px] font-medium text-slate-700 tracking-tight mb-1">
                       Model
                     </div>
                     <select
@@ -1333,7 +1333,7 @@ function App() {
                     </p>
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                    <div className="text-[11px] font-medium text-slate-700 tracking-tight mb-1">
                       Temp
                     </div>
                     <Input
@@ -1353,7 +1353,7 @@ function App() {
                     </p>
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-slate-700 mb-1">
+                    <div className="text-[11px] font-medium text-slate-700 tracking-tight mb-1">
                       Max tokens
                     </div>
                     <Input
@@ -1387,7 +1387,7 @@ function App() {
               {inputsCollapsed ? "Show inputs" : "Hide inputs"}
             </span>
             <div className="flex h-20 w-7 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm group-hover:bg-slate-50">
-              <span className="text-xs text-slate-500">
+              <span className="text-[11px] text-slate-500 leading-snug">
                 {inputsCollapsed ? ">>" : "<<"}
               </span>
             </div>
@@ -1404,8 +1404,8 @@ function App() {
           <Card>
             <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">Output types</div>
-                <div className="text-xs text-slate-500">
+                <div className="text-[13px] font-semibold tracking-tight text-slate-900">Output types</div>
+                <div className="text-[11px] text-slate-500 leading-snug">
                   Choose which formats you want for this event and optionally
                   cap the length.
                 </div>
@@ -1505,7 +1505,7 @@ function App() {
           <Card>
             <CardHeader className="flex flex-col items-start gap-1.5">
               <div className="flex items-center gap-2">
-                <div className="text-sm font-semibold tracking-tight text-slate-900">
+                <div className="text-[13px] font-semibold tracking-tight text-slate-900 tracking-tight text-slate-900">
                   Draft output
                 </div>
                 {currentVersion && (
@@ -1518,7 +1518,7 @@ function App() {
                 )}
               </div>
 
-              <div className="text-[11px] text-slate-500">
+              <div className="text-[11px] text-slate-500 leading-snug tracking-tight">
                 {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
                 {getModelLabel(modelId)} ·{" "}
                 {versionType === "public" ? "Public version" : "Complete version"}
@@ -1575,7 +1575,7 @@ function App() {
                   <button
                     type="button"
                     onClick={() => setRewritePanelCollapsed((v) => !v)}
-                    className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
+                    className="text-[10px] font-medium text-slate-500 underline decoration-dotted underline-offset-2 tracking-tight hover:text-slate-700"
                   >
                     {rewritePanelCollapsed ? "Show panel" : "Hide panel"}
                   </button>
@@ -1650,7 +1650,7 @@ function App() {
                     <button
                       type="button"
                       onClick={() => setStatementPanelCollapsed((v) => !v)}
-                      className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
+                      className="text-[10px] font-medium text-slate-500 underline decoration-dotted underline-offset-2 tracking-tight hover:text-slate-700"
                     >
                       {statementPanelCollapsed ? "Show panel" : "Hide panel"}
                     </button>
@@ -1846,7 +1846,7 @@ function App() {
                   <button
                     type="button"
                     onClick={() => setAskPanelCollapsed((v) => !v)}
-                    className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
+                    className="text-[10px] font-medium text-slate-500 underline decoration-dotted underline-offset-2 tracking-tight hover:text-slate-700"
                   >
                     {askPanelCollapsed ? "Show panel" : "Hide panel"}
                   </button>
@@ -1934,11 +1934,11 @@ function App() {
             <Card>
               <CardHeader className="items-center justify-between">
                 <div className="flex flex-col gap-1">
-                  <div className="text-sm font-semibold">
+                  <div className="text-[13px] font-semibold tracking-tight text-slate-900">
                     Sources for this version
                   </div>
                   {!sourcesPanelCollapsed && (
-                    <div className="text-xs text-slate-500">
+                    <div className="text-[11px] text-slate-500 leading-snug">
                       Files, URLs and public sources feeding the selected draft.
                     </div>
                   )}
@@ -1946,7 +1946,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() => setSourcesPanelCollapsed((v) => !v)}
-                  className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
+                  className="text-[10px] font-medium text-slate-500 underline decoration-dotted underline-offset-2 tracking-tight hover:text-slate-700"
                 >
                   {sourcesPanelCollapsed ? "Show panel" : "Hide panel"}
                 </button>
@@ -2033,9 +2033,9 @@ function App() {
         <Card>
           <CardHeader className="items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="text-sm font-semibold">Versions</div>
+              <div className="text-[13px] font-semibold tracking-tight text-slate-900">Versions</div>
               {sortedVersions.length > 0 && (
-                <div className="text-xs text-slate-500">
+                <div className="text-[11px] text-slate-500 leading-snug">
                   ({sortedVersions.length})
                 </div>
               )}
@@ -2043,7 +2043,7 @@ function App() {
             <button
               type="button"
               onClick={() => setVersionsPanelCollapsed((v) => !v)}
-              className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
+              className="text-[10px] font-medium text-slate-500 underline decoration-dotted underline-offset-2 tracking-tight hover:text-slate-700"
             >
               {versionsPanelCollapsed ? "Show panel" : "Hide panel"}
             </button>
@@ -2052,7 +2052,7 @@ function App() {
             {!versionsPanelCollapsed && (
               <>
                 {sortedVersions.length === 0 && (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-[11px] text-slate-500 leading-snug">
                     Generate a draft to start building a version history.
                   </div>
                 )}
@@ -2152,8 +2152,8 @@ function App() {
             <Card>
               <CardHeader className="items-center justify-between">
                 <div className="flex flex-col gap-1">
-                  <div className="text-sm font-semibold">Question history</div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-[13px] font-semibold tracking-tight text-slate-900">Question history</div>
+                  <div className="text-[11px] text-slate-500 leading-snug">
                     Quick access to recent questions and answers for this session.
                   </div>
                 </div>
