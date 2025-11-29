@@ -1640,7 +1640,91 @@ function App() {
                         <div className="max-h-64 overflow-y-auto overflow-x-auto">
                           {/* table stays exactly as you have it now */}
                           <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
-                            {/* ...existing thead/tbody content unchanged... */}
+                            <thead className="bg-slate-50">
+                              <tr>
+                                <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
+                                  #
+                                </th>
+                                <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Statement
+                                </th>
+                                <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Reliability
+                                </th>
+                                <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Category
+                                </th>
+                                <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
+                                  Implication
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {statementAnalysis.statements.map((st, idx) => {
+                                const rel =
+                                  typeof st.reliability === "number" ? st.reliability : null;
+                                const relPct = rel != null ? Math.round(rel * 100) : null;
+                          
+                                let relBand = null;
+                                if (relPct != null) {
+                                  if (relPct >= 90) relBand = "high";
+                                  else if (relPct >= 75) relBand = "medium";
+                                  else relBand = "low";
+                                }
+                          
+                                const rowHighlight =
+                                  relBand === "low"
+                                    ? "bg-red-50/40"
+                                    : relBand === "medium"
+                                    ? "bg-amber-50/30"
+                                    : "";
+                          
+                                return (
+                                  <tr
+                                    key={st.id ?? idx}
+                                    className={`border-t border-slate-200 align-top ${rowHighlight}`}
+                                  >
+                                    <td className="px-2 py-1 align-top text-slate-500">
+                                      {idx + 1}
+                                    </td>
+                                    <td className="px-2 py-1 align-top">
+                                      {st.text}
+                                    </td>
+                                    <td className="px-2 py-1 align-top text-slate-600">
+                                      {relPct != null ? (
+                                        <span
+                                          className={
+                                            relBand === "low"
+                                              ? "text-red-600 font-medium"
+                                              : relBand === "medium"
+                                              ? "text-amber-700 font-medium"
+                                              : relBand === "high"
+                                              ? "text-emerald-700 font-medium"
+                                              : ""
+                                          }
+                                        >
+                                          {formatNumber(relPct)}%{" "}
+                                          {relBand === "low" && (
+                                            <span className="ml-1">⚠</span>
+                                          )}
+                                        </span>
+                                      ) : (
+                                        "–"
+                                      )}
+                                    </td>
+                                    <td className="px-2 py-1 align-top text-slate-600">
+                                      {st.category || "–"}
+                                    </td>
+                                    <td className="px-2 py-1 align-top text-slate-600">
+                                      {relBand === "high"
+                                        ? "–"
+                                        : st.implication ||
+                                          "Consider reviewing or softening this statement."}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
                           </table>
                         </div>
                       )}
