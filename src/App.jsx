@@ -1936,15 +1936,82 @@ function App() {
                   {sourcesPanelCollapsed ? "Show panel" : "Hide panel"}
                 </button>
               </CardHeader>
-              <CardBody>
-                {!sourcesPanelCollapsed && (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
-                      {/* existing thead/tbody stays identical */}
-                    </table>
-                  </div>
-                )}
-              </CardBody>
+                <CardBody>
+                  {!sourcesPanelCollapsed && (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                              Source
+                            </th>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                              Type
+                            </th>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                              Used portion
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(currentVersion.sources || sources).map((s, idx) => {
+                            const kind = s.kind || "text";
+                            const isUrl = kind === "url" || kind === "public";
+                            const url = s.url || (isUrl ? s.name : null);
+                
+                            let usageLabel = "";
+                            if (kind === "file") {
+                              usageLabel = "entire document";
+                            } else if (kind === "url") {
+                              usageLabel = "extracted article text";
+                            } else if (kind === "public") {
+                              usageLabel = "public web context";
+                            } else {
+                              usageLabel = "manual text input";
+                            }
+                
+                            return (
+                              <tr
+                                key={`${s.name || "src"}-${idx}`}
+                                className="border-t border-slate-200"
+                              >
+                                <td className="px-2 py-1 align-top">
+                                  {isUrl && url ? (
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-sky-600 hover:underline break-all"
+                                    >
+                                      {s.name}
+                                    </a>
+                                  ) : (
+                                    <span className="break-all">
+                                      {s.name || "(unnamed source)"}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-2 py-1 align-top text-slate-600">
+                                  {kind === "file"
+                                    ? "File"
+                                    : kind === "url"
+                                    ? "URL"
+                                    : kind === "public"
+                                    ? "Public source"
+                                    : "Text"}
+                                </td>
+                                <td className="px-2 py-1 align-top text-slate-600">
+                                  {usageLabel}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </CardBody>
+
             </Card>
           )}
 
@@ -1979,8 +2046,88 @@ function App() {
                     </div>
                   )}
                   {sortedVersions.map((v, idx) => {
-                    // keep your existing map body exactly as-is
+                    const dt = new Date(v.createdAt);
+                    const outputLabel = v.outputType
+                      ? v.outputType.replace("_", " ")
+                      : "output";
+                    const versionNumber = v.versionNumber || idx + 1;
+                    const isSelected = v.id === selectedVersionId;
+                    const wordCount =
+                      v.text && v.text.trim().length > 0
+                        ? v.text.trim().split(/\s+/).filter(Boolean).length
+                        : 0;
+                  
+                    return (
+                      <div key={v.id} className="flex items-stretch gap-2">
+                        {/* Timeline column */}
+                        <div className="flex flex-col items-center pt-1">
+                          <div
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              isSelected ? "bg-black" : "bg-slate-300"
+                            }`}
+                          />
+                          {idx < sortedVersions.length - 1 && (
+                            <div className="flex-1 w-px bg-slate-200 mt-1" />
+                          )}
+                        </div>
+                  
+                        {/* Card column */}
+                        <div
+                          className={`flex-1 rounded-xl border px-3 py-2 mb-1 ${
+                            isSelected
+                              ? "border-black bg-slate-50"
+                              : "border-slate-200 hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="mb-1 flex items-center justify-between gap-2">
+                            <div className="truncate text-[11px] font-semibold tracking-tight">
+                              v{versionNumber} ·{" "}
+                              <span className="capitalize">{outputLabel}</span>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <Pill className="text-[10px]">
+                                {formatNumber(wordCount)} words
+                              </Pill>
+                              <Pill className="text-[10px] capitalize">
+                                {v.versionType === "public" ? "Public" : "Complete"}
+                              </Pill>
+                              <Pill tone={qualityTone(v.score)} className="text-[10px]">
+                                Score (proto): {v.score != null ? v.score : "–"}
+                              </Pill>
+                            </div>
+                          </div>
+                  
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[11px] text-slate-500">
+                                {formatDateTime(dt)}
+                              </span>
+                              <span className="text-[11px] text-slate-700 truncate">
+                                {v.title}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="quiet"
+                                className="text-[11px] px-2 py-1"
+                                onClick={() => handleSelectVersion(v.id)}
+                              >
+                                View
+                              </Button>
+                              <Button
+                                variant="quiet"
+                                className="text-[11px] px-2 py-1"
+                                onClick={() => handleDeleteVersion(v.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
                   })}
+
                 </>
               )}
             </CardBody>
