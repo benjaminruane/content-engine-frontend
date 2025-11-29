@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { formatNumber } from "./utils/format";
+
 const MAX_MODEL_INPUT_CHARS = 60000; // hard guardrail for model-facing text
 
 function CharCounter({ value, max = MAX_MODEL_INPUT_CHARS }) {
@@ -8,7 +9,7 @@ function CharCounter({ value, max = MAX_MODEL_INPUT_CHARS }) {
   const len = value.length;
 
   let tone = "text-slate-400";
-  if (len > max * 0.9) tone = "text-red-500";         // >90%
+  if (len > max * 0.9) tone = "text-red-500"; // >90%
   else if (len > max * 0.75) tone = "text-amber-600"; // >75%
 
   return (
@@ -19,7 +20,6 @@ function CharCounter({ value, max = MAX_MODEL_INPUT_CHARS }) {
 }
 
 function Button({ variant = "default", className = "", children, ...props }) {
-
   const base =
     "inline-flex items-center justify-center rounded-xl text-sm font-medium px-3 py-2 transition active:scale-[.98] focus:outline-none focus:ring-2 focus:ring-offset-1";
 
@@ -39,7 +39,7 @@ function Button({ variant = "default", className = "", children, ...props }) {
   const variantClass = isDisabled
     ? "bg-slate-200 border border-slate-300 text-slate-500 cursor-not-allowed opacity-80"
     : variants[variant] || variants.default;
- 
+
   return (
     <button className={`${base} ${variantClass} ${className}`} {...props}>
       {children}
@@ -66,8 +66,6 @@ function CardHeader({ className = "", children }) {
     </div>
   );
 }
-
-
 
 function CardBody({ className = "", children }) {
   return <div className={`px-4 py-3 ${className}`}>{children}</div>;
@@ -109,7 +107,6 @@ function Pill({ children, tone = "neutral", className = "" }) {
     </span>
   );
 }
-
 
 function qualityTone(score) {
   if (score == null) return "neutral";
@@ -174,7 +171,8 @@ function App() {
   const [rawText, setRawText] = useState("");
 
   const [instructionsApplied, setInstructionsApplied] = useState(false);
-  const [rewriteInstructionsApplied, setRewriteInstructionsApplied] = useState(false);
+  const [rewriteInstructionsApplied, setRewriteInstructionsApplied] =
+    useState(false);
 
   const [scenario, setScenario] = useState("new_investment");
   const [selectedTypes, setSelectedTypes] = useState(["transaction_text"]);
@@ -203,21 +201,6 @@ function App() {
   const [statementAnalysis, setStatementAnalysis] = useState(null);
   const [isAnalysingStatements, setIsAnalysingStatements] = useState(false);
 
-   // Whenever the selected version, scenario, or version type changes,
-  // clear any existing statement analysis (it may no longer be valid).
-    useEffect(() => {
-      setStatementAnalysis(null);
-      setQueryAnswer(null);
-      setQueryText("");
-    }, [selectedVersionId, scenario, versionType]);
-
-
-  // On initial load, make sure we start at the top of the page
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
@@ -233,7 +216,18 @@ function App() {
   const [queryMeta, setQueryMeta] = useState(null);
   const [queryHistory, setQueryHistory] = useState([]);
 
-  const [inputsCollapsed, setInputsCollapsed] = useState(false);
+  // Whenever the selected version, scenario, or version type changes,
+  // clear any existing statement analysis & query state.
+  useEffect(() => {
+    setStatementAnalysis(null);
+    setQueryAnswer(null);
+    setQueryText("");
+  }, [selectedVersionId, scenario, versionType]);
+
+  // On initial load, make sure we start at the top of the page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Trigger a given action when Enter is pressed (but allow Shift+Enter for new lines)
   function handleEnterKey(event, action, isDisabled = false) {
@@ -251,7 +245,6 @@ function App() {
     setToast(message);
     setTimeout(() => setToast(null), duration);
   };
-
 
   const currentVersion =
     versions.find((v) => v.id === selectedVersionId) || null;
@@ -334,7 +327,7 @@ function App() {
         return;
       }
 
-            setSources((prev) => [
+      setSources((prev) => [
         ...prev,
         {
           name: data.title?.trim() || trimmed,
@@ -397,63 +390,63 @@ function App() {
   };
 
   const runStatementAnalysis = async (textForAnalysis, versionId) => {
-  if (!apiBaseUrl) {
-    showToast("Set API base URL first");
-    return;
-  }
-
-  const trimmed = (textForAnalysis || "").trim();
-
-  if (!trimmed) {
-    showToast("No draft to analyse");
-    return;
-  }
-
-  if (trimmed.length > MAX_MODEL_INPUT_CHARS) {
-    showToast(
-      `This draft is too long for statement analysis in one pass (${formatNumber(
-        trimmed.length
-      )} characters). Try analysing a shorter or more focused version.`
-    );
-    return;
-  }
-
-  try {
-    setIsAnalysingStatements(true);
-    setStatementAnalysis(null);
-    
-    const payload = {
-      text: trimmed,
-      scenario,
-      versionType,
-    };
-
-    const data = await callBackend("analyse-statements", payload);
-
-    const statements = Array.isArray(data?.statements)
-      ? data.statements
-      : [];
-    const summary =
-      data && typeof data.summary === "object" ? data.summary : null;
-
-    setStatementAnalysis({
-      versionId,
-      statements,
-      summary,
-    });
-
-    if (!statements.length) {
-      showToast("Analysis completed – no discrete statements found");
+    if (!apiBaseUrl) {
+      showToast("Set API base URL first");
+      return;
     }
-  } catch (e) {
-    console.error("Error analysing statements", e);
-    const msg =
-      e && e.message ? e.message : "Error analysing statements";
-    showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
-  } finally {
-    setIsAnalysingStatements(false);
-  }
-};
+
+    const trimmed = (textForAnalysis || "").trim();
+
+    if (!trimmed) {
+      showToast("No draft to analyse");
+      return;
+    }
+
+    if (trimmed.length > MAX_MODEL_INPUT_CHARS) {
+      showToast(
+        `This draft is too long for statement analysis in one pass (${formatNumber(
+          trimmed.length
+        )} characters). Try analysing a shorter or more focused version.`
+      );
+      return;
+    }
+
+    try {
+      setIsAnalysingStatements(true);
+      setStatementAnalysis(null);
+
+      const payload = {
+        text: trimmed,
+        scenario,
+        versionType,
+      };
+
+      const data = await callBackend("analyse-statements", payload);
+
+      const statements = Array.isArray(data?.statements)
+        ? data.statements
+        : [];
+      const summary =
+        data && typeof data.summary === "object" ? data.summary : null;
+
+      setStatementAnalysis({
+        versionId,
+        statements,
+        summary,
+      });
+
+      if (!statements.length) {
+        showToast("Analysis completed – no discrete statements found");
+      }
+    } catch (e) {
+      console.error("Error analysing statements", e);
+      const msg =
+        e && e.message ? e.message : "Error analysing statements";
+      showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
+    } finally {
+      setIsAnalysingStatements(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!apiBaseUrl) {
@@ -497,10 +490,10 @@ function App() {
 
     setIsGenerating(true);
     try {
-       const payload = {
+      const payload = {
         title,
         notes,
-        text: textPayload,   // <- keep this as textPayload
+        text: textPayload,
         selectedTypes,
         scenario,
         versionType,
@@ -510,7 +503,6 @@ function App() {
         publicSearch,
         maxWords: numericMaxWords,
       };
-
 
       const data = await callBackend("generate", payload);
 
@@ -531,14 +523,13 @@ function App() {
       const now = new Date();
 
       // Uploaded / manual sources
-       const uploadedSources = sources.map((s) => ({
+      const uploadedSources = sources.map((s) => ({
         name: s.name,
         kind: s.kind, // "file" | "url" | undefined -> treated as "text" later
         size: s.size ?? null,
         textLength: s.text ? s.text.length : 0,
         url: s.kind === "url" ? s.url || s.name : null,
       }));
-
 
       // Public-domain sources (future: real web / knowledge-base retrieval)
       const publicSourcesForVersion = publicSources.map((ps, idx) => ({
@@ -572,30 +563,30 @@ function App() {
           sources: versionSources,
         };
       });
-      
+
       setVersions((prev) => [...prev, ...newVersions]);
       const primary = newVersions[0];
       setSelectedVersionId(primary.id);
       setDraftText(primary.text);
-      
+
       // After a successful generation, lock the Generate button
       setCanGenerate(false);
-      
-      showToast("Draft generated");
-      
-      // 🔍 Automatically run statement analysis on the primary version
-      await runStatementAnalysis(primary.text, primary.id);
 
+      showToast("Draft generated");
+
+      // Automatically run statement analysis on the primary version
+      await runStatementAnalysis(primary.text, primary.id);
     } catch (e) {
       console.error("Error generating", e);
-      const msg = e && e.message ? e.message : "Error generating draft";
+      const msg =
+        e && e.message ? e.message : "Error generating draft";
       showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
     } finally {
       setIsGenerating(false);
     }
   };
 
-    const handleRewrite = async () => {
+  const handleRewrite = async () => {
     if (!apiBaseUrl) {
       showToast("Set API base URL first");
       return;
@@ -617,7 +608,6 @@ function App() {
       );
       return;
     }
-
 
     const numericMaxWords =
       maxWords && !Number.isNaN(parseInt(maxWords, 10))
@@ -650,13 +640,11 @@ function App() {
         publicSearch,
       };
 
-
-
       const data = await callBackend("rewrite", payload);
 
       // Mark rewrite instructions as applied after a successful rewrite call
       setRewriteInstructionsApplied(true);
-       
+
       const out =
         Array.isArray(data.outputs) && data.outputs[0]
           ? data.outputs[0]
@@ -692,25 +680,25 @@ function App() {
         metrics: out.metrics || {},
         sources: versionSources,
       };
-      
+
       setVersions((prev) => [...prev, newVersion]);
       setSelectedVersionId(id);
       setDraftText(out.text);
       showToast("Rewrite completed");
-      
-      // 🔍 Automatically re-run statement analysis on the rewritten version
-      await runStatementAnalysis(out.text, id);
 
+      // Automatically re-run statement analysis on the rewritten version
+      await runStatementAnalysis(out.text, id);
     } catch (e) {
       console.error("Error rewriting", e);
-      const msg = e && e.message ? e.message : "Error rewriting draft";
+      const msg =
+        e && e.message ? e.message : "Error rewriting draft";
       showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
     } finally {
       setIsRewriting(false);
     }
   };
 
-    const handleAskQuery = async () => {
+  const handleAskQuery = async () => {
     if (!apiBaseUrl) {
       showToast("Set API base URL first");
       return;
@@ -756,7 +744,7 @@ function App() {
       contextParts.push(`SOURCES:\n${sourceSummaries.join("\n")}`);
     }
 
-        const fullContext = contextParts.join("\n\n");
+    const fullContext = contextParts.join("\n\n");
     const context =
       fullContext.length > MAX_MODEL_INPUT_CHARS
         ? fullContext.slice(0, MAX_MODEL_INPUT_CHARS)
@@ -768,10 +756,9 @@ function App() {
     try {
       const payload = {
         question,
-        context,      // 👈 trimmed / capped context
+        context, // trimmed / capped context
         model: modelId,
       };
-
 
       const data = await callBackend("query", payload);
 
@@ -807,29 +794,26 @@ function App() {
       setQueryHistory((prev) => [historyEntry, ...prev]);
 
       showToast("AI answered your question");
-
     } catch (e) {
       console.error("Error asking query", e);
-      const msg = e && e.message ? e.message : "Error answering question";
+      const msg =
+        e && e.message ? e.message : "Error answering question";
       showToast(msg.length > 160 ? msg.slice(0, 157) + "..." : msg);
     } finally {
       setIsQuerying(false);
     }
   };
 
+  const handleAnalyseStatements = async () => {
+    if (!currentVersion || !currentVersion.text) {
+      showToast("No draft to analyse");
+      return;
+    }
 
-   
-      const handleAnalyseStatements = async () => {
-        if (!currentVersion || !currentVersion.text) {
-          showToast("No draft to analyse");
-          return;
-        }
-      
-        await runStatementAnalysis(currentVersion.text, currentVersion.id);
-      };
+    await runStatementAnalysis(currentVersion.text, currentVersion.id);
+  };
 
-
-    const handleSelectVersion = (id) => {
+  const handleSelectVersion = (id) => {
     const v = versions.find((ver) => ver.id === id) || null;
 
     setSelectedVersionId(id);
@@ -843,7 +827,6 @@ function App() {
     // Any existing analysis is now stale
     setStatementAnalysis(null);
   };
-
 
   const handleDeleteVersion = (id) => {
     setVersions((prev) => {
@@ -888,7 +871,7 @@ function App() {
     showToast("Draft downloaded");
   };
 
-    const handleNewOutput = () => {
+  const handleNewOutput = () => {
     setTitle("");
     setNotes("");
     setRawText("");
@@ -909,10 +892,9 @@ function App() {
     setCanGenerate(true);
 
     // Reset analysis and instruction state for a clean session
-      setStatementAnalysis(null);
-      setInstructionsApplied(false);
-      setRewriteInstructionsApplied(false);
-
+    setStatementAnalysis(null);
+    setInstructionsApplied(false);
+    setRewriteInstructionsApplied(false);
 
     // Reset query state for this session
     setQueryText("");
@@ -921,7 +903,7 @@ function App() {
     setQueryHistory([]);
 
     setInputsCollapsed(false);
-      
+
     showToast("New output session started");
   };
 
@@ -944,324 +926,59 @@ function App() {
       : 0;
 
   return (
-  <div className="min-h-screen bg-slate-50 text-slate-900">
-    {/* Header */}
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2.5">
-        {/* Left: product identity */}
-        <div className="flex items-center gap-3">
-          {/* CE monogram */}
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-900 text-xs font-semibold tracking-tight text-white">
-            CE
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2.5">
+          {/* Left: product identity */}
+          <div className="flex items-center gap-3">
+            {/* CE monogram */}
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-900 text-xs font-semibold tracking-tight text-white">
+              CE
+            </div>
+
+            {/* Title + workspace tagline */}
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold tracking-tight text-slate-900">
+                Content Engine
+              </span>
+              <span className="text-xs text-slate-500">
+                Single workspace · Event-based prompts · Scored versions
+              </span>
+            </div>
           </div>
 
-          {/* Title + workspace tagline */}
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold tracking-tight text-slate-900">
-              Content Engine
+          {/* Right: environment and primary actions */}
+          <div className="hidden items-center gap-3 md:flex">
+            {/* Environment pill */}
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              <span className="whitespace-nowrap">Alpha</span>
             </span>
-            <span className="text-xs text-slate-500">
-              Single workspace · Event-based prompts · Scored versions
-            </span>
+
+            {/* Collapse / expand inputs – only useful once you have versions */}
+            <Button
+              variant="quiet"
+              className="text-xs"
+              onClick={() => setInputsCollapsed((v) => !v)}
+              disabled={versions.length === 0}
+            >
+              {inputsCollapsed ? "Show inputs" : "Collapse inputs"}
+            </Button>
+
+            {/* Primary action */}
+            <Button
+              variant="primary"
+              className="text-xs"
+              onClick={handleNewOutput}
+            >
+              New output
+            </Button>
           </div>
         </div>
+      </header>
 
-        {/* Right: environment and primary actions */}
-        <div className="hidden items-center gap-3 md:flex">
-          {/* Environment pill */}
-          <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            <span className="whitespace-nowrap">Alpha</span>
-          </span>
-
-          {/* Collapse / expand inputs – only useful once you have versions */}
-          <Button
-            variant="quiet"
-            className="text-xs"
-            onClick={() => setInputsCollapsed((v) => !v)}
-            disabled={versions.length === 0}
-          >
-            {inputsCollapsed ? "Show inputs" : "Collapse inputs"}
-          </Button>
-
-          {/* Primary action */}
-          <Button
-            variant="primary"
-            className="text-xs"
-            onClick={handleNewOutput}
-          >
-            New output
-          </Button>
-        </div>
-
-
-      </div>
-    </header>
-
-
-      {/* Main layout */}
-      <main
-        className={`mx-auto grid max-w-6xl grid-cols-1 gap-5 px-4 py-5 ${
-          inputsCollapsed
-            ? "md:grid-cols-1"
-            : "md:grid-cols-[minmax(0,1.35fr)_minmax(0,1.85fr)]"
-        }`}
-      >
-        {/* Left column – inputs */}
-        {!inputsCollapsed && (
-          <div className="space-y-4">
-          {/* Event & title */}
-          <Card>
-            <CardHeader className="items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">Event & title</div>
-                <div className="text-xs text-slate-500">
-                  Define what happened and what you need written.
-                </div>
-              </div>
-            </CardHeader>
-            <CardBody className="space-y-3">
-              <div>
-                <label className="text-xs font-medium text-slate-700 mb-1 block">
-                  Title / headline{" "}
-                  <span className="font-normal">(optional)</span>
-                </label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Acquisition of XYZ by ABC Partners"
-                />
-                <p className="mt-1 text-[11px] text-slate-500">
-                  Helpful for press releases and LinkedIn posts, but not
-                  required for all outputs.
-                </p>
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-slate-700 mb-1 block">
-                  Event type
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {SCENARIOS.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setScenario(s.id)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
-                        scenario === s.id
-                          ? "bg-black text-white border-black"
-                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-1 text-[11px] text-slate-500">
-                  Used to adjust scenario-specific prompting and scoring.
-                </p>
-              </div>
-
-                            <div>
-                <label className="text-xs font-medium text-slate-700 mb-1 block">
-                  Instructions / constraints
-                </label>
-                <textarea
-                  className={
-                    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
-                    (instructionsApplied ? "text-slate-400" : "text-slate-800")
-                  }
-                  value={notes}
-                  onChange={(e) => {
-                    setNotes(e.target.value);
-                    // User is editing -> treat as fresh instructions
-                    setInstructionsApplied(false);
-                  }}
-                  placeholder="Add instructions and constraints for this output..."
-                />
-              </div>
-
-            </CardBody>
-          </Card>
-
-          {/* Sources */}
-          <Card>
-            <CardHeader className="items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="text-sm font-semibold">Source material</div>
-              </div>
-            </CardHeader>
-            <CardBody className="space-y-3">
-              {/* Attached sources first */}
-              {sources.length > 0 && (
-                <div className="border border-slate-100 rounded-xl px-3 py-2 bg-slate-50">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-[11px] font-medium text-slate-600">
-                      Attached sources
-                    </div>
-                    <div className="text-[11px] text-slate-500">
-                      {sources.length} source
-                      {sources.length > 1 ? "s" : ""}
-                    </div>
-                  </div>
-                  <ul className="space-y-1 text-xs text-slate-700">
-                    {sources.map((s, idx) => {
-                      let meta = "";
-                  if (s.kind === "file") {
-                    if (s.size) {
-                      const kb = Math.round(s.size / 1024);
-                      meta = `${formatNumber(kb)} KB`;
-                    } else {
-                      meta = "file";
-                    }
-                  } else if (s.kind === "url") {
-                    const len = s.text ? s.text.length : 0;
-                    const k = Math.max(1, Math.round(len / 1000));
-                    meta = `URL · ~${formatNumber(k)}k chars`;
-                  } else {
-                    meta = "source";
-                  }
-
-
-                      return (
-                        <li
-                          key={`${s.name}-${idx}`}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            {s.kind === "url" && (s.url || s.name) ? (
-                              <a
-                                href={s.url || s.name}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="truncate text-sky-600 hover:underline"
-                              >
-                                {s.name}
-                              </a>
-                            ) : (
-                              <span className="truncate">{s.name}</span>
-                            )}
-                            <span className="text-[10px] text-slate-500 shrink-0">
-                              {meta}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSource(idx)}
-                            className="text-[14px] font-bold text-red-500 hover:text-white hover:bg-red-600 rounded-full px-2 py-0.5 transition"
-                            aria-label={`Remove source ${s.name}`}
-                          >
-                            ×
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-
-              {/* Files */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-700">
-                    Files
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 mb-1">
-                  Upload investment memos, IM extracts, emails, board papers, or
-                  notes. Text files work best.
-                </p>
-                <div
-                  className="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 px-4 py-6 text-xs text-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-slate-400 hover:bg-slate-100"
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onDrop={handleDropFiles}
-                >
-                  <div className="text-lg mb-1">📄</div>
-                  <div className="font-medium mb-0.5">
-                    Drop files here, or click to upload
-                  </div>
-                  <div className="text-[11px] text-slate-500">
-                    We’ll extract text and treat each file as a separate source.
-                  </div>
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => handleFiles(e.target.files)}
-                />
-              </div>
-
-              {/* URL */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700 mb-1 block">
-                  URL
-                </label>
-                <p className="text-[11px] text-slate-500 mb-1">
-                  Paste a link to a public article or announcement. The backend
-                  will fetch readable on-page text where possible.
-                </p>
-                <div className="flex items-center gap-2">
-                  <Input
-                    className="text-xs"
-                    placeholder="https://example.com/article"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                  />
-                  <Button
-                    variant="default"
-                    className="text-xs whitespace-nowrap"
-                    onClick={handleAddUrlSource}
-                  >
-                    Add URL
-                  </Button>
-                </div>
-              </div>
-
-              {/* Manual text */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700 mb-1 block">
-                  Manual text
-                </label>
-                <p className="text-[11px] text-slate-500 mb-1">
-                  Paste or type any additional source material here – email
-                  chains, call notes, bullet points, internal commentary, etc.
-                </p>
-               <TextArea
-                 rows={3}
-                 value={rawText}
-                 onChange={(e) => setRawText(e.target.value)}
-                 placeholder="Paste IM extracts, memos, emails, notes..."
-               />
-               <CharCounter value={rawText} />
-
-              </div>
-
-              {/* Public domain search */}
-              <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-medium text-slate-700">
-                    Public domain search
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setPublicSearch((v) => !v)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                      publicSearch ? "bg-black" : "bg-slate-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                        publicSearch ? "translate-x-5" : "translate-x-1"
-                      }`}
-                    />
-                    <span className="sr-only">
-                      Toggle public do      {/* Main layout */}
+      {/* Main layout – flex with central collapse rail */}
       <main className="mx-auto max-w-6xl px-4 py-5 flex flex-col gap-5 md:flex-row">
         {/* Left column – inputs */}
         <div
@@ -1335,7 +1052,6 @@ function App() {
                   value={notes}
                   onChange={(e) => {
                     setNotes(e.target.value);
-                    // User is editing -> treat as fresh instructions
                     setInstructionsApplied(false);
                   }}
                   placeholder="Add instructions and constraints for this output..."
@@ -1714,22 +1430,23 @@ function App() {
                   Version type
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {[{ id: "complete", label: "Complete" }, { id: "public", label: "Public" }].map(
-                    (opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setVersionType(opt.id)}
-                        className={`px-2.5 py-1 rounded-full text-[11px] border ${
-                          versionType === opt.id
-                            ? "bg-black text-white border-black"
-                            : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    )
-                  )}
+                  {[
+                    { id: "complete", label: "Complete" },
+                    { id: "public", label: "Public" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setVersionType(opt.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] border ${
+                        versionType === opt.id
+                          ? "bg-black text-white border-black"
+                          : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
                 <p className="mt-1 text-[11px] text-slate-500">
                   Complete versions follow the full internal brief. Public
@@ -1751,7 +1468,11 @@ function App() {
                     value={maxWords}
                     onChange={(e) => setMaxWords(e.target.value)}
                     onKeyDown={(e) =>
-                      handleEnterKey(e, handleGenerate, isGenerating || !canGenerate)
+                      handleEnterKey(
+                        e,
+                        handleGenerate,
+                        isGenerating || !canGenerate
+                      )
                     }
                   />
 
@@ -2045,7 +1766,6 @@ function App() {
                   value={rewriteNotes}
                   onChange={(e) => {
                     setRewriteNotes(e.target.value);
-                    // As soon as the user types, this is a new set of instructions
                     setRewriteInstructionsApplied(false);
                   }}
                   placeholder="Tell the AI how to revise this version..."
@@ -2160,7 +1880,9 @@ function App() {
             <Card>
               <CardHeader className="items-center justify-between">
                 <div className="flex flex-col gap-1">
-                  <div className="text-sm font-semibold">Sources for this version</div>
+                  <div className="text-sm font-semibold">
+                    Sources for this version
+                  </div>
                   <div className="text-xs text-slate-500">
                     Files, URLs and public sources feeding the selected draft.
                   </div>
@@ -2383,7 +2105,10 @@ function App() {
                         </span>
                         {item.meta && item.meta.confidence != null && (
                           <span className="text-[10px] text-slate-500">
-                            {formatNumber(Math.round(item.meta.confidence * 100))}%
+                            {formatNumber(
+                              Math.round(item.meta.confidence * 100)
+                            )}
+                            %
                           </span>
                         )}
                       </div>
@@ -2398,7 +2123,6 @@ function App() {
           )}
         </div>
       </main>
-
 
       {/* Toast */}
       {toast && (
