@@ -60,12 +60,13 @@ function Card({ className = "", children }) {
 function CardHeader({ className = "", children }) {
   return (
     <div
-      className={`flex gap-2.5 border-b border-slate-100 px-4 py-2.5 ${className}`}
+      className={`flex gap-2.5 border-b border-slate-100 bg-slate-50 px-4 py-2.5 ${className}`}
     >
       {children}
     </div>
   );
 }
+
 
 function CardBody({ className = "", children }) {
   return <div className={`px-4 py-3 ${className}`}>{children}</div>;
