@@ -1256,7 +1256,7 @@ function App() {
           </Card>
 
           {/* Advanced settings */}
-          <Card className="align-row-3">
+          <Card>
             <CardHeader className="items-center justify-between">
               <div className="flex flex-col gap-1">
                 <div className="text-[13px] font-semibold tracking-tight text-slate-900">Advanced settings</div>
@@ -2032,7 +2032,7 @@ function App() {
           )}
 
         {/* Versions timeline */}
-        <Card className="align-row-3">
+        <Card>
           <CardHeader className="items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="text-[13px] font-semibold tracking-tight text-slate-900">Versions</div>
