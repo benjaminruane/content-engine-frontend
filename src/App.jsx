@@ -1404,14 +1404,14 @@ function App() {
                   ))}
                 </div>
               </div>
-
+        
               {/* Version type toggle */}
               <div>
                 <label className="text-xs font-medium text-slate-700 mb-1 block">
                   Version type
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                    {[{ id: "complete", label: "Complete" }, { id: "public", label: "Public" }].map(
+                  {[{ id: "complete", label: "Complete" }, { id: "public", label: "Public" }].map(
                     (opt) => (
                       <button
                         key={opt.id}
@@ -1434,7 +1434,7 @@ function App() {
                   while still following the writing guidelines.
                 </p>
               </div>
-
+        
               <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-3 items-end">
                 <div>
                   <label className="text-xs font-medium text-slate-700 mb-1 block">
@@ -1451,7 +1451,7 @@ function App() {
                       handleEnterKey(e, handleGenerate, isGenerating || !canGenerate)
                     }
                   />
-
+        
                   <p className="text-[11px] text-slate-500 mt-1">
                     Soft guidance plus hard cap. The engine will aim to stay
                     within this length.
@@ -1469,646 +1469,638 @@ function App() {
               </div>
             </CardBody>
           </Card>
-
-          {/* Current draft */}
-          <Card>
-            <CardHeader className="flex flex-col items-start gap-1.5">
-              <div className="flex items-center gap-2">
-                <div className="text-sm font-semibold tracking-tight text-slate-900">
-                  Draft output
-                </div>
-                {currentVersion && (
-                  <Pill
-                    tone={qualityTone(currentVersion.score)}
-                    className="text-[10px]"
-                  >
-                    Score (proto): {currentVersion.score ?? "–"}
-                  </Pill>
-                )}
-              </div>
-          
-              <div className="text-[11px] text-slate-500">
-                {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
-                {getModelLabel(modelId)} ·{" "}
-                {versionType === "public" ? "Public version" : "Complete version"}
-                {maxWords && ` · ≤ ${formatNumber(maxWords)} words`}
-                {" · Public search: "}
-                {publicSearch ? "On" : "Off"}
-              </div>
-            </CardHeader>
-
-            <CardBody className="space-y-3">
-              <TextArea
-              rows={18}
-              value={draftText}
-              onChange={(e) => setDraftText(e.target.value)}
-              placeholder="Generated draft will appear here. You can edit before rewriting."
-            />
-            <CharCounter value={draftText} />
-
-               <div className="mt-1 text-right text-[11px] text-slate-500">
-                 Word count: {formatNumber(draftWordCount)}
-               </div>
-
-              {/* Export options */}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex gap-2">
-                  <Button
-                    variant="default"
-                    className="text-xs"
-                    onClick={handleCopyDraft}
-                  >
-                    Copy draft
-                  </Button>
-                  <Button
-                    variant="quiet"
-                    className="text-xs"
-                    onClick={handleDownloadDraft}
-                  >
-                    Download .txt
-                  </Button>
-                </div>
-
-                <div className="flex-1 text-right text-[11px] text-slate-500">
-                  You can rewrite this draft using the current version type
-                  setting (Complete vs Public-facing).
-                </div>
-              </div>
-
-          {/* Statement reliability analysis */}
-          <div className="border-t border-slate-200 pt-3 mt-2">
-            <div className="mb-2 flex items-center justify-between">
-              <div className="text-[11px] font-semibold tracking-tight text-slate-800">
-                Statement reliability (beta)
-              </div>
-          
-              <Button
-                variant="quiet"
-                className="text-[11px]"
-                onClick={handleAnalyseStatements}
-                disabled={isAnalysingStatements}
-              >
-                {isAnalysingStatements
-                  ? "Analysing…"
-                  : statementAnalysis &&
-                    statementAnalysis.versionId === currentVersion?.id
-                  ? "Re-run analysis"
-                  : "Analyse statements"}
-              </Button>
-            </div>
-          
-            {/* Summary strip */}
-            {statementAnalysis &&
-              statementAnalysis.versionId === currentVersion?.id && (
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
-                    <span>
-                      {statementAnalysis.summary?.totalStatements ??
-                        statementAnalysis.statements?.length ??
-                        0}{" "}
-                      statements analysed
-                    </span>
-                    {typeof statementAnalysis.summary?.lowReliabilityCount ===
-                      "number" &&
-                      statementAnalysis.summary.lowReliabilityCount > 0 && (
-                        <span>
-                          • {statementAnalysis.summary.lowReliabilityCount} flagged
-                          as low reliability
-                        </span>
-                      )}
+        
+          {/* Draft + right-hand stack */}
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)]">
+            {/* Left: Draft output + analysis + rewrite + Ask AI */}
+            <Card>
+              <CardHeader className="flex flex-col items-start gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-semibold tracking-tight text-slate-900">
+                    Draft output
                   </div>
-                  {typeof statementAnalysis.summary?.averageReliability ===
-                    "number" && (
+                  {currentVersion && (
                     <Pill
-                      tone={
-                        statementAnalysis.summary.reliabilityBand === "high"
-                          ? "success"
-                          : statementAnalysis.summary.reliabilityBand === "medium"
-                          ? "warning"
-                          : statementAnalysis.summary.reliabilityBand === "low"
-                          ? "danger"
-                          : "neutral"
-                      }
+                      tone={qualityTone(currentVersion.score)}
                       className="text-[10px]"
                     >
-                      Overall reliability:{" "}
-                      {formatNumber(
-                        Math.round(
-                          statementAnalysis.summary.averageReliability * 100
-                        )
-                      )}
-                      %
-                      {statementAnalysis.summary.reliabilityBand && (
-                        <> ({statementAnalysis.summary.reliabilityBand})</>
-                      )}
+                      Score (proto): {currentVersion.score ?? "–"}
                     </Pill>
                   )}
                 </div>
-              )}
-          
-            {/* Scrollable table */}
-            {statementAnalysis &&
-              statementAnalysis.versionId === currentVersion?.id &&
-              Array.isArray(statementAnalysis.statements) &&
-              statementAnalysis.statements.length > 0 && (
-                <div className="max-h-64 overflow-y-auto overflow-x-auto">
-                  <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
-                          #
-                        </th>
-                        <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
-                          Statement
-                        </th>
-                        <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
-                          Reliability
-                        </th>
-                        <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
-                          Category
-                        </th>
-                        <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
-                          Implication
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {statementAnalysis.statements.map((st, idx) => {
-                        const rel =
-                          typeof st.reliability === "number" ? st.reliability : null;
-                        const relPct =
-                          rel != null ? Math.round(rel * 100) : null;
-          
-                        let relBand = null;
-                        if (relPct != null) {
-                          if (relPct >= 90) relBand = "high";
-                          else if (relPct >= 75) relBand = "medium";
-                          else relBand = "low";
-                        }
-          
-                        const rowHighlight =
-                          relBand === "low"
-                            ? "bg-red-50/40"
-                            : relBand === "medium"
-                            ? "bg-amber-50/30"
-                            : "";
-          
-                        return (
-                          <tr
-                            key={st.id ?? idx}
-                            className={`border-t border-slate-200 align-top ${rowHighlight}`}
-                          >
-                            <td className="px-2 py-1 align-top text-slate-500">
-                              {idx + 1}
-                            </td>
-                            <td className="px-2 py-1 align-top">
-                              {st.text}
-                            </td>
-                            <td className="px-2 py-1 align-top text-slate-600">
-                              {relPct != null ? (
-                                <span
-                                  className={
-                                    relBand === "low"
-                                      ? "text-red-600 font-medium"
-                                      : relBand === "medium"
-                                      ? "text-amber-700 font-medium"
-                                      : relBand === "high"
-                                      ? "text-emerald-700 font-medium"
-                                      : ""
-                                  }
-                                >
-                                  {formatNumber(relPct)}%{" "}
-                                  {relBand === "low" && (
-                                    <span className="ml-1">⚠</span>
-                                  )}
-                                </span>
-                              ) : (
-                                "–"
-                              )}
-                            </td>
-                            <td className="px-2 py-1 align-top text-slate-600">
-                              {st.category || "–"}
-                            </td>
-                            <td className="px-2 py-1 align-top text-slate-600">
-                              {relBand === "high"
-                                ? "–"
-                                : st.implication ||
-                                  "Consider reviewing or softening this statement."}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-          
-            {/* No statements message – graceful fallback */}
-            {statementAnalysis &&
-              statementAnalysis.versionId === currentVersion?.id &&
-              Array.isArray(statementAnalysis.statements) &&
-              statementAnalysis.statements.length === 0 && (
-                <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
-                  <div className="mb-0.5 font-medium">
-                    Analysis completed – no discrete statements found
-                  </div>
-                  <p>
-                    The AI couldn’t confidently break this draft into separate
-                    factual statements. This often happens when the text is highly
-                    narrative, very short, or light on explicit figures and claims.
-                    The draft itself is still valid – consider adding clearer factual
-                    sentences if you want statement-level checks.
-                  </p>
-                </div>
-              )}
-          </div>
-
-              {/* Rewrite section */}
-              <div className="space-y-2 pt-1">
-               <label className="mb-1 block text-[11px] font-semibold tracking-tight text-slate-800">
-                 Rewrite instructions (optional)
-               </label>
-
-                <p className="text-[11px] text-slate-500">
-                  This rewrite will use the current "{versionType}" setting in
-                  the controls above (Complete vs Public-facing).
-                </p>
-
-               <textarea
-                className={
-                  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
-                  (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
-                }
-                value={rewriteNotes}
-                onChange={(e) => {
-                  setRewriteNotes(e.target.value);
-                  // As soon as the user types, this is a new set of instructions
-                  setRewriteInstructionsApplied(false);
-                }}
-                placeholder="Tell the AI how to revise this version..."
-                onKeyDown={(e) =>
-                  handleEnterKey(
-                    e,
-                    handleRewrite,
-                    isRewriting || versions.length === 0
-                  )
-                }
-              />
-              <CharCounter value={rewriteNotes} />
-
-
-
-                <div className="flex justify-end gap-2 pt-1">
-                  <Button
-                    variant="default"
-                    onClick={handleRewrite}
-                    disabled={isRewriting || versions.length === 0}
-                  >
-                    {isRewriting ? "Rewriting..." : "Rewrite draft"}
-                  </Button>
-                </div>
-              </div>
-
-              {/* AI query box */}
-              <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="text-[11px] font-semibold tracking-tight text-slate-800">
-                Ask a question about this draft or its sources
-              </div>
-              {queryAnswer && (
-                <span className="text-[10px] text-slate-500">
-                  Latest answer shown below
-                </span>
-              )}
-            </div>
-
-               <p className="text-[11px] leading-snug text-slate-500">
-                 Example: “Is the revenue figure mentioned in paragraph three public
-                 information?” or “What exactly is meant by the leverage metric here?”
-               </p>
-
-
-                <TextArea
-                  rows={2}
-                  value={queryText}
-                  onChange={(e) => setQueryText(e.target.value)}
-                  placeholder="Type your question about this draft or its sources..."
-                  disabled={isQuerying}
-                  className={
-                    isQuerying
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                      : ""
-                  }
-                  onKeyDown={(e) => handleEnterKey(e, handleAskQuery, isQuerying)}
-                />
-                <CharCounter value={queryText} max={4000} />
-
-
-
-                <div className="flex items-center justify-between gap-2">
-                  <div className="text-[11px] leading-snug text-slate-500">
-                    The AI will consider both the draft and the attached sources.
-                  </div>
-
-                  <Button
-                    variant="default"
-                    className="text-xs"
-                    onClick={handleAskQuery}
-                    disabled={isQuerying}
-                  >
-                    {isQuerying ? "Asking…" : "Ask AI"}
-                  </Button>
-                </div>
-
-                                {queryAnswer && (
-                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
-                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="font-medium whitespace-nowrap text-slate-800">
-                        AI answer
-                      </div>
-                       
-                           {queryMeta && queryMeta.confidence != null && (
-                             <div className="text-[10px] text-slate-500 sm:text-right">
-                               <span className="mr-1 font-semibold">
-                                 {queryMeta.confidence >= 0.8
-                                   ? "High confidence"
-                                   : queryMeta.confidence >= 0.6
-                                   ? "Moderate confidence"
-                                   : "Low confidence"}
-                               </span>
-                              <span>
-                                ({formatNumber(Math.round(queryMeta.confidence * 100))}%)
-                              </span>
-
-                               {queryMeta.confidenceReason && (
-                                 <span className="ml-1">
-                                   – {queryMeta.confidenceReason}
-                                 </span>
-                               )}
-                             </div>
-                           )}
-
-                    </div>
-                    <div className="whitespace-pre-wrap leading-snug">
-                      {queryAnswer}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardBody>
-          </Card>
-
-        {/* Sources for selected version */}
-        {currentVersion && (currentVersion.sources || sources).length > 0 && (
-          <Card>
-            <CardHeader className="items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold">Sources for this version</div>
-                <div className="text-xs text-slate-500">
-                  Files, URLs and public sources feeding the selected draft.
-                </div>
-              </div>
-            </CardHeader>
         
-            {/* 👇 New: cap height + vertical scroll */}
-            <CardBody className="max-h-48 overflow-y-auto">
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-2 py-1 text-left font-medium text-slate-600">
-                        Source
-                      </th>
-                      <th className="px-2 py-1 text-left font-medium text-slate-600">
-                        Type
-                      </th>
-                      <th className="px-2 py-1 text-left font-medium text-slate-600">
-                        Used portion
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(currentVersion.sources || sources).map((s, idx) => {
-                      const kind = s.kind || "text";
-                      const isUrl = kind === "url" || kind === "public";
-                      const url = s.url || (isUrl ? s.name : null);
-        
-                      let usageLabel = "";
-                      if (kind === "file") {
-                        usageLabel = "entire document";
-                      } else if (kind === "url") {
-                        usageLabel = "extracted article text";
-                      } else if (kind === "public") {
-                        usageLabel = "public web context";
-                      } else {
-                        usageLabel = "manual text input";
-                      }
-        
-                      return (
-                        <tr
-                          key={`${s.name || "src"}-${idx}`}
-                          className="border-t border-slate-200"
-                        >
-                          <td className="px-2 py-1 align-top">
-                            {isUrl && url ? (
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-sky-600 hover:underline break-all"
-                              >
-                                {s.name}
-                              </a>
-                            ) : (
-                              <span className="break-all">
-                                {s.name || "(unnamed source)"}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-2 py-1 align-top text-slate-600">
-                            {kind === "file"
-                              ? "File"
-                              : kind === "url"
-                              ? "URL"
-                              : kind === "public"
-                              ? "Public source"
-                              : "Text"}
-                          </td>
-                          <td className="px-2 py-1 align-top text-slate-600">
-                            {usageLabel}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </CardBody>
-          </Card>
-        )}
-
-
-          {/* Versions timeline */}
-          <Card>
-            <CardHeader className="items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="text-sm font-semibold">Versions</div>
-                <div className="text-xs text-slate-500">
-                  {sortedVersions.length === 0
-                    ? "No versions yet"
-                    : `${sortedVersions.length} version${
-                        sortedVersions.length > 1 ? "s" : ""
-                      }`}
-                </div>
-              </div>
-            </CardHeader>
-            <CardBody className="space-y-2 max-h-[260px] overflow-auto">
-              {sortedVersions.length === 0 && (
-                <div className="text-xs text-slate-500">
-                  Generate a draft to start building a version history.
-                </div>
-              )}
-              {sortedVersions.map((v, idx) => {
-                const dt = new Date(v.createdAt);
-                const outputLabel = v.outputType
-                  ? v.outputType.replace("_", " ")
-                  : "output";
-                const versionNumber = v.versionNumber || idx + 1;
-                const isSelected = v.id === selectedVersionId;
-                const wordCount =
-                  v.text && v.text.trim().length > 0
-                    ? v.text.trim().split(/\s+/).filter(Boolean).length
-                    : 0;
-
-                return (
-                  <div key={v.id} className="flex items-stretch gap-2">
-                    {/* Timeline column */}
-                    <div className="flex flex-col items-center pt-1">
-                      <div
-                        className={`h-2.5 w-2.5 rounded-full ${
-                          isSelected ? "bg-black" : "bg-slate-300"
-                        }`}
-                      />
-                      {idx < sortedVersions.length - 1 && (
-                        <div className="flex-1 w-px bg-slate-200 mt-1" />
-                      )}
-                    </div>
-                    {/* Card column */}
-                    <div
-                      className={`flex-1 rounded-xl border px-3 py-2 mb-1 ${
-                        isSelected
-                          ? "border-black bg-slate-50"
-                          : "border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                        <div className="mb-1 flex items-center justify-between gap-2">
-                          <div className="truncate text-[11px] font-semibold tracking-tight">
-                            v{versionNumber} ·{" "}
-                            <span className="capitalize">{outputLabel}</span>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-1.5">
-                            <Pill className="text-[10px]">
-                              {formatNumber(wordCount)} words
-                            </Pill>
-                            <Pill className="text-[10px] capitalize">
-                              {v.versionType === "public" ? "Public" : "Complete"}
-                            </Pill>
-                            <Pill
-                              tone={qualityTone(v.score)}
-                              className="text-[10px]"
-                            >
-                              Score (proto): {v.score != null ? v.score : "–"}
-                            </Pill>
-                          </div>
-                        </div>
-
-
-
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex flex-col">
-                          <span className="text-[11px] text-slate-500">
-                            {formatDateTime(dt)}
-                          </span>
-                          <span className="text-[11px] text-slate-700 truncate">
-                            {v.title}
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="quiet"
-                            className="text-[11px] px-2 py-1"
-                            onClick={() => handleSelectVersion(v.id)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            className="text-[11px] px-2 py-1"
-                            onClick={() => handleDeleteVersion(v.id)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </CardBody>
-          </Card>
-
-          {/* Question history */}
-          {queryHistory.length > 0 && (
-            <Card>
-              <CardHeader className="items-center justify-between">
-                <div className="flex flex-col gap-1">
-                  <div className="text-sm font-semibold">Question history</div>
-                  <div className="text-xs text-slate-500">
-                    Quick access to recent questions and answers for this session.
-                  </div>
-                </div>
-                <div className="text-[10px] text-slate-500">
-                  {queryHistory.length} question
-                  {queryHistory.length > 1 ? "s" : ""} this session
+                <div className="text-[11px] text-slate-500">
+                  {getScenarioLabel(scenario)} · {primaryOutputLabel} ·{" "}
+                  {getModelLabel(modelId)} ·{" "}
+                  {versionType === "public" ? "Public version" : "Complete version"}
+                  {maxWords && ` · ≤ ${formatNumber(maxWords)} words`}
+                  {" · Public search: "}
+                  {publicSearch ? "On" : "Off"}
                 </div>
               </CardHeader>
-              <CardBody className="pt-2">
-                <div className="max-h-40 space-y-1 overflow-auto pr-1">
-                  {queryHistory.map((item, idx) => (
-                    <button
-                      key={item.id ?? idx}
-                      type="button"
-                      onClick={() => {
-                        setQueryText(item.question);
-                        setQueryAnswer(item.answer);
-                        setQueryMeta(item.meta ?? null);
-                      }}
-                      className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
+        
+              <CardBody className="space-y-3">
+                <TextArea
+                  rows={18}
+                  value={draftText}
+                  onChange={(e) => setDraftText(e.target.value)}
+                  placeholder="Generated draft will appear here. You can edit before rewriting."
+                />
+                <CharCounter value={draftText} />
+        
+                <div className="mt-1 text-right text-[11px] text-slate-500">
+                  Word count: {formatNumber(draftWordCount)}
+                </div>
+        
+                {/* Export options */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      className="text-xs"
+                      onClick={handleCopyDraft}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
-                          {item.question}
-                        </span>
-                        {item.meta && item.meta.confidence != null && (
-                          <span className="text-[10px] text-slate-500">
-                            {formatNumber(Math.round(item.meta.confidence * 100))}%
+                      Copy draft
+                    </Button>
+                    <Button
+                      variant="quiet"
+                      className="text-xs"
+                      onClick={handleDownloadDraft}
+                    >
+                      Download .txt
+                    </Button>
+                  </div>
+        
+                  <div className="flex-1 text-right text-[11px] text-slate-500">
+                    You can rewrite this draft using the current version type
+                    setting (Complete vs Public-facing).
+                  </div>
+                </div>
+        
+                {/* Statement reliability analysis */}
+                <div className="border-t border-slate-200 pt-3 mt-2">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="text-[11px] font-semibold tracking-tight text-slate-800">
+                      Statement reliability (beta)
+                    </div>
+        
+                    <Button
+                      variant="quiet"
+                      className="text-[11px]"
+                      onClick={handleAnalyseStatements}
+                      disabled={isAnalysingStatements}
+                    >
+                      {isAnalysingStatements
+                        ? "Analysing…"
+                        : statementAnalysis &&
+                          statementAnalysis.versionId === currentVersion?.id
+                        ? "Re-run analysis"
+                        : "Analyse statements"}
+                    </Button>
+                  </div>
+        
+                  {/* Summary strip */}
+                  {statementAnalysis &&
+                    statementAnalysis.versionId === currentVersion?.id && (
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+                          <span>
+                            {statementAnalysis.summary?.totalStatements ??
+                              statementAnalysis.statements?.length ??
+                              0}{" "}
+                            statements analysed
                           </span>
+                          {typeof statementAnalysis.summary?.lowReliabilityCount ===
+                            "number" &&
+                            statementAnalysis.summary.lowReliabilityCount > 0 && (
+                              <span>
+                                • {statementAnalysis.summary.lowReliabilityCount} flagged
+                                as low reliability
+                              </span>
+                            )}
+                        </div>
+                        {typeof statementAnalysis.summary?.averageReliability ===
+                          "number" && (
+                          <Pill
+                            tone={
+                              statementAnalysis.summary.reliabilityBand === "high"
+                                ? "success"
+                                : statementAnalysis.summary.reliabilityBand === "medium"
+                                ? "warning"
+                                : statementAnalysis.summary.reliabilityBand === "low"
+                                ? "danger"
+                                : "neutral"
+                            }
+                            className="text-[10px]"
+                          >
+                            Overall reliability:{" "}
+                            {formatNumber(
+                              Math.round(
+                                statementAnalysis.summary.averageReliability * 100
+                              )
+                            )}
+                            %
+                            {statementAnalysis.summary.reliabilityBand && (
+                              <> ({statementAnalysis.summary.reliabilityBand})</>
+                            )}
+                          </Pill>
                         )}
                       </div>
-                      <div className="truncate text-[10px] text-slate-500">
-                        {item.answer}
+                    )}
+        
+                  {/* Scrollable table */}
+                  {statementAnalysis &&
+                    statementAnalysis.versionId === currentVersion?.id &&
+                    Array.isArray(statementAnalysis.statements) &&
+                    statementAnalysis.statements.length > 0 && (
+                      <div className="max-h-64 overflow-y-auto overflow-x-auto">
+                        <table className="min-w-full table-fixed overflow-hidden rounded-lg border border-slate-200 text-[11px]">
+                          <thead className="bg-slate-50">
+                            <tr>
+                              <th className="w-8 px-2 py-1 text-left font-medium text-slate-600">
+                                #
+                              </th>
+                              <th className="w-[60%] px-2 py-1 text-left font-medium text-slate-600">
+                                Statement
+                              </th>
+                              <th className="w-[10%] px-2 py-1 text-left font-medium text-slate-600">
+                                Reliability
+                              </th>
+                              <th className="w-[15%] px-2 py-1 text-left font-medium text-slate-600">
+                                Category
+                              </th>
+                              <th className="w-[20%] px-2 py-1 text-left font-medium text-slate-600">
+                                Implication
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {statementAnalysis.statements.map((st, idx) => {
+                              const rel =
+                                typeof st.reliability === "number" ? st.reliability : null;
+                              const relPct =
+                                rel != null ? Math.round(rel * 100) : null;
+        
+                              let relBand = null;
+                              if (relPct != null) {
+                                if (relPct >= 90) relBand = "high";
+                                else if (relPct >= 75) relBand = "medium";
+                                else relBand = "low";
+                              }
+        
+                              const rowHighlight =
+                                relBand === "low"
+                                  ? "bg-red-50/40"
+                                  : relBand === "medium"
+                                  ? "bg-amber-50/30"
+                                  : "";
+        
+                              return (
+                                <tr
+                                  key={st.id ?? idx}
+                                  className={`border-t border-slate-200 align-top ${rowHighlight}`}
+                                >
+                                  <td className="px-2 py-1 align-top text-slate-500">
+                                    {idx + 1}
+                                  </td>
+                                  <td className="px-2 py-1 align-top">
+                                    {st.text}
+                                  </td>
+                                  <td className="px-2 py-1 align-top text-slate-600">
+                                    {relPct != null ? (
+                                      <span
+                                        className={
+                                          relBand === "low"
+                                            ? "text-red-600 font-medium"
+                                            : relBand === "medium"
+                                            ? "text-amber-700 font-medium"
+                                            : relBand === "high"
+                                            ? "text-emerald-700 font-medium"
+                                            : ""
+                                        }
+                                      >
+                                        {formatNumber(relPct)}%{" "}
+                                        {relBand === "low" && (
+                                          <span className="ml-1">⚠</span>
+                                        )}
+                                      </span>
+                                    ) : (
+                                      "–"
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-1 align-top text-slate-600">
+                                    {st.category || "–"}
+                                  </td>
+                                  <td className="px-2 py-1 align-top text-slate-600">
+                                    {relBand === "high"
+                                      ? "–"
+                                      : st.implication ||
+                                        "Consider reviewing or softening this statement."}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
-                    </button>
-                  ))}
+                    )}
+        
+                  {/* No statements message – graceful fallback */}
+                  {statementAnalysis &&
+                    statementAnalysis.versionId === currentVersion?.id &&
+                    Array.isArray(statementAnalysis.statements) &&
+                    statementAnalysis.statements.length === 0 && (
+                      <div className="mt-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
+                        <div className="mb-0.5 font-medium">
+                          Analysis completed – no discrete statements found
+                        </div>
+                        <p>
+                          The AI couldn’t confidently break this draft into separate
+                          factual statements. This often happens when the text is highly
+                          narrative, very short, or light on explicit figures and claims.
+                          The draft itself is still valid – consider adding clearer factual
+                          sentences if you want statement-level checks.
+                        </p>
+                      </div>
+                    )}
+                </div>
+        
+                {/* Rewrite section */}
+                <div className="space-y-2 pt-1">
+                  <label className="mb-1 block text-[11px] font-semibold tracking-tight text-slate-800">
+                    Rewrite instructions (optional)
+                  </label>
+        
+                  <p className="text-[11px] text-slate-500">
+                    This rewrite will use the current "{versionType}" setting in
+                    the controls above (Complete vs Public-facing).
+                  </p>
+        
+                  <textarea
+                    className={
+                      "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+                      (rewriteInstructionsApplied ? "text-slate-400" : "text-slate-800")
+                    }
+                    value={rewriteNotes}
+                    onChange={(e) => {
+                      setRewriteNotes(e.target.value);
+                      // As soon as the user types, this is a new set of instructions
+                      setRewriteInstructionsApplied(false);
+                    }}
+                    placeholder="Tell the AI how to revise this version..."
+                    onKeyDown={(e) =>
+                      handleEnterKey(
+                        e,
+                        handleRewrite,
+                        isRewriting || versions.length === 0
+                      )
+                    }
+                  />
+                  <CharCounter value={rewriteNotes} />
+        
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button
+                      variant="default"
+                      onClick={handleRewrite}
+                      disabled={isRewriting || versions.length === 0}
+                    >
+                      {isRewriting ? "Rewriting..." : "Rewrite draft"}
+                    </Button>
+                  </div>
+                </div>
+        
+                {/* AI query box */}
+                <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] font-semibold tracking-tight text-slate-800">
+                      Ask a question about this draft or its sources
+                    </div>
+                    {queryAnswer && (
+                      <span className="text-[10px] text-slate-500">
+                        Latest answer shown below
+                      </span>
+                    )}
+                  </div>
+        
+                  <p className="text-[11px] leading-snug text-slate-500">
+                    Example: “Is the revenue figure mentioned in paragraph three public
+                    information?” or “What exactly is meant by the leverage metric here?”
+                  </p>
+        
+                  <TextArea
+                    rows={2}
+                    value={queryText}
+                    onChange={(e) => setQueryText(e.target.value)}
+                    placeholder="Type your question about this draft or its sources..."
+                    disabled={isQuerying}
+                    className={
+                      isQuerying
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                        : ""
+                    }
+                    onKeyDown={(e) => handleEnterKey(e, handleAskQuery, isQuerying)}
+                  />
+                  <CharCounter value={queryText} max={4000} />
+        
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[11px] leading-snug text-slate-500">
+                      The AI will consider both the draft and the attached sources.
+                    </div>
+        
+                    <Button
+                      variant="default"
+                      className="text-xs"
+                      onClick={handleAskQuery}
+                      disabled={isQuerying}
+                    >
+                      {isQuerying ? "Asking…" : "Ask AI"}
+                    </Button>
+                  </div>
+        
+                  {queryAnswer && (
+                    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                      <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="font-medium whitespace-nowrap text-slate-800">
+                          AI answer
+                        </div>
+        
+                        {queryMeta && queryMeta.confidence != null && (
+                          <div className="text-[10px] text-slate-500 sm:text-right">
+                            <span className="mr-1 font-semibold">
+                              {queryMeta.confidence >= 0.8
+                                ? "High confidence"
+                                : queryMeta.confidence >= 0.6
+                                ? "Moderate confidence"
+                                : "Low confidence"}
+                            </span>
+                            <span>
+                              ({formatNumber(Math.round(queryMeta.confidence * 100))}%)
+                            </span>
+        
+                            {queryMeta.confidenceReason && (
+                              <span className="ml-1">
+                                – {queryMeta.confidenceReason}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="whitespace-pre-wrap leading-snug">
+                        {queryAnswer}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardBody>
             </Card>
-          )}
-
-
-
-          
+        
+            {/* Right: sources for version, versions timeline, question history */}
+            <div className="space-y-4">
+              {/* Sources for selected version */}
+              {currentVersion && (currentVersion.sources || sources).length > 0 && (
+                <Card>
+                  <CardHeader className="items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-sm font-semibold">Sources for this version</div>
+                      <div className="text-xs text-slate-500">
+                        Files, URLs and public sources feeding the selected draft.
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardBody className="max-h-48 overflow-y-auto">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                              Source
+                            </th>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                              Type
+                            </th>
+                            <th className="px-2 py-1 text-left font-medium text-slate-600">
+                              Used portion
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(currentVersion.sources || sources).map((s, idx) => {
+                            const kind = s.kind || "text";
+                            const isUrl = kind === "url" || kind === "public";
+                            const url = s.url || (isUrl ? s.name : null);
+        
+                            let usageLabel = "";
+                            if (kind === "file") {
+                              usageLabel = "entire document";
+                            } else if (kind === "url") {
+                              usageLabel = "extracted article text";
+                            } else if (kind === "public") {
+                              usageLabel = "public web context";
+                            } else {
+                              usageLabel = "manual text input";
+                            }
+        
+                            return (
+                              <tr
+                                key={`${s.name || "src"}-${idx}`}
+                                className="border-t border-slate-200"
+                              >
+                                <td className="px-2 py-1 align-top">
+                                  {isUrl && url ? (
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-sky-600 hover:underline break-all"
+                                    >
+                                      {s.name}
+                                    </a>
+                                  ) : (
+                                    <span className="break-all">
+                                      {s.name || "(unnamed source)"}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-2 py-1 align-top text-slate-600">
+                                  {kind === "file"
+                                    ? "File"
+                                    : kind === "url"
+                                    ? "URL"
+                                    : kind === "public"
+                                    ? "Public source"
+                                    : "Text"}
+                                </td>
+                                <td className="px-2 py-1 align-top text-slate-600">
+                                  {usageLabel}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+        
+              {/* Versions timeline */}
+              <Card>
+                <CardHeader className="items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-semibold">Versions</div>
+                    <div className="text-xs text-slate-500">
+                      {sortedVersions.length === 0
+                        ? "No versions yet"
+                        : `${sortedVersions.length} version${
+                            sortedVersions.length > 1 ? "s" : ""
+                          }`}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardBody className="space-y-2 max-h-[260px] overflow-auto">
+                  {sortedVersions.length === 0 && (
+                    <div className="text-xs text-slate-500">
+                      Generate a draft to start building a version history.
+                    </div>
+                  )}
+                  {sortedVersions.map((v, idx) => {
+                    const dt = new Date(v.createdAt);
+                    const outputLabel = v.outputType
+                      ? v.outputType.replace("_", " ")
+                      : "output";
+                    const versionNumber = v.versionNumber || idx + 1;
+                    const isSelected = v.id === selectedVersionId;
+                    const wordCount =
+                      v.text && v.text.trim().length > 0
+                        ? v.text.trim().split(/\s+/).filter(Boolean).length
+                        : 0;
+        
+                    return (
+                      <div key={v.id} className="flex items-stretch gap-2">
+                        {/* Timeline column */}
+                        <div className="flex flex-col items-center pt-1">
+                          <div
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              isSelected ? "bg-black" : "bg-slate-300"
+                            }`}
+                          />
+                          {idx < sortedVersions.length - 1 && (
+                            <div className="flex-1 w-px bg-slate-200 mt-1" />
+                          )}
+                        </div>
+                        {/* Card column */}
+                        <div
+                          className={`flex-1 rounded-xl border px-3 py-2 mb-1 ${
+                            isSelected
+                              ? "border-black bg-slate-50"
+                              : "border-slate-200 hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="mb-1 flex items-center justify-between gap-2">
+                            <div className="truncate text-[11px] font-semibold tracking-tight">
+                              v{versionNumber} ·{" "}
+                              <span className="capitalize">{outputLabel}</span>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <Pill className="text-[10px]">
+                                {formatNumber(wordCount)} words
+                              </Pill>
+                              <Pill className="text-[10px] capitalize">
+                                {v.versionType === "public" ? "Public" : "Complete"}
+                              </Pill>
+                              <Pill
+                                tone={qualityTone(v.score)}
+                                className="text-[10px]"
+                              >
+                                Score (proto): {v.score != null ? v.score : "–"}
+                              </Pill>
+                            </div>
+                          </div>
+        
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-[11px] text-slate-500">
+                                {formatDateTime(dt)}
+                              </span>
+                              <span className="text-[11px] text-slate-700 truncate">
+                                {v.title}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="quiet"
+                                className="text-[11px] px-2 py-1"
+                                onClick={() => handleSelectVersion(v.id)}
+                              >
+                                View
+                              </Button>
+                              <Button
+                                variant="quiet"
+                                className="text-[11px] px-2 py-1"
+                                onClick={() => handleDeleteVersion(v.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardBody>
+              </Card>
+        
+              {/* Question history */}
+              {queryHistory.length > 0 && (
+                <Card>
+                  <CardHeader className="items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-sm font-semibold">Question history</div>
+                      <div className="text-xs text-slate-500">
+                        Quick access to recent questions and answers for this session.
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-slate-500">
+                      {queryHistory.length} question
+                      {queryHistory.length > 1 ? "s" : ""} this session
+                    </div>
+                  </CardHeader>
+                  <CardBody className="pt-2">
+                    <div className="max-h-40 space-y-1 overflow-auto pr-1">
+                      {queryHistory.map((item, idx) => (
+                        <button
+                          key={item.id ?? idx}
+                          type="button"
+                          onClick={() => {
+                            setQueryText(item.question);
+                            setQueryAnswer(item.answer);
+                            setQueryMeta(item.meta ?? null);
+                          }}
+                          className="w-full rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-left hover:bg-slate-100"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="min-w-0 truncate text-[11px] font-medium text-slate-800">
+                              {item.question}
+                            </span>
+                            {item.meta && item.meta.confidence != null && (
+                              <span className="text-[10px] text-slate-500">
+                                {formatNumber(Math.round(item.meta.confidence * 100))}%
+                              </span>
+                            )}
+                          </div>
+                          <div className="truncate text-[10px] text-slate-500">
+                            {item.answer}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+            </div>
+          </div>
         </div>
+
       </main>
 
       {/* Toast */}
