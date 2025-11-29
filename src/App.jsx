@@ -956,16 +956,6 @@ function App() {
               <span className="whitespace-nowrap">Alpha</span>
             </span>
 
-            {/* Collapse / expand inputs – only useful once you have versions */}
-            <Button
-              variant="quiet"
-              className="text-xs"
-              onClick={() => setInputsCollapsed((v) => !v)}
-              disabled={versions.length === 0}
-            >
-              {inputsCollapsed ? "Show inputs" : "Collapse inputs"}
-            </Button>
-
             {/* Primary action */}
             <Button
               variant="primary"
@@ -1370,11 +1360,11 @@ function App() {
         </div>
 
         {/* Collapse rail between columns (desktop only) */}
-        <div className="hidden md:flex flex-col items-stretch">
+        <div className="hidden md:flex flex-col items-center pt-4">
           <button
             type="button"
             onClick={() => setInputsCollapsed((v) => !v)}
-            className="group relative flex h-full items-center justify-center px-1"
+            className="group flex items-center justify-center"
           >
             <span className="sr-only">
               {inputsCollapsed ? "Show inputs" : "Hide inputs"}
