@@ -202,6 +202,7 @@ function App() {
   const [isAnalysingStatements, setIsAnalysingStatements] = useState(false);
 
   const [statementPanelCollapsed, setStatementPanelCollapsed] = useState(false);
+  const [askPanelCollapsed, setAskPanelCollapsed] = useState(false);
 
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1796,87 +1797,102 @@ function App() {
               </div>
 
               {/* AI query box */}
-              <div className="border-t border-slate-200 pt-3 mt-2 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-semibold tracking-tight text-slate-800">
-                    Ask a question about this draft or its sources
-                  </div>
+              <div className="border-t border-slate-200 pt-3 mt-2">
+                {/* Collapsible header */}
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={() => setAskPanelCollapsed((v) => !v)}
+                    className="flex items-center gap-1 text-[11px] font-semibold tracking-tight text-slate-800"
+                  >
+                    <span className="inline-block">
+                      {askPanelCollapsed ? "▸" : "▾"}
+                    </span>
+                    <span>Ask a question about this draft or its sources</span>
+                  </button>
+              
                   {queryAnswer && (
                     <span className="text-[10px] text-slate-500">
                       Latest answer shown below
                     </span>
                   )}
                 </div>
-
-                <p className="text-[11px] leading-snug text-slate-500">
-                  Example: “Is the revenue figure mentioned in paragraph three public
-                  information?” or “What exactly is meant by the leverage metric here?”
-                </p>
-
-                <TextArea
-                  rows={2}
-                  value={queryText}
-                  onChange={(e) => setQueryText(e.target.value)}
-                  placeholder="Type your question about this draft or its sources..."
-                  disabled={isQuerying}
-                  className={
-                    isQuerying
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                      : ""
-                  }
-                  onKeyDown={(e) => handleEnterKey(e, handleAskQuery, isQuerying)}
-                />
-                <CharCounter value={queryText} max={4000} />
-
-                <div className="flex items-center justify-between gap-2">
-                  <div className="text-[11px] leading-snug text-slate-500">
-                    The AI will consider both the draft and the attached sources.
-                  </div>
-
-                  <Button
-                    variant="default"
-                    className="text-xs"
-                    onClick={handleAskQuery}
-                    disabled={isQuerying}
-                  >
-                    {isQuerying ? "Asking…" : "Ask AI"}
-                  </Button>
-                </div>
-
-                {queryAnswer && (
-                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
-                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="font-medium whitespace-nowrap text-slate-800">
-                        AI answer
+              
+                {/* Collapsible body */}
+                {!askPanelCollapsed && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] leading-snug text-slate-500">
+                      Example: “Is the revenue figure mentioned in paragraph three public
+                      information?” or “What exactly is meant by the leverage metric here?”
+                    </p>
+              
+                    <TextArea
+                      rows={2}
+                      value={queryText}
+                      onChange={(e) => setQueryText(e.target.value)}
+                      placeholder="Type your question about this draft or its sources..."
+                      disabled={isQuerying}
+                      className={
+                        isQuerying
+                          ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                          : ""
+                      }
+                      onKeyDown={(e) => handleEnterKey(e, handleAskQuery, isQuerying)}
+                    />
+                    <CharCounter value={queryText} max={4000} />
+              
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-[11px] leading-snug text-slate-500">
+                        The AI will consider both the draft and the attached sources.
                       </div>
-
-                      {queryMeta && queryMeta.confidence != null && (
-                        <div className="text-[10px] text-slate-500 sm:text-right">
-                          <span className="mr-1 font-semibold">
-                            {queryMeta.confidence >= 0.8
-                              ? "High confidence"
-                              : queryMeta.confidence >= 0.6
-                              ? "Moderate confidence"
-                              : "Low confidence"}
-                          </span>
-                          <span>
-                            ({formatNumber(Math.round(queryMeta.confidence * 100))}%)
-                          </span>
-
-                          {queryMeta.confidenceReason && (
-                            <span className="ml-1">
-                              – {queryMeta.confidenceReason}
-                            </span>
+              
+                      <Button
+                        variant="default"
+                        className="text-xs"
+                        onClick={handleAskQuery}
+                        disabled={isQuerying}
+                      >
+                        {isQuerying ? "Asking…" : "Ask AI"}
+                      </Button>
+                    </div>
+              
+                    {queryAnswer && (
+                      <div className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                        <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="font-medium whitespace-nowrap text-slate-800">
+                            AI answer
+                          </div>
+              
+                          {queryMeta && queryMeta.confidence != null && (
+                            <div className="text-[10px] text-slate-500 sm:text-right">
+                              <span className="mr-1 font-semibold">
+                                {queryMeta.confidence >= 0.8
+                                  ? "High confidence"
+                                  : queryMeta.confidence >= 0.6
+                                  ? "Moderate confidence"
+                                  : "Low confidence"}
+                              </span>
+                              <span>
+                                ({formatNumber(Math.round(queryMeta.confidence * 100))}%)
+                              </span>
+              
+                              {queryMeta.confidenceReason && (
+                                <span className="ml-1">
+                                  – {queryMeta.confidenceReason}
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                    <div className="whitespace-pre-wrap leading-snug">
-                      {queryAnswer}
-                    </div>
+                        <div className="whitespace-pre-wrap leading-snug">
+                          {queryAnswer}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+
             </CardBody>
           </Card>
 
