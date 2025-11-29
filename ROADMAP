@@ -1,217 +1,213 @@
-# Content Engine – Product Roadmap
-_Last updated: YYYY-MM-DD_
+✅ Updated Content Engine Roadmap (2025 Edition)
 
-This roadmap outlines the planned evolution of the Content Engine from the current MVP toward a production-grade, enterprise-deployable platform. It integrates all architecture, UX, feature, and future-capability discussions to date.
+(Clean, structured, and aligned with the modular architecture we just agreed on.)
 
----
+🟢 Completed
 
-# 1. 🎯 Vision & Objectives
+ First-pass UI overhaul (header, sidebar, layout reflow)
 
-The Content Engine enables users to:
-- Upload or provide sources (documents, pasted text, URLs)
-- Generate structured investment-grade written outputs
-- Apply defined style guides and scenario rules
-- Produce public-facing vs complete/internal versions
-- Iterate via rewrite instructions
-- Track version history with metadata and scoring
-- Provide transparency through source auditability and statement reliability
+ Versions timeline with score/model/metadata
 
-Future goals:
-- Real public-domain retrieval
-- Internal knowledge-base ingestion
-- Document similarity checks
-- Multi-client style guide switching
-- Enterprise-grade privacy, access control, and SSO
-- Automated templated Word/PPT outputs
+ Quality pill colouring (green ≥90%, amber 75–90%, red <75)
 
----
+ Basic source ingestion (URLs + pasted text)
 
-# 2. ⭐ Completed (MVP Foundations)
+ Statement analysis (atomic statements, reliability scoring, category tagging)
 
-### 2.1 Core Features
-- Upload & parse text, files, and URLs
-- Scenario-based prompt templates
-- Complete vs Public-facing drafting
-- Inline style guide compliance
-- Version generation and rewrite
-- Token, temperature, model selection
+ Ask-AI module (with session history, disabling button after click)
 
-### 2.2 UI/UX
-- Full UI overhaul (2025)
-- Cleaner layout and spacing
-- Collapsible advanced settings
-- Color-coded metadata pills
-- Consistent controls + button hierarchy
-- Sources table (user-provided)
+ Collapsible sections (Future Roadmap, Statement Analysis, Ask-AI)
 
-### 2.3 Reliability & Debugging
-- CORS overhaul & correct headers
-- Backend restructuring and cleanup
-- Removal of circular imports
-- Safe JSON parsing
-- Stable scoring engine
-- Error toasts with safe truncation
+ Vercel backend v2 with robust CORS and error handling
 
----
+ Style guide improvements (no thousand separators for years, normal English commas)
 
-# 3. 🛠 In Progress (Actively Being Implemented)
+ Drafting workflow fully stable
 
-### 3.1 Statement Reliability (Beta)
-- New backend endpoint `/api/analyse-statements`
-- Break draft into atomic statements
-- Reliability scoring (0–100%)
-- Classification:
-  - Source-based factual
-  - Plausible factual
-  - Interpretive/subjective
-  - Speculative/forward-looking
-- Flags for risks (e.g., “not supported by source”)
-- UI table under Draft card
+🚧 In Progress Now
+Phase 1 — Frontend Migration to Modular Architecture
 
-### 3.2 Style Guide Consolidation
-- One location only: `DEFAULT_STYLE_GUIDE`
-- Rules for:
-  - Numbers (“one”–“eleven”, ranges, units)
-  - No em-dashes
-  - Institutional tone
-  - Currency handling
-  - Paragraph structure
-- Removal of duplicated rules from prompts
+ Introduce new folder structure (modules/, components/, hooks/, utils/ingest)
 
-### 3.3 Source Snapshot Per Version
-- Every generated/rewrite version stores:
-  - File names, size
-  - URLs
-  - Text-length metrics
-- Displayed in Sources table
+ Split the monolithic App.jsx into:
 
----
+ UI primitives (Button, Input, Card, TextArea, Pill)
 
-# 4. 🧩 Next Up (Short-Term Roadmap)
+ Layout components (TwoColumn, MainColumn, SideColumn, Header)
 
-### 4.1 Full Public-Source Retrieval (Real Web Context)
-(Currently, public search = “allow model knowledge”. Next version = real retrieval.)
+ Drafting module panels (Draft Output, Sources, Output Types, Generation Controls)
 
-#### Backend
-- `/api/public-search` endpoint
-- Connect to a real web search service (Google Custom Search, Bing Search, Tavily, Perplexity, etc.)
-- Extract canonical URLs, titles, snippets
-- Provide structured `publicSources` list
-- Prevent hallucinated URLs
+ Statement Analysis panel
 
-#### Frontend
-- Merge `userProvidedSources` + `publicSources`
-- Expanded Sources table:
-  - File / URL / Text / Public Web Source
-- Optional: relevance ranking
+ Ask-AI panel
 
----
+ Versions Timeline
 
-### 4.2 Rewrite Consistency Improvements
-- Allow version-type switching mid-version
-- Preview changes before committing rewrite
-- Rewrite-specific word limit override (optional)
+ History Sidebar
 
----
+ Add core hooks (useDraftState, useApi, useToggle)
 
-### 4.3 Source Management UX
-- “Remove source” (X button) for uploaded files & URLs
-- “Preview source” inspector pane
-- Show count of total uploaded sources
-- Confirmation dialogs before removing big files
+ Preserve all existing behaviour exactly while modularizing
 
----
+ Prepare structure for future modules (reviewing, export, ingestion)
 
-### 4.4 Prompt Audit Mode (Light)
-- Show “effective prompt” for transparency
-- User toggle: display prompt or hide
-- Stripped of internal logic (safe mode)
+🟡 Next Up (Near-Term, high priority)
 
----
+These are features tightly tied to the new architecture that should follow immediately after migration.
 
-# 5. 🧱 Medium-Term Roadmap (Beta → Full Product)
+A. Advanced Source Ingestion (PDF/DOC/XLSX/PPTX)
 
-### 5.1 Reliability Dashboard
-- Highlight low-reliability statements
-- Inline highlighting in draft text
-- Heatmap mode (color-coded reliability)
-- Suggested fixes (“Rewrite this section?”)
+ Add SourceIngestion panel with file-drop + browse uploader
 
-### 5.2 Output Comparison Tools
-- Compare two versions:
-  - Diff view
-  - Highlighted additions & removals
-  - Score changes (clarity, tone, structure)
+ Support ingestion types:
 
-### 5.3 Multi-Output Bundles
-- Generate several deliverables at once:
-  - Press release
-  - Portfolio commentary
-  - Investor email
-- Cross-coherence enforcement
+ PDF → text extraction + page-level metadata
 
-### 5.4 Templated Word/PPT Output
-- Word template engine (docx)
-- PPT slides with:
-  - Summary bullets
-  - Charts (later)
-- User-defined templates per client/team
+ DOCX → using docx parser
 
-### 5.5 Role-Based Access Control (RBAC)
-- View-only roles
-- Editor roles
-- Admin roles
-- Audit logs (enterprise)
+ XLSX → cell/column extraction
 
----
+ PPTX → slide text extraction
 
-# 6. 🧠 Long-Term (Enterprise / v3+)
+ Add backend endpoints (/api/ingest, /api/extract-pdf, etc.)
 
-### 6.1 Internal Knowledge Base Integration
-- Let users upload approved content to a private datastore
-- ChromaDB / Pinecone / pgvector / Azure Search
-- Retrieval-augmented generation (RAG) mode
-- “Approve this version for training” workflow
-- Optional: auto-tagging & metadata extraction
+ Add UI preview + confirmation before adding to Sources table
 
-### 6.2 Data Governance & Compliance
-- Automatic detection of sensitive content
-- Blocked phrases awareness
-- Client-specific redaction rules
-- Multi-region data residency (EU/US/APAC)
+ Add progress indicators + error fallback
 
-### 6.3 Enterprise Integrations
-- SSO (Okta / Azure AD / Google)
-- Slack/Teams notifications (“Your draft is ready”)
-- Export to internal content systems
-- Integration with deal workflow tools (DealCloud, Salesforce, etc.)
+ Store extracted text as structured Source objects:
 
----
+{
+  id,
+  type,
+  name,
+  text,
+  metadata: { pages, mime, sizeKB }
+}
 
-# 7. 🧪 Experimental / Optional
+B. Project Metadata Panel
 
-- Citation-level accuracy scoring
-- Boolean fact checking (“True / False / Needs evidence”)
-- Style drift detection against historical outputs
-- Sentiment analysis of tone
-- Auto-created outline before drafting
+ New panel for:
 
----
+ Investment name
 
-# 8. 📦 Release Versioning Framework
+ Transaction date
 
-### Version tags
-- `v1.x.x`  → early prototypes  
-- `v2.x.x`  → MVP stable  
-- `v3.x.x`  → Beta with auditability  
-- `v4.x.x`  → Enterprise-grade  
+ Reference texts (style/substance guide)
 
-### Recommended workflow
-1. Create a GitHub **release** after major feature sets  
-2. Tag using semantic versioning  
-3. Update `ROADMAP.md` + `CHANGELOG.md`  
-4. Push to Vercel  
-5. Keep main branch always deployable  
+ Auto-inject metadata into /generate and /rewrite prompts
 
+ Display metadata within the UI top bar or sidebar
 
+C. Auto-Analysis & Auto-Run Logic
 
+ Automatically run statement analysis after every Generate/Rewrite
+
+ Auto-update version metadata
+
+ New toggle: “Auto-run analysis”
+
+🔵 Medium-Term (Major Features)
+D. Export System (multi-format bundler)
+
+A full export module allowing the user to select which elements to export:
+
+ Draft text
+
+ Source table (URLs uploaded files, extracted metadata)
+
+ Statement reliability table
+
+ Ask-AI Q&A log
+
+ Model settings
+
+ Metadata (investment name, transaction date, reference texts)
+
+Supported output formats:
+
+ PDF export pack
+
+ DOCX report
+
+ HTML export
+
+ JSON archive
+
+ ZIP bundle containing multiple exports
+
+Selectable, e.g.:
+
+☑ Draft text
+☑ Reliability table
+☐ Ask AI
+☑ Sources
+Export as: PDF / DOCX / ZIP / JSON
+
+Everything pulls cleanly from modular components.
+
+🔴 Longer-Term (Major Modules & Intelligence Upgrades)
+E. Reviewing Module
+
+A second standalone workflow in the app:
+
+Review Mode Steps:
+
+Upload draft text
+
+Upload sources (PDF/URLs/DOCX/text)
+
+Run evaluation:
+
+correctness vs sources
+
+reliability statements
+
+drafting style vs reference texts
+
+Receive revision suggestions:
+
+contradicting statements
+
+unclear logic
+
+weak evidence
+
+style inconsistencies
+
+Auto-rewrite options
+
+Export review report (ties into Export System)
+
+This will reuse:
+
+Statement analysis
+
+Source ingestion
+
+Style guide rules
+
+Ask-AI Q&A
+
+Versions timeline
+
+Architecture:
+src/modules/reviewing/
+    ReviewInput.jsx
+    ReviewSources.jsx
+    ReviewAnalysis.jsx
+    ReviewSuggestions.jsx
+
+🔮 Future R&D Items (not urgent, but valuable)
+
+Live collaboration mode (multi-user projects)
+
+In-app PDF viewer with highlight → extract → send to model
+
+Style guide builder UI
+
+Model benchmarking viewer
+
+On-device caching for low-latency rewriting
+
+“Assistant personas” that alter the prompting style (professional, concise, aggressive editing, etc.)
