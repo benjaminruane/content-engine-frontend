@@ -201,11 +201,12 @@ function App() {
   const [statementAnalysis, setStatementAnalysis] = useState(null);
   const [isAnalysingStatements, setIsAnalysingStatements] = useState(false);
 
-  const [askPanelCollapsed, setAskPanelCollapsed] = useState(false);
+  const [askPanelCollapsed, setAskPanelCollapsed] = useState(true);
   const [rewritePanelCollapsed, setRewritePanelCollapsed] = useState(true);
-  const [statementPanelCollapsed, setStatementPanelCollapsed] = useState(false);
+  const [statementPanelCollapsed, setStatementPanelCollapsed] = useState(true);
   const [sourcesPanelCollapsed, setSourcesPanelCollapsed] = useState(true);
   const [versionsPanelCollapsed, setVersionsPanelCollapsed] = useState(true);
+
 
   const [draftText, setDraftText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -579,9 +580,11 @@ function App() {
       setCanGenerate(false);
 
       showToast("Draft generated");
-
+      
       // Automatically run statement analysis on the primary version
       await runStatementAnalysis(primary.text, primary.id);
+      setStatementPanelCollapsed(false);
+
     } catch (e) {
       console.error("Error generating", e);
       const msg =
@@ -909,6 +912,13 @@ function App() {
     setQueryHistory([]);
 
     setInputsCollapsed(false);
+    
+    setRewritePanelCollapsed(true);
+    setStatementPanelCollapsed(true);
+    setAskPanelCollapsed(true);
+    setSourcesPanelCollapsed(true);
+    setVersionsPanelCollapsed(true);
+
 
     showToast("New output session started");
   };
@@ -2018,9 +2028,6 @@ function App() {
               </CardBody>
             </Card>
           )}
-
-          )}
-
 
         {/* Versions timeline */}
         <Card>
