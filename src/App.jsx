@@ -1554,16 +1554,18 @@ function App() {
 
               {/* Statement reliability analysis */}
               <div className="border-t border-slate-200 pt-3 mt-2">
-                <div className="mb-1 flex items-center justify-between gap-2">
+               <div className="mb-1 flex items-center justify-between gap-2">
+                <div className="text-[11px] font-semibold tracking-tight text-slate-800">
+                  Statement reliability (beta)
+                </div>
+              
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setStatementPanelCollapsed((v) => !v)}
-                    className="flex items-center gap-1 text-[11px] font-semibold tracking-tight text-slate-800"
+                    className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
                   >
-                    <span className="inline-block">
-                      {statementPanelCollapsed ? "▸" : "▾"}
-                    </span>
-                    <span>Statement reliability (beta)</span>
+                    {statementPanelCollapsed ? "Show panel" : "Hide panel"}
                   </button>
               
                   <Button
@@ -1580,6 +1582,8 @@ function App() {
                       : "Analyse statements"}
                   </Button>
                 </div>
+              </div>
+
               
                 {/* Collapsible body */}
                 {!statementPanelCollapsed && (
@@ -1798,24 +1802,26 @@ function App() {
 
               {/* AI query box */}
               <div className="border-t border-slate-200 pt-3 mt-2">
-                {/* Collapsible header */}
-                <div className="flex items-center justify-between gap-2 mb-1">
+                {/* Header with text toggle */}
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <div className="flex flex-col">
+                    <div className="text-[11px] font-semibold tracking-tight text-slate-800">
+                      Ask a question about this draft or its sources
+                    </div>
+                    {queryAnswer && (
+                      <span className="text-[10px] text-slate-500">
+                        Latest answer shown below
+                      </span>
+                    )}
+                  </div>
+              
                   <button
                     type="button"
                     onClick={() => setAskPanelCollapsed((v) => !v)}
-                    className="flex items-center gap-1 text-[11px] font-semibold tracking-tight text-slate-800"
+                    className="text-[10px] text-slate-500 underline decoration-dotted underline-offset-2 hover:text-slate-700"
                   >
-                    <span className="inline-block">
-                      {askPanelCollapsed ? "▸" : "▾"}
-                    </span>
-                    <span>Ask a question about this draft or its sources</span>
+                    {askPanelCollapsed ? "Show panel" : "Hide panel"}
                   </button>
-              
-                  {queryAnswer && (
-                    <span className="text-[10px] text-slate-500">
-                      Latest answer shown below
-                    </span>
-                  )}
                 </div>
               
                 {/* Collapsible body */}
@@ -1857,7 +1863,7 @@ function App() {
                     </div>
               
                     {queryAnswer && (
-                      <div className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                      <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
                         <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                           <div className="font-medium whitespace-nowrap text-slate-800">
                             AI answer
@@ -1890,6 +1896,9 @@ function App() {
                       </div>
                     )}
                   </div>
+                )}
+              </div>
+
                 )}
               </div>
 
