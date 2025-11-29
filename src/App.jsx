@@ -1882,10 +1882,6 @@ function App() {
                   </div>
                 )}
               </div>
-
-                )}
-              </div>
-
             </CardBody>
           </Card>
 
