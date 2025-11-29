@@ -1858,92 +1858,95 @@ function App() {
             </CardBody>
           </Card>
 
-          {/* Sources for selected version */}
-          {currentVersion && (currentVersion.sources || sources).length > 0 && (
-            <Card>
-              <CardHeader className="items-center justify-between">
-                <div className="flex flex-col gap-1">
-                  <div className="text-sm font-semibold">Sources for this version</div>
-                  <div className="text-xs text-slate-500">
-                    Files, URLs and public sources feeding the selected draft.
-                  </div>
+        {/* Sources for selected version */}
+        {currentVersion && (currentVersion.sources || sources).length > 0 && (
+          <Card>
+            <CardHeader className="items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold">Sources for this version</div>
+                <div className="text-xs text-slate-500">
+                  Files, URLs and public sources feeding the selected draft.
                 </div>
-              </CardHeader>
-              <CardBody>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="px-2 py-1 text-left font-medium text-slate-600">
-                          Source
-                        </th>
-                        <th className="px-2 py-1 text-left font-medium text-slate-600">
-                          Type
-                        </th>
-                        <th className="px-2 py-1 text-left font-medium text-slate-600">
-                          Used portion
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(currentVersion.sources || sources).map((s, idx) => {
-                        const kind = s.kind || "text";
-                        const isUrl = kind === "url" || kind === "public";
-                        const url = s.url || (isUrl ? s.name : null);
+              </div>
+            </CardHeader>
+        
+            {/* 👇 New: cap height + vertical scroll */}
+            <CardBody className="max-h-48 overflow-y-auto">
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-fixed border border-slate-200 rounded-lg overflow-hidden text-[11px]">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-2 py-1 text-left font-medium text-slate-600">
+                        Source
+                      </th>
+                      <th className="px-2 py-1 text-left font-medium text-slate-600">
+                        Type
+                      </th>
+                      <th className="px-2 py-1 text-left font-medium text-slate-600">
+                        Used portion
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(currentVersion.sources || sources).map((s, idx) => {
+                      const kind = s.kind || "text";
+                      const isUrl = kind === "url" || kind === "public";
+                      const url = s.url || (isUrl ? s.name : null);
+        
+                      let usageLabel = "";
+                      if (kind === "file") {
+                        usageLabel = "entire document";
+                      } else if (kind === "url") {
+                        usageLabel = "extracted article text";
+                      } else if (kind === "public") {
+                        usageLabel = "public web context";
+                      } else {
+                        usageLabel = "manual text input";
+                      }
+        
+                      return (
+                        <tr
+                          key={`${s.name || "src"}-${idx}`}
+                          className="border-t border-slate-200"
+                        >
+                          <td className="px-2 py-1 align-top">
+                            {isUrl && url ? (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sky-600 hover:underline break-all"
+                              >
+                                {s.name}
+                              </a>
+                            ) : (
+                              <span className="break-all">
+                                {s.name || "(unnamed source)"}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-2 py-1 align-top text-slate-600">
+                            {kind === "file"
+                              ? "File"
+                              : kind === "url"
+                              ? "URL"
+                              : kind === "public"
+                              ? "Public source"
+                              : "Text"}
+                          </td>
+                          <td className="px-2 py-1 align-top text-slate-600">
+                            {usageLabel}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardBody>
+          </Card>
+        )}
 
-                        let usageLabel = "";
-                        if (kind === "file") {
-                          usageLabel = "entire document";
-                        } else if (kind === "url") {
-                          usageLabel = "extracted article text";
-                        } else if (kind === "public") {
-                          usageLabel = "public web context";
-                        } else {
-                          usageLabel = "manual text input";
-                        }
-
-                        return (
-                          <tr
-                            key={`${s.name || "src"}-${idx}`}
-                            className="border-t border-slate-200"
-                          >
-                            <td className="px-2 py-1 align-top">
-                              {isUrl && url ? (
-                                <a
-                                  href={url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-sky-600 hover:underline break-all"
-                                >
-                                  {s.name}
-                                </a>
-                              ) : (
-                                <span className="break-all">
-                                  {s.name || "(unnamed source)"}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-2 py-1 align-top text-slate-600">
-                              {kind === "file"
-                                ? "File"
-                                : kind === "url"
-                                ? "URL"
-                                : kind === "public"
-                                ? "Public source"
-                                : "Text"}
-                            </td>
-                            <td className="px-2 py-1 align-top text-slate-600">
-                              {usageLabel}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </CardBody>
-            </Card>
-          )}
 
           {/* Versions timeline */}
           <Card>
